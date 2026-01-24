@@ -31,9 +31,6 @@ export function SkinToneSelector() {
     { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: '冬季型' },
   ];
 
-  // Get a diverse set of preview colors from all seasons
-  const previewColors = SKIN_TONES.flatMap(tone => tone.palette.slice(0, 1)).slice(0, 8);
-
   return (
     <div className="w-full">
       {/* Collapsed Header - Always Visible */}
@@ -42,20 +39,20 @@ export function SkinToneSelector() {
         className="w-full flex items-center justify-between py-2 px-1 transition-colors"
       >
         <div className="flex items-center gap-3">
-          {/* Preview color circles from various palettes */}
+          {/* Preview color circles */}
           <div className="flex items-center -space-x-1.5">
-            {previewColors.map((color, idx) => (
+            {SKIN_TONES.slice(0, 8).map((tone, idx) => (
               <div
-                key={idx}
+                key={tone.id}
                 className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
                 style={{ 
-                  backgroundColor: color,
+                  backgroundColor: tone.color,
                   zIndex: 8 - idx
                 }}
               />
             ))}
             <div className="w-4 h-4 rounded-full border-2 border-white shadow-sm bg-neutral-200 flex items-center justify-center" style={{ zIndex: 0 }}>
-              <span className="text-[7px] font-bold text-neutral-500">+</span>
+              <span className="text-[7px] font-bold text-neutral-500">+4</span>
             </div>
           </div>
           
@@ -77,14 +74,14 @@ export function SkinToneSelector() {
       {/* Expandable Content */}
       <div 
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isExpanded ? 'max-h-[600px] opacity-100 mt-3' : 'max-h-0 opacity-0'
+          isExpanded ? 'max-h-[500px] opacity-100 mt-3' : 'max-h-0 opacity-0'
         }`}
       >
         <p className="text-xs text-muted-foreground text-center mb-3">
           {language === 'zh' ? '基于12色季理论' : 'Based on 12-season color theory'}
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {seasonGroups.map((group) => (
             <div key={group.key} className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground px-1">
@@ -98,7 +95,7 @@ export function SkinToneSelector() {
                       key={tone.id}
                       onClick={() => handleSelect(tone.id)}
                       className={`
-                        relative flex flex-col items-center gap-2 p-2.5 rounded-xl 
+                        relative flex flex-col items-center gap-1.5 p-2 rounded-xl 
                         border-2 transition-all duration-200
                         ${isSelected 
                           ? 'border-neutral-900 bg-neutral-50' 
@@ -106,27 +103,18 @@ export function SkinToneSelector() {
                         }
                       `}
                     >
-                      {/* Palette strip - 5 color dots */}
-                      <div className="flex items-center gap-0.5">
-                        {tone.palette.map((color, idx) => (
-                          <div 
-                            key={idx}
-                            className={`
-                              w-4 h-4 rounded-full shadow-sm
-                              ${isSelected && idx === 2 ? 'ring-1 ring-neutral-900 ring-offset-1' : ''}
-                            `}
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
+                      {/* Single solid color circle */}
+                      <div 
+                        className={`
+                          w-8 h-8 rounded-full shadow-sm flex items-center justify-center
+                          ${isSelected ? 'ring-2 ring-neutral-900 ring-offset-1' : ''}
+                        `}
+                        style={{ backgroundColor: tone.color }}
+                      >
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-white drop-shadow-sm" />
+                        )}
                       </div>
-                      
-                      {/* Selected indicator */}
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-900 rounded-full flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                      
                       {/* Label */}
                       <span className="text-[10px] font-medium text-center leading-tight text-foreground">
                         {language === 'zh' ? tone.nameZh : tone.nameEn}

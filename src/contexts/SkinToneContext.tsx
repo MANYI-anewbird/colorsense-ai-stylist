@@ -19,8 +19,7 @@ export interface SkinToneInfo {
   id: SkinToneType;
   nameEn: string;
   nameZh: string;
-  palette: string[]; // array of 4-5 hex colors representing this color season
-  primaryColor: string; // main representative color for badges/indicators
+  color: string; // single representative color from reference chart
   season: 'spring' | 'summer' | 'autumn' | 'winter';
   characteristics: {
     temperature: 'warm' | 'cool';
@@ -30,13 +29,12 @@ export interface SkinToneInfo {
 }
 
 export const SKIN_TONES: SkinToneInfo[] = [
-  // Spring types (Warm, fresh, light to bright)
+  // Spring types - colors from reference chart circles
   {
     id: 'spring-light',
     nameEn: 'Light Spring',
     nameZh: '浅春型',
-    palette: ['#F5EED6', '#E8E4C9', '#D4E2C8', '#F2D9C4', '#C9D9B8'], // creamy, pale yellow-green, soft peach, sage
-    primaryColor: '#D4E2C8',
+    color: '#C5CFA8', // sage/light olive green from chart
     season: 'spring',
     characteristics: { temperature: 'warm', depth: 'light', chroma: 'bright' }
   },
@@ -44,8 +42,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'spring-true',
     nameEn: 'Warm Spring',
     nameZh: '暖春型',
-    palette: ['#F5C842', '#E8A832', '#F2B056', '#D4A843', '#E89838'], // warm yellow, golden, coral orange
-    primaryColor: '#F5C842',
+    color: '#E8C864', // golden/mustard yellow from chart
     season: 'spring',
     characteristics: { temperature: 'warm', depth: 'medium', chroma: 'true' }
   },
@@ -53,18 +50,16 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'spring-bright',
     nameEn: 'Clear Spring',
     nameZh: '净春型',
-    palette: ['#F5D062', '#E8B84A', '#F08850', '#5EB86A', '#E25C48'], // bright golden, clear coral, fresh green
-    primaryColor: '#E8B84A',
+    color: '#DEBB78', // warm tan/golden from chart
     season: 'spring',
     characteristics: { temperature: 'warm', depth: 'medium', chroma: 'bright' }
   },
-  // Summer types (Cool, muted, soft)
+  // Summer types - colors from reference chart circles
   {
     id: 'summer-light',
     nameEn: 'Light Summer',
     nameZh: '浅夏型',
-    palette: ['#B8D4E8', '#C8D8E8', '#D4E0F0', '#E0E8F0', '#A8C8E0'], // light cool blue, soft lavender, pale grey-blue
-    primaryColor: '#B8D4E8',
+    color: '#A8C8DC', // light blue from chart
     season: 'summer',
     characteristics: { temperature: 'cool', depth: 'light', chroma: 'soft' }
   },
@@ -72,8 +67,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'summer-true',
     nameEn: 'Cool Summer',
     nameZh: '冷夏型',
-    palette: ['#9B8EC2', '#A8A0C8', '#8888B0', '#B0A0C0', '#7888A8'], // cool dusty blue, lavender, muted purple
-    primaryColor: '#9B8EC2',
+    color: '#A898C0', // lavender/purple from chart
     season: 'summer',
     characteristics: { temperature: 'cool', depth: 'medium', chroma: 'true' }
   },
@@ -81,18 +75,16 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'summer-soft',
     nameEn: 'Soft Summer',
     nameZh: '柔夏型',
-    palette: ['#B8C8B0', '#A8B8A8', '#C0C8B8', '#98A898', '#D0D8C8'], // very muted sage, dusty olive-grey, greyed tones
-    primaryColor: '#B8C8B0',
+    color: '#B8C0A8', // sage/muted green-grey from chart
     season: 'summer',
     characteristics: { temperature: 'cool', depth: 'medium', chroma: 'soft' }
   },
-  // Autumn types (Warm, earthy, muted to deep)
+  // Autumn types - colors from reference chart circles
   {
     id: 'autumn-soft',
     nameEn: 'Soft Autumn',
     nameZh: '柔秋型',
-    palette: ['#D4C4A8', '#C8B898', '#B8A888', '#C0B090', '#A89878'], // muted beige, taupe, soft olive, dusty warm
-    primaryColor: '#D4C4A8',
+    color: '#C8B8A0', // warm beige/tan from chart
     season: 'autumn',
     characteristics: { temperature: 'warm', depth: 'medium', chroma: 'soft' }
   },
@@ -100,8 +92,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'autumn-true',
     nameEn: 'Warm Autumn',
     nameZh: '暖秋型',
-    palette: ['#D87848', '#C86838', '#E08850', '#B85828', '#D06030'], // burnt orange, terracotta, caramel, rust
-    primaryColor: '#D87848',
+    color: '#C88860', // burnt orange/terracotta from chart
     season: 'autumn',
     characteristics: { temperature: 'warm', depth: 'medium', chroma: 'true' }
   },
@@ -109,18 +100,16 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'autumn-deep',
     nameEn: 'Deep Autumn',
     nameZh: '深秋型',
-    palette: ['#6B4832', '#5A3828', '#483020', '#785040', '#3A2818'], // deep brown, chocolate, dark olive
-    primaryColor: '#6B4832',
+    color: '#786050', // brown/chocolate from chart
     season: 'autumn',
     characteristics: { temperature: 'warm', depth: 'deep', chroma: 'true' }
   },
-  // Winter types (Cool, clear, high contrast)
+  // Winter types - colors from reference chart circles
   {
     id: 'winter-bright',
     nameEn: 'Clear Winter',
     nameZh: '净冬型',
-    palette: ['#E040A0', '#4080E0', '#00A878', '#F0E040', '#8040C0'], // hot pink, royal blue, emerald, bright jewel tones
-    primaryColor: '#C8A0D0',
+    color: '#B8A8D0', // lavender/light purple from chart
     season: 'winter',
     characteristics: { temperature: 'cool', depth: 'medium', chroma: 'bright' }
   },
@@ -128,8 +117,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'winter-true',
     nameEn: 'Cool Winter',
     nameZh: '冷冬型',
-    palette: ['#186848', '#2868A0', '#E03868', '#1858A8', '#087858'], // emerald green, icy blue, cool clear tones
-    primaryColor: '#D0A8B8',
+    color: '#C8A0B0', // soft pink/mauve from chart
     season: 'winter',
     characteristics: { temperature: 'cool', depth: 'medium', chroma: 'true' }
   },
@@ -137,8 +125,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'winter-deep',
     nameEn: 'Deep Winter',
     nameZh: '深冬型',
-    palette: ['#6A1832', '#401028', '#2A0818', '#881838', '#501028'], // deep wine, burgundy, dark dramatic, near-black
-    primaryColor: '#6A1832',
+    color: '#604850', // dark burgundy/brown from chart
     season: 'winter',
     characteristics: { temperature: 'cool', depth: 'deep', chroma: 'true' }
   },

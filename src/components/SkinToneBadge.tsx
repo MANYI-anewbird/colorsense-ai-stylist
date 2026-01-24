@@ -16,23 +16,14 @@ export function SkinToneBadge({ showLabel = true, size = 'sm' }: SkinToneBadgePr
   const info = getSkinToneInfo(skinTone);
   if (!info) return null;
 
-  const dotSize = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4';
+  const dotSize = size === 'sm' ? 'w-5 h-5' : 'w-6 h-6';
 
   return (
     <div className="flex items-center gap-1.5 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full border border-neutral-200 shadow-sm">
-      {/* Mini palette strip showing 4 colors */}
-      <div className="flex items-center -space-x-0.5">
-        {info.palette.slice(0, 4).map((color, idx) => (
-          <div 
-            key={idx}
-            className={`${dotSize} rounded-full border border-white/50 shadow-sm`}
-            style={{ 
-              backgroundColor: color,
-              zIndex: 4 - idx
-            }}
-          />
-        ))}
-      </div>
+      <div 
+        className={`${dotSize} rounded-full shadow-sm flex-shrink-0`}
+        style={{ backgroundColor: info.color }}
+      />
       {showLabel && (
         <span className="text-[10px] font-medium text-neutral-700 truncate max-w-20">
           {language === 'zh' ? info.nameZh : info.nameEn}
