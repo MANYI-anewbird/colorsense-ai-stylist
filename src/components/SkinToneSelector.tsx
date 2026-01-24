@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, HelpCircle } from 'lucide-react';
 import { useSkinTone, SKIN_TONES, SkinToneType } from '@/contexts/SkinToneContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ColorSeasonTest } from '@/components/ColorSeasonTest';
 
 export function SkinToneSelector() {
   const { skinTone, setSkinTone, getSkinToneInfo } = useSkinTone();
   const { language } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showTest, setShowTest] = useState(false);
 
   const handleSelect = (toneId: SkinToneType) => {
     if (skinTone === toneId) {
@@ -31,13 +33,27 @@ export function SkinToneSelector() {
     { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: '冬季型' },
   ];
 
+  const handleTestComplete = () => {
+    setShowTest(false);
+    setIsExpanded(false);
+  };
+
   return (
-    <div className="w-full">
-      {/* Collapsed Header - Always Visible */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between py-2 px-1 transition-colors"
-      >
+    <>
+      {/* Color Season Test Modal */}
+      {showTest && (
+        <ColorSeasonTest
+          onClose={() => setShowTest(false)}
+          onComplete={handleTestComplete}
+        />
+      )}
+
+      <div className="w-full">
+        {/* Collapsed Header - Always Visible */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-between py-2 px-1 transition-colors"
+        >
         <div className="flex items-center gap-3">
           {/* Preview color circles */}
           <div className="flex items-center -space-x-1.5">
@@ -80,6 +96,15 @@ export function SkinToneSelector() {
         <p className="text-xs text-muted-foreground text-center mb-3">
           {language === 'zh' ? '基于12色季理论' : 'Based on 12-season color theory'}
         </p>
+
+        {/* "I don't know" Button */}
+        <button
+          onClick={() => setShowTest(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 mb-4 bg-neutral-100 text-neutral-600 rounded-xl hover:bg-neutral-200 transition-colors text-sm font-medium"
+        >
+          <HelpCircle className="w-4 h-4" />
+          {language === 'zh' ? '我不知道我的色季' : "I don't know my color season"}
+        </button>
 
         <div className="space-y-3">
           {seasonGroups.map((group) => (
@@ -128,5 +153,6 @@ export function SkinToneSelector() {
         </div>
       </div>
     </div>
+    </>
   );
 }
