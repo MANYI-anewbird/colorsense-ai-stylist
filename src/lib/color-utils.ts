@@ -39,26 +39,6 @@ export interface ColorAnalysis {
   confidenceNote?: string;
 }
 
-export interface AIAnalysis {
-  delta: number;
-  insight: string;
-  advice: string;
-  fallback?: boolean;
-}
-
-export interface AnalysisResult {
-  analysis: ColorAnalysis;
-  ruleScore: number;
-  breakdown?: {
-    temperature: number;
-    season: number;
-    brightness: number;
-    saturation: number;
-  };
-  aiAnalysis?: AIAnalysis;
-  finalScore?: number;
-}
-
 // RGB to HEX
 export function rgbToHex(r: number, g: number, b: number): string {
   const toHex = (n: number) => {

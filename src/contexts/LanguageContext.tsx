@@ -14,8 +14,6 @@ interface Translations {
   selectColor: string;
   analyzing: string;
   analyzeColor: string;
-  analyzeWithAI: string;
-  aiAnalysisCaption: string;
   imageNotReady: string;
   analyzeFailed: string;
   
@@ -28,14 +26,6 @@ interface Translations {
   temperature: string;
   seasonalTendency: string;
   analyzeAnother: string;
-  matchScore: string;
-  aiMatchScore: string;
-  baseScore: string;
-  aiAdjustment: string;
-  insight: string;
-  suggestion: string;
-  aiUnavailable: string;
-  ruleEngine: string;
   
   // Seasons
   spring: string;
@@ -62,8 +52,6 @@ const translations: Record<Language, Translations> = {
     selectColor: 'Select Color',
     analyzing: 'Analyzing...',
     analyzeColor: 'Analyze Color',
-    analyzeWithAI: 'Analyze with AI',
-    aiAnalysisCaption: 'Adds a stylist\'s perspective (may take a few seconds)',
     imageNotReady: 'Image not ready. Please try again.',
     analyzeFailed: 'Failed to analyze color. Please try again.',
     
@@ -76,14 +64,6 @@ const translations: Record<Language, Translations> = {
     temperature: 'Temperature',
     seasonalTendency: 'Seasonal Tendency',
     analyzeAnother: 'Analyze Another Color',
-    matchScore: 'Match Score',
-    aiMatchScore: 'AI Match Score',
-    baseScore: 'Base Score',
-    aiAdjustment: 'AI Adjustment',
-    insight: 'Insight',
-    suggestion: 'Suggestion',
-    aiUnavailable: 'AI unavailable, showing base score',
-    ruleEngine: 'rule engine',
     
     // Seasons
     spring: 'Spring',
@@ -108,8 +88,6 @@ const translations: Record<Language, Translations> = {
     selectColor: '选择颜色',
     analyzing: '分析中...',
     analyzeColor: '分析颜色',
-    analyzeWithAI: 'AI 分析',
-    aiAnalysisCaption: '添加造型师视角（可能需要几秒钟）',
     imageNotReady: '图片未准备好，请重试',
     analyzeFailed: '颜色分析失败，请重试',
     
@@ -122,14 +100,6 @@ const translations: Record<Language, Translations> = {
     temperature: '色温',
     seasonalTendency: '季节倾向',
     analyzeAnother: '分析另一个颜色',
-    matchScore: '匹配分数',
-    aiMatchScore: 'AI 匹配分数',
-    baseScore: '基础分数',
-    aiAdjustment: 'AI 调整',
-    insight: '洞察',
-    suggestion: '建议',
-    aiUnavailable: 'AI 不可用，显示基础分数',
-    ruleEngine: '规则引擎',
     
     // Seasons
     spring: '春季型',
