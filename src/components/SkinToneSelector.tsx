@@ -62,7 +62,7 @@ export function SkinToneSelector() {
             </span>
           ) : (
             <span className="text-sm font-medium text-foreground">
-              {language === 'zh' ? '选择肤色' : 'Select Skin Tone'}
+              {language === 'zh' ? '选择你的色季' : 'Select Your Color Season'}
             </span>
           )}
         </div>
