@@ -48,16 +48,14 @@ export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = f
       className={cn('color-swatch relative flex flex-col items-center justify-center', sizeClasses[size], className)}
       style={{ backgroundColor: hex }}
     >
-      {/* Compatibility Score Overlay */}
+      {/* Compatibility Score Overlay - Clean text only */}
       {score !== null && recommendation && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 rounded-inherit">
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg text-center">
-            <div className={cn('text-2xl font-bold', getScoreColor(recommendation.level))}>
-              {score}
-            </div>
-            <div className="text-[9px] text-neutral-500 font-medium mt-0.5">
-              {language === 'zh' ? '推荐指数' : 'Match Score'}
-            </div>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className={cn('text-4xl font-bold drop-shadow-lg', 'text-white')}>
+            {score}
+          </div>
+          <div className="text-xs text-white/90 font-medium mt-1 drop-shadow-md">
+            {language === 'zh' ? '推荐指数' : 'Match Score'}
           </div>
         </div>
       )}
