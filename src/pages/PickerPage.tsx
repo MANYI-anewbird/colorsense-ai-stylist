@@ -7,10 +7,12 @@ import { ColorButton } from '@/components/ui/color-button';
 import { analyzeColor, type ColorAnalysis } from '@/lib/color-utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function PickerPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -47,7 +49,7 @@ export default function PickerPage() {
 
   const handleAnalyze = async () => {
     if (!canvasRef.current) {
-      toast.error('Image not ready. Please try again.');
+      toast.error(t.imageNotReady);
       return;
     }
 
@@ -91,7 +93,7 @@ export default function PickerPage() {
       });
     } catch (error) {
       console.error('Analysis error:', error);
-      toast.error('Failed to analyze color. Please try again.');
+      toast.error(t.analyzeFailed);
     } finally {
       setIsAnalyzing(false);
     }
@@ -103,7 +105,7 @@ export default function PickerPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header title="Select Color" showBack />
+      <Header title={t.selectColor} showBack />
 
       <main className="flex-1 container px-4 py-6 flex flex-col">
         <div className="flex-1">
@@ -125,12 +127,12 @@ export default function PickerPage() {
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Analyzing...
+                {t.analyzing}
               </>
             ) : (
               <>
                 <Wand2 className="w-5 h-5" />
-                Analyze Color
+                {t.analyzeColor}
               </>
             )}
           </ColorButton>

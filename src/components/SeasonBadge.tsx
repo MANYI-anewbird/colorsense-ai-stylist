@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Flower2, Sun, Leaf, Snowflake } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 
@@ -12,32 +13,32 @@ interface SeasonBadgeProps {
 
 const seasonConfig = {
   spring: {
-    label: 'Spring',
-    description: 'Warm & Light',
+    descriptionEn: 'Warm & Light',
+    descriptionZh: '暖调浅色',
     icon: Flower2,
     className: 'bg-gradient-to-br from-beauty-rose/15 to-beauty-coral/15 text-beauty-rose border-beauty-rose/30',
     iconClass: 'text-beauty-rose',
     cardBg: 'bg-gradient-to-br from-beauty-rose/10 to-beauty-peach/20',
   },
   summer: {
-    label: 'Summer',
-    description: 'Cool & Light',
+    descriptionEn: 'Cool & Light',
+    descriptionZh: '冷调浅色',
     icon: Sun,
     className: 'bg-gradient-to-br from-beauty-lavender/15 to-beauty-blush/15 text-beauty-lavender border-beauty-lavender/30',
     iconClass: 'text-beauty-lavender',
     cardBg: 'bg-gradient-to-br from-beauty-lavender/10 to-beauty-blush/20',
   },
   autumn: {
-    label: 'Autumn',
-    description: 'Warm & Deep',
+    descriptionEn: 'Warm & Deep',
+    descriptionZh: '暖调深色',
     icon: Leaf,
     className: 'bg-gradient-to-br from-beauty-coral/15 to-beauty-gold/15 text-beauty-coral border-beauty-coral/30',
     iconClass: 'text-beauty-coral',
     cardBg: 'bg-gradient-to-br from-beauty-coral/10 to-beauty-gold/20',
   },
   winter: {
-    label: 'Winter',
-    description: 'Cool & Deep',
+    descriptionEn: 'Cool & Deep',
+    descriptionZh: '冷调深色',
     icon: Snowflake,
     className: 'bg-gradient-to-br from-beauty-lavender/20 to-beauty-rose/15 text-beauty-lavender border-beauty-lavender/30',
     iconClass: 'text-beauty-lavender',
@@ -64,9 +65,11 @@ const sizeClasses = {
 };
 
 export function SeasonBadge({ season, size = 'md', showLabel = true }: SeasonBadgeProps) {
+  const { t } = useLanguage();
   const config = seasonConfig[season];
   const sizes = sizeClasses[size];
   const Icon = config.icon;
+  const label = t[season];
 
   return (
     <div
@@ -78,7 +81,7 @@ export function SeasonBadge({ season, size = 'md', showLabel = true }: SeasonBad
     >
       <Icon className={cn(sizes.icon, config.iconClass)} />
       {showLabel && (
-        <span className={sizes.text}>{config.label}</span>
+        <span className={sizes.text}>{label}</span>
       )}
     </div>
   );
@@ -89,8 +92,11 @@ interface SeasonCardProps {
 }
 
 export function SeasonCard({ season }: SeasonCardProps) {
+  const { t, language } = useLanguage();
   const config = seasonConfig[season];
   const Icon = config.icon;
+  const label = t[season];
+  const description = language === 'zh' ? config.descriptionZh : config.descriptionEn;
 
   return (
     <div className={cn('rounded-2xl border-2 p-4 shadow-card', config.className, config.cardBg)}>
@@ -99,8 +105,8 @@ export function SeasonCard({ season }: SeasonCardProps) {
           <Icon className={cn('w-6 h-6', config.iconClass)} />
         </div>
         <div>
-          <p className="font-semibold text-lg">{config.label}</p>
-          <p className="text-sm opacity-80">{config.description}</p>
+          <p className="font-semibold text-lg">{label}</p>
+          <p className="text-sm opacity-80">{description}</p>
         </div>
       </div>
     </div>

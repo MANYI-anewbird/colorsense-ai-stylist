@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Flame, Snowflake, CircleDot } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Temperature = 'warm' | 'cool' | 'neutral';
 
@@ -11,19 +12,16 @@ interface TemperatureBadgeProps {
 
 const temperatureConfig = {
   warm: {
-    label: 'Warm',
     icon: Flame,
     className: 'bg-gradient-to-r from-beauty-coral/20 to-beauty-peach/30 text-beauty-coral border-beauty-coral/30',
     iconClass: 'text-beauty-coral',
   },
   cool: {
-    label: 'Cool',
     icon: Snowflake,
     className: 'bg-gradient-to-r from-beauty-lavender/20 to-beauty-blush/30 text-beauty-lavender border-beauty-lavender/30',
     iconClass: 'text-beauty-lavender',
   },
   neutral: {
-    label: 'Neutral',
     icon: CircleDot,
     className: 'bg-gradient-to-r from-beauty-blush/20 to-muted/30 text-muted-foreground border-beauty-blush/30',
     iconClass: 'text-muted-foreground',
@@ -49,9 +47,11 @@ const sizeClasses = {
 };
 
 export function TemperatureBadge({ temperature, size = 'md' }: TemperatureBadgeProps) {
+  const { t } = useLanguage();
   const config = temperatureConfig[temperature];
   const sizes = sizeClasses[size];
   const Icon = config.icon;
+  const label = t[temperature];
 
   return (
     <div
@@ -62,7 +62,7 @@ export function TemperatureBadge({ temperature, size = 'md' }: TemperatureBadgeP
       )}
     >
       <Icon className={cn(sizes.icon, config.iconClass)} />
-      <span className={sizes.text}>{config.label}</span>
+      <span className={sizes.text}>{label}</span>
     </div>
   );
 }
