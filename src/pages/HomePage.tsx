@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image, Lightbulb } from 'lucide-react';
 import colorsenseLogo from '@/assets/colorsense-logo.png';
+import taglineImage from '@/assets/tagline.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -68,9 +69,11 @@ export default function HomePage() {
             alt="Color Sense Studio" 
             className="w-72 h-auto mx-auto drop-shadow-sm"
           />
-          <p className="mt-4 text-base text-neutral-500 font-light tracking-wide">
-            {t.tagline}
-          </p>
+          <img 
+            src={taglineImage} 
+            alt={t.tagline}
+            className="mt-4 w-64 h-auto mx-auto"
+          />
         </div>
 
         {/* Main CTA Buttons - Side by Side */}
