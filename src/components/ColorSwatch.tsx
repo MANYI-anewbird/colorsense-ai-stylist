@@ -14,6 +14,24 @@ interface ColorSwatchProps {
   colorMetrics?: ColorMetrics;
 }
 
+// Calculate relative luminance to determine if text should be black
+function isLightColor(hex: string): boolean {
+  // Remove # if present
+  const cleanHex = hex.replace('#', '');
+  
+  // Parse RGB values
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  
+  // Calculate relative luminance (perceived brightness)
+  // Using the standard formula: L = 0.2126*R + 0.7152*G + 0.0722*B
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  
+  // If luminance is above 0.7 (very light), use black text
+  return luminance > 0.7;
+}
+
 export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = false, colorMetrics }: ColorSwatchProps) {
   const { skinTone } = useSkinTone();
   const { language } = useLanguage();
@@ -32,6 +50,11 @@ export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = f
   
   const recommendation = score !== null ? getRecommendationLevel(score) : null;
 
+  // Determine text color based on background lightness
+  const useBlackText = isLightColor(hex);
+  const textColorClass = useBlackText ? 'text-neutral-900' : 'text-white';
+  const labelColorClass = useBlackText ? 'text-neutral-700' : 'text-white/90';
+
   // Get color for score display based on level
   const getScoreColor = (level: string) => {
     switch (level) {
@@ -45,16 +68,20 @@ export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = f
 
   return (
     <div
-      className={cn('color-swatch relative flex flex-col items-center justify-center', sizeClasses[size], className)}
+      className={cn(
+        'color-swatch relative flex flex-col items-center justify-center border-2 border-neutral-300',
+        sizeClasses[size], 
+        className
+      )}
       style={{ backgroundColor: hex }}
     >
       {/* Compatibility Score Overlay - Clean text only */}
       {score !== null && recommendation && (
         <div className="flex flex-col items-center justify-center text-center">
-          <div className={cn('text-4xl font-bold drop-shadow-lg', 'text-white')}>
+          <div className={cn('text-4xl font-bold drop-shadow-lg', textColorClass)}>
             {score}
           </div>
-          <div className="text-xs text-white/90 font-medium mt-1 drop-shadow-md">
+          <div className={cn('text-xs font-medium mt-1 drop-shadow-md', labelColorClass)}>
             {language === 'zh' ? '推荐指数' : 'Match Score'}
           </div>
         </div>
