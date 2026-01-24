@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, HelpCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TestOption {
@@ -17,11 +17,8 @@ interface TestStepProps {
   instructionEn: string;
   instructionZh: string;
   options: TestOption[];
-  notSureEn?: string;
-  notSureZh?: string;
   onSelect: (value: string) => void;
   onBack: () => void;
-  onNotSure: () => void;
 }
 
 export function TestStep({
@@ -32,11 +29,8 @@ export function TestStep({
   instructionEn,
   instructionZh,
   options,
-  notSureEn = "Not sure / Both similar",
-  notSureZh = "不确定 / 两个差不多",
   onSelect,
   onBack,
-  onNotSure,
 }: TestStepProps) {
   const { language } = useLanguage();
 
@@ -76,7 +70,7 @@ export function TestStep({
         </p>
 
         {/* Color Cards */}
-        <div className={`grid gap-3 mb-6 ${options.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <div className={`grid gap-3 ${options.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {options.map((option) => (
             <button
               key={option.id}
@@ -93,15 +87,6 @@ export function TestStep({
             </button>
           ))}
         </div>
-
-        {/* Not Sure Button */}
-        <button
-          onClick={onNotSure}
-          className="flex items-center justify-center gap-2 py-3 px-4 bg-neutral-100 text-neutral-600 rounded-xl hover:bg-neutral-200 transition-colors text-sm"
-        >
-          <HelpCircle className="w-4 h-4" />
-          {language === 'zh' ? notSureZh : notSureEn}
-        </button>
       </div>
     </div>
   );

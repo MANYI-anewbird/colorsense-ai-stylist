@@ -52,28 +52,13 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
     setScreen('test-2');
   };
 
-  const handleStep1NotSure = () => {
-    setAnswers(prev => ({ ...prev, undertone: 'neutral' }));
-    setScreen('test-2');
-  };
-
   const handleStep2Select = (value: string) => {
     setAnswers(prev => ({ ...prev, chroma: value as Chroma }));
     setScreen('test-3');
   };
 
-  const handleStep2NotSure = () => {
-    setAnswers(prev => ({ ...prev, chroma: 'neutral' }));
-    setScreen('test-3');
-  };
-
   const handleStep3Select = (value: string) => {
     setAnswers(prev => ({ ...prev, value: value as Value }));
-    setScreen('result');
-  };
-
-  const handleStep3NotSure = () => {
-    setAnswers(prev => ({ ...prev, value: 'neutral' }));
     setScreen('result');
   };
 
@@ -123,11 +108,8 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           instructionEn="Put your finger in the middle and see which side makes your skin look brighter and less yellow."
           instructionZh="把手指放在中间，看看哪一边让你的皮肤看起来更明亮、更少黄调。"
           options={STEP_1_OPTIONS}
-          notSureEn="Not sure / Both similar"
-          notSureZh="不确定 / 两个差不多"
           onSelect={handleStep1Select}
           onBack={() => setScreen('find')}
-          onNotSure={handleStep1NotSure}
         />
       )}
 
@@ -140,11 +122,8 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           instructionEn="Which side makes your skin look cleaner and more refined?"
           instructionZh="哪一边让你的皮肤看起来更干净、更精致？"
           options={STEP_2_OPTIONS}
-          notSureEn="Not sure"
-          notSureZh="不确定"
           onSelect={handleStep2Select}
           onBack={() => setScreen('test-1')}
-          onNotSure={handleStep2NotSure}
         />
       )}
 
@@ -157,11 +136,8 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           instructionEn="Which one makes your skin look more balanced and defined?"
           instructionZh="哪一个让你的皮肤看起来更平衡、更有轮廓感？"
           options={STEP_3_OPTIONS}
-          notSureEn="Not sure"
-          notSureZh="不确定"
           onSelect={handleStep3Select}
           onBack={() => setScreen('test-2')}
-          onNotSure={handleStep3NotSure}
         />
       )}
 
