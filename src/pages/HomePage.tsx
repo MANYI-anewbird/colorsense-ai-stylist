@@ -2,14 +2,13 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image, Lightbulb } from 'lucide-react';
 import colorsenseLogo from '@/assets/colorsense-logo.png';
-import taglineEn from '@/assets/tagline-en.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -69,17 +68,9 @@ export default function HomePage() {
             alt="Color Sense Studio" 
             className="w-72 h-auto mx-auto drop-shadow-sm"
           />
-          {language === 'en' ? (
-            <img 
-              src={taglineEn} 
-              alt="Snap a photo. Understand your colors." 
-              className="mt-5 w-80 h-auto mx-auto mix-blend-multiply"
-            />
-          ) : (
-            <p className="mt-4 text-lg text-neutral-600 font-medium tracking-wide italic">
-              {t.tagline}
-            </p>
-          )}
+          <p className="mt-4 text-base text-neutral-500 font-light tracking-wide">
+            {t.tagline}
+          </p>
         </div>
 
         {/* Main CTA Buttons - Side by Side */}
