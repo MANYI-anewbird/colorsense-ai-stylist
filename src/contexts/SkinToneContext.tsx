@@ -156,8 +156,13 @@ const STORAGE_KEY = 'colorsense-skin-tone';
 
 export function SkinToneProvider({ children }: { children: ReactNode }) {
   const [skinTone, setSkinToneState] = useState<SkinToneType>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? (stored as SkinToneType) : null;
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? (stored as SkinToneType) : null;
+    } catch {
+      return null;
+    }
   });
 
   const setSkinTone = (tone: SkinToneType) => {
