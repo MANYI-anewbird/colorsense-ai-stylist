@@ -100,18 +100,18 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCameraClick}
-              className="flex flex-col items-center justify-center gap-2 py-5 px-4 bg-neutral-900 text-white rounded-2xl shadow-lg hover:bg-neutral-800 active:scale-[0.98] transition-all duration-200"
+              className="flex flex-col items-center justify-center gap-3 py-10 px-4 bg-neutral-900 text-white rounded-2xl shadow-lg hover:bg-neutral-800 active:scale-[0.98] transition-all duration-200"
             >
-              <Camera className="w-6 h-6" />
-              <span className="text-sm font-medium">{t.takePhoto}</span>
+              <Camera className="w-8 h-8" />
+              <span className="text-base font-medium">{t.takePhoto}</span>
             </button>
 
             <button
               onClick={handleGalleryClick}
-              className="flex flex-col items-center justify-center gap-2 py-5 px-4 bg-white text-neutral-900 rounded-2xl shadow-lg border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all duration-200"
+              className="flex flex-col items-center justify-center gap-3 py-10 px-4 bg-white text-neutral-900 rounded-2xl shadow-lg border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all duration-200"
             >
-              <Image className="w-6 h-6" />
-              <span className="text-sm font-medium">{t.gallery}</span>
+              <Image className="w-8 h-8" />
+              <span className="text-base font-medium">{t.gallery}</span>
             </button>
           </div>
         </div>
