@@ -86,10 +86,10 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
           <span className="text-sm">{language === 'zh' ? '使用此估算' : 'Use this estimate'}</span>
         </button>
 
-        {/* Primary button - highlighted with glow */}
+        {/* Primary button - highlighted with gradient */}
         <button
           onClick={onConsultant}
-          className="w-full flex items-center justify-center gap-2 py-3.5 bg-neutral-900 text-white rounded-xl font-medium shadow-lg shadow-neutral-900/25 hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/30 active:scale-[0.98] transition-all ring-1 ring-neutral-800"
+          className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 text-white rounded-xl font-medium shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 active:scale-[0.98] transition-all"
         >
           <MessageCircle className="w-4 h-4" />
           <span className="text-sm">{language === 'zh' ? '获取专业色彩报告' : 'Get a professional color report'}</span>
