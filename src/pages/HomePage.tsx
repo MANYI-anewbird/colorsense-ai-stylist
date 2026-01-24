@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, Sparkles, Sun, Heart } from 'lucide-react';
+import { Camera, Image, Sparkles, Lightbulb } from 'lucide-react';
 import { ColorButton } from '@/components/ui/color-button';
 
 export default function HomePage() {
@@ -46,19 +46,12 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        {/* Decorative gradient orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-beauty-rose/20 rounded-full blur-3xl" />
-          <div className="absolute top-40 right-5 w-40 h-40 bg-beauty-lavender/15 rounded-full blur-3xl" />
-          <div className="absolute bottom-32 left-20 w-28 h-28 bg-beauty-coral/20 rounded-full blur-3xl" />
-        </div>
-
         {/* Logo / Brand */}
         <div className="animate-fade-in mb-8 relative z-10">
-          <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-beauty-rose via-beauty-coral to-beauty-lavender flex items-center justify-center shadow-elevated mb-6 mx-auto">
-            <Heart className="w-12 h-12 text-white fill-white/30" />
+          <div className="w-24 h-24 rounded-[2rem] bg-neutral-900 flex items-center justify-center shadow-elevated mb-6 mx-auto">
+            <Sparkles className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-beauty-rose via-beauty-coral to-beauty-lavender bg-clip-text text-transparent text-center tracking-tight">
+          <h1 className="text-4xl font-bold text-neutral-900 text-center tracking-tight">
             ColorSense
           </h1>
           <p className="text-muted-foreground text-center mt-2 text-lg">
@@ -91,13 +84,13 @@ export default function HomePage() {
 
         {/* Tip Card */}
         <div className="mt-12 w-full max-w-sm animate-fade-in relative z-10" style={{ animationDelay: '0.2s' }}>
-          <div className="glass-card rounded-2xl p-5 border border-beauty-blush/50">
+          <div className="bg-white rounded-2xl p-5 border border-neutral-200 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-beauty-peach to-beauty-coral/40 flex items-center justify-center flex-shrink-0">
-                <Sun className="w-5 h-5 text-beauty-coral" />
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                <Lightbulb className="w-5 h-5 text-neutral-600" />
               </div>
               <div>
-                <p className="font-medium text-foreground">Beauty Tip</p>
+                <p className="font-medium text-neutral-900">Pro Tip</p>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                   For best results, use natural daylight and avoid harsh shadows on your clothing.
                 </p>
