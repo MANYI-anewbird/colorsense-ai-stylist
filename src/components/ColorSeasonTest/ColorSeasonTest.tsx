@@ -140,7 +140,7 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           seasonId={getResultSeason()}
           confidence={getResultConfidence()}
           onUseResult={onComplete}
-          onRetake={handleRetake}
+          onConsultant={() => setScreen('consultant')}
         />
       )}
 

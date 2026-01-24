@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, RotateCcw, AlertCircle } from 'lucide-react';
+import { Check, MessageCircle, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSkinTone, SKIN_TONES, SkinToneType } from '@/contexts/SkinToneContext';
 
@@ -7,10 +7,10 @@ interface TestResultProps {
   seasonId: string;
   confidence: 'high' | 'medium' | 'low';
   onUseResult: () => void;
-  onRetake: () => void;
+  onConsultant: () => void;
 }
 
-export function TestResult({ seasonId, confidence, onUseResult, onRetake }: TestResultProps) {
+export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: TestResultProps) {
   const { language } = useLanguage();
   const { setSkinTone } = useSkinTone();
 
@@ -86,11 +86,11 @@ export function TestResult({ seasonId, confidence, onUseResult, onRetake }: Test
         </button>
 
         <button
-          onClick={onRetake}
+          onClick={onConsultant}
           className="w-full flex items-center justify-center gap-2 py-4 bg-white text-neutral-700 rounded-xl font-medium border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all"
         >
-          <RotateCcw className="w-5 h-5" />
-          {language === 'zh' ? '重新测试' : 'Retake test'}
+          <MessageCircle className="w-5 h-5" />
+          {language === 'zh' ? '咨询色彩顾问' : 'Ask a Color Consultant'}
         </button>
       </div>
     </div>
