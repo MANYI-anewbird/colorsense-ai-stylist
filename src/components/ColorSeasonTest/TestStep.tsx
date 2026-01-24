@@ -25,6 +25,16 @@ const CRITERIA = [
   { en: 'Clearer and more defined features', zh: '五官更清晰立体' },
 ];
 
+// Helper to determine if a color is light (for text contrast)
+function isLightColor(hex: string): boolean {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6;
+}
+
 export function TestStep({
   step,
   totalSteps,
@@ -231,21 +241,31 @@ export function TestStep({
           </div>
         </div>
 
-        {/* Selection buttons - compact */}
+        {/* Selection buttons - with color indicators */}
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => isThreeOptionStep ? handleThreeOptionSelect(leftOption.id) : onSelect(leftOption.id)}
-            className="py-2.5 px-3 rounded-xl font-medium transition-all duration-200 border-2 border-neutral-200 bg-white hover:border-neutral-900 hover:bg-neutral-50 active:scale-[0.98]"
+            className="py-2.5 px-3 rounded-xl font-medium transition-all duration-200 border-2 hover:scale-[1.02] active:scale-[0.98]"
+            style={{ 
+              backgroundColor: leftOption.color,
+              borderColor: leftOption.color,
+              color: isLightColor(leftOption.color) ? '#1a1a1a' : '#ffffff'
+            }}
           >
-            <span className="text-sm text-foreground">
+            <span className="text-sm font-semibold">
               {language === 'zh' ? leftOption.labelZh : leftOption.labelEn}
             </span>
           </button>
           <button
             onClick={() => isThreeOptionStep ? handleThreeOptionSelect(rightOption.id) : onSelect(rightOption.id)}
-            className="py-2.5 px-3 rounded-xl font-medium transition-all duration-200 border-2 border-neutral-200 bg-white hover:border-neutral-900 hover:bg-neutral-50 active:scale-[0.98]"
+            className="py-2.5 px-3 rounded-xl font-medium transition-all duration-200 border-2 hover:scale-[1.02] active:scale-[0.98]"
+            style={{ 
+              backgroundColor: rightOption.color,
+              borderColor: rightOption.color,
+              color: isLightColor(rightOption.color) ? '#1a1a1a' : '#ffffff'
+            }}
           >
-            <span className="text-sm text-foreground">
+            <span className="text-sm font-semibold">
               {language === 'zh' ? rightOption.labelZh : rightOption.labelEn}
             </span>
           </button>
