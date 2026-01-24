@@ -211,20 +211,18 @@ export function TestStep({
           </div>
         </div>
 
-        {/* Selection criteria - elegant minimal style */}
+        {/* Selection criteria - dark tag style, vertical */}
         <div className="mt-4 mb-4">
           <p className="text-center text-xs text-muted-foreground mb-3">
             {language === 'zh' ? '哪一侧让你看起来...' : 'Which side makes you look...'}
           </p>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             {CRITERIA.map((criterion, index) => (
               <div 
                 key={index}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-neutral-200 shadow-sm"
+                className="px-4 py-2 rounded-full bg-neutral-600 text-white text-sm font-medium"
               >
-                <span className="text-xs font-medium text-foreground">
-                  {language === 'zh' ? criterion.zh : criterion.en}
-                </span>
+                {language === 'zh' ? criterion.zh : criterion.en}
               </div>
             ))}
           </div>
