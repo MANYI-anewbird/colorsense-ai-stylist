@@ -46,19 +46,19 @@ export function CopyableColor({ label, value, displayValue }: CopyableColorProps
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center justify-between w-full p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors group"
+      className="flex items-center justify-between w-full p-2.5 rounded-xl bg-muted/40 hover:bg-muted/60 border border-border/50 transition-colors group"
     >
       <div className="text-left">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-        <p className="text-sm font-mono font-semibold text-foreground mt-0.5">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-xs font-mono font-semibold text-foreground mt-0.5">
           {displayValue || value}
         </p>
       </div>
-      <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-background/50 group-hover:bg-background transition-colors">
+      <div className="w-7 h-7 flex items-center justify-center rounded-lg bg-background/60 group-hover:bg-background transition-colors">
         {copied ? (
-          <Check className="w-4 h-4 text-success" />
+          <Check className="w-3.5 h-3.5 text-success" />
         ) : (
-          <Copy className="w-4 h-4 text-muted-foreground" />
+          <Copy className="w-3.5 h-3.5 text-muted-foreground" />
         )}
       </div>
     </button>

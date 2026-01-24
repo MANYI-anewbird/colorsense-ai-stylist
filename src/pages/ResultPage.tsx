@@ -37,15 +37,15 @@ export default function ResultPage() {
     <div className="min-h-screen bg-background">
       <Header title="Color Analysis" showBack />
 
-      <main className="container px-4 py-6 pb-24">
-        {/* Color Swatch */}
+      <main className="container px-4 py-4 pb-20">
+        {/* Color Swatch - More compact */}
         <div className="flex flex-col items-center animate-scale-in">
-          <ColorSwatch hex={color.hex} size="xl" />
-          <p className="mt-4 text-2xl font-bold text-foreground">{color.hex}</p>
+          <ColorSwatch hex={color.hex} size="lg" />
+          <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
         </div>
 
-        {/* Copyable Values */}
-        <div className="mt-8 grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        {/* Copyable Values - Tighter grid */}
+        <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <CopyableColor label="HEX" value={color.hex} />
           <CopyableColor label="RGB" value={formatRgb(color.rgb)} displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
           <CopyableColor label="HSL" value={formatHsl(color.hsl)} displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
@@ -54,50 +54,50 @@ export default function ResultPage() {
 
         {/* Confidence Indicator */}
         {(confidence !== 'high' || confidenceNote) && (
-          <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+          <div className="mt-4 animate-slide-up" style={{ animationDelay: '0.15s' }}>
             <ConfidenceIndicator confidence={confidence} note={confidenceNote} />
           </div>
         )}
 
-        {/* Metrics */}
-        <div className="mt-8 space-y-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <h2 className="text-lg font-semibold text-foreground">Color Metrics</h2>
+        {/* Metrics - Compact */}
+        <div className="mt-5 space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <h2 className="text-base font-semibold text-foreground">Color Metrics</h2>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             <MetricBar
               label="Lightness"
               value={metrics.lightness}
-              colorClass="bg-gradient-to-r from-gray-800 to-white"
+              variant="lightness"
             />
             <MetricBar
               label="Saturation"
               value={metrics.saturation}
-              colorClass="bg-gradient-to-r from-muted to-primary"
+              variant="saturation"
             />
           </div>
         </div>
 
-        {/* Temperature & Season */}
-        <div className="mt-8 space-y-4 animate-slide-up" style={{ animationDelay: '0.25s' }}>
-          <h2 className="text-lg font-semibold text-foreground">Color Classification</h2>
+        {/* Temperature & Season - Compact */}
+        <div className="mt-5 space-y-3 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+          <h2 className="text-base font-semibold text-foreground">Color Classification</h2>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Temperature:</span>
-            <TemperatureBadge temperature={metrics.temperature} />
+            <TemperatureBadge temperature={metrics.temperature} size="sm" />
           </div>
 
           <div>
-            <span className="text-sm text-muted-foreground block mb-3">Seasonal Tendency:</span>
+            <span className="text-sm text-muted-foreground block mb-2">Seasonal Tendency:</span>
             <SeasonCard season={metrics.seasonalTendency} />
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="mt-8 animate-slide-up" style={{ animationDelay: '0.35s' }}>
+        {/* Action Button - Black/White style */}
+        <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
           <ColorButton
-            variant="secondary"
+            variant="outline"
             size="lg"
-            className="w-full"
+            className="w-full bg-neutral-900 text-white border-neutral-900 hover:bg-neutral-800 hover:border-neutral-800"
             onClick={() => navigate('/')}
           >
             <RotateCcw className="w-5 h-5" />
