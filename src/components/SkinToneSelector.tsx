@@ -38,20 +38,31 @@ export function SkinToneSelector() {
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between py-2 px-1 transition-colors"
       >
-        <div className="flex items-center gap-2">
-          {currentToneInfo ? (
-            <>
-              <div 
-                className="w-5 h-5 rounded-full shadow-sm"
-                style={{ backgroundColor: currentToneInfo.color }}
+        <div className="flex items-center gap-3">
+          {/* Preview color circles */}
+          <div className="flex items-center -space-x-1.5">
+            {SKIN_TONES.slice(0, 8).map((tone, idx) => (
+              <div
+                key={tone.id}
+                className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                style={{ 
+                  backgroundColor: tone.color,
+                  zIndex: 8 - idx
+                }}
               />
-              <span className="text-sm font-medium text-foreground">
-                {language === 'zh' ? currentToneInfo.nameZh : currentToneInfo.nameEn}
-              </span>
-            </>
+            ))}
+            <div className="w-4 h-4 rounded-full border-2 border-white shadow-sm bg-neutral-200 flex items-center justify-center" style={{ zIndex: 0 }}>
+              <span className="text-[7px] font-bold text-neutral-500">+4</span>
+            </div>
+          </div>
+          
+          {currentToneInfo ? (
+            <span className="text-sm font-medium text-foreground">
+              {language === 'zh' ? currentToneInfo.nameZh : currentToneInfo.nameEn}
+            </span>
           ) : (
             <span className="text-sm font-medium text-foreground">
-              {language === 'zh' ? '选择你的肤色类型' : 'Select Your Skin Tone'}
+              {language === 'zh' ? '选择肤色' : 'Select Skin Tone'}
             </span>
           )}
         </div>
