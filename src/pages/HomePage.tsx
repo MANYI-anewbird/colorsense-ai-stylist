@@ -1,15 +1,19 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, Lightbulb } from 'lucide-react';
+import { Camera, Image, Lightbulb, Palette } from 'lucide-react';
 import colorsenseLogo from '@/assets/colorsense-logo.png';
 import taglineImage from '@/assets/tagline.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { SkinToneSelector } from '@/components/SkinToneSelector';
+import { SkinToneBadge } from '@/components/SkinToneBadge';
+import { useSkinTone } from '@/contexts/SkinToneContext';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { skinTone } = useSkinTone();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -48,8 +52,23 @@ export default function HomePage() {
         className="hidden"
       />
 
-      {/* Language Switcher - Top Right */}
-      <div className="absolute top-4 right-4 z-20 safe-area-top">
+      {/* Top Bar - Skin Tone Badge (Left) & Language Switcher (Right) */}
+      <div className="absolute top-4 left-4 right-4 z-20 safe-area-top flex items-center justify-between">
+        {/* Skin Tone Badge - Left */}
+        <div className="flex items-center">
+          {skinTone ? (
+            <SkinToneBadge showLabel={true} size="sm" />
+          ) : (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-white/70 backdrop-blur-sm rounded-full border border-neutral-200/50">
+              <Palette className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-[10px] text-neutral-400">
+                {language === 'zh' ? '未设置肤色' : 'No skin tone'}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {/* Language Switcher - Right */}
         <LanguageSwitcher />
       </div>
 
@@ -60,10 +79,10 @@ export default function HomePage() {
         <div className="absolute -bottom-10 left-1/4 w-56 h-56 bg-gradient-to-tr from-amber-200/20 to-rose-200/15 rounded-full blur-3xl" />
       </div>
 
-      {/* Hero Section */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8 relative z-10">
+      {/* Main Content - Scrollable */}
+      <div className="flex-1 flex flex-col items-center px-5 py-8 pt-16 relative z-10 overflow-y-auto">
         {/* Logo & Tagline Group */}
-        <div className="animate-fade-in mb-10 text-center">
+        <div className="animate-fade-in mb-8 text-center">
           <img 
             src={colorsenseLogo} 
             alt="Color Sense Studio" 
@@ -97,8 +116,15 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Skin Tone Selector Section */}
+        <div className="mt-6 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-neutral-100 p-4 shadow-sm">
+            <SkinToneSelector />
+          </div>
+        </div>
+
         {/* Compact Tip */}
-        <div className="mt-8 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
+        <div className="mt-6 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
           <div className="flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-sm rounded-xl border border-neutral-100">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center flex-shrink-0">
               <Lightbulb className="w-4 h-4 text-amber-600" />
