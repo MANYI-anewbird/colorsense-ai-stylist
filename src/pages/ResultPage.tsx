@@ -4,7 +4,7 @@ import { RotateCcw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorSwatch, CopyableColor } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
-import { SeasonCard } from '@/components/SeasonBadge';
+import { SeasonBadge } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
 import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
 import { ColorButton } from '@/components/ui/color-button';
@@ -88,9 +88,9 @@ export default function ResultPage() {
             <TemperatureBadge temperature={metrics.temperature} size="sm" />
           </div>
 
-          <div>
-            <span className="text-sm text-muted-foreground block mb-2">{t.seasonalTendency}:</span>
-            <SeasonCard season={metrics.seasonalTendency} />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">{t.seasonalTendency}:</span>
+            <SeasonBadge season={metrics.seasonalTendency} size="sm" />
           </div>
         </div>
 
