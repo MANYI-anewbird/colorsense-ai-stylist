@@ -100,7 +100,7 @@ export function SkinToneSelector() {
         {/* "I don't know" Button */}
         <button
           onClick={() => setShowTest(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 mb-4 bg-neutral-100 text-neutral-600 rounded-xl hover:bg-neutral-200 transition-colors text-sm font-medium"
+          className="w-full flex items-center justify-center gap-2 py-3 mb-4 bg-violet-100 text-violet-700 rounded-xl hover:bg-violet-200 transition-colors text-sm font-medium"
         >
           <HelpCircle className="w-4 h-4" />
           {language === 'zh' ? '我不知道我的色季' : "I don't know my color season"}
