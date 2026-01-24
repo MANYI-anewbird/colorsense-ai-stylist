@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Language = 'en' | 'zh';
+export type Language = 'en' | 'zh';
 
 interface Translations {
   // HomePage
@@ -9,6 +9,8 @@ interface Translations {
   gallery: string;
   tip: string;
   footer: string;
+  heroTitle: string;
+  heroSubtitle: string;
   
   // PickerPage
   selectColor: string;
@@ -16,6 +18,8 @@ interface Translations {
   analyzeColor: string;
   imageNotReady: string;
   analyzeFailed: string;
+  pickerInstruction: string;
+  selectedColor: string;
   
   // ResultPage
   colorAnalysis: string;
@@ -26,6 +30,9 @@ interface Translations {
   temperature: string;
   seasonalTendency: string;
   analyzeAnother: string;
+  skinToneMatch: string;
+  bestMatch: string;
+  colorValues: string;
   
   // Seasons
   spring: string;
@@ -42,11 +49,13 @@ interface Translations {
 const translations: Record<Language, Translations> = {
   en: {
     // HomePage
-    tagline: 'Snap a photo. Understand your colors.',
+    tagline: 'Clothing Color Analysis & Skin Tone Matching',
     takePhoto: 'Take Photo',
     gallery: 'Gallery',
     tip: 'Use natural daylight for best color accuracy',
     footer: 'AI-powered professional color analysis',
+    heroTitle: 'Find Your Perfect Colors',
+    heroSubtitle: 'Analyze clothing colors and discover which skin tones they complement best',
     
     // PickerPage
     selectColor: 'Select Color',
@@ -54,6 +63,8 @@ const translations: Record<Language, Translations> = {
     analyzeColor: 'Analyze Color',
     imageNotReady: 'Image not ready. Please try again.',
     analyzeFailed: 'Failed to analyze color. Please try again.',
+    pickerInstruction: 'Drag the picker to select a color from your clothing',
+    selectedColor: 'Selected Color',
     
     // ResultPage
     colorAnalysis: 'Color Analysis',
@@ -64,6 +75,9 @@ const translations: Record<Language, Translations> = {
     temperature: 'Temperature',
     seasonalTendency: 'Seasonal Tendency',
     analyzeAnother: 'Analyze Another Color',
+    skinToneMatch: 'Skin Tone Compatibility',
+    bestMatch: 'Best Matches',
+    colorValues: 'Color Values',
     
     // Seasons
     spring: 'Spring',
@@ -78,11 +92,13 @@ const translations: Record<Language, Translations> = {
   },
   zh: {
     // HomePage
-    tagline: '拍张照片，了解你的色彩',
+    tagline: '服装颜色分析 & 肤色匹配',
     takePhoto: '拍照',
     gallery: '相册',
     tip: '使用自然光以获得最佳色彩准确度',
     footer: 'AI驱动的专业色彩分析',
+    heroTitle: '找到你的完美色彩',
+    heroSubtitle: '分析服装颜色，发现最适合的肤色搭配',
     
     // PickerPage
     selectColor: '选择颜色',
@@ -90,6 +106,8 @@ const translations: Record<Language, Translations> = {
     analyzeColor: '分析颜色',
     imageNotReady: '图片未准备好，请重试',
     analyzeFailed: '颜色分析失败，请重试',
+    pickerInstruction: '拖动选择器从服装上选取颜色',
+    selectedColor: '已选颜色',
     
     // ResultPage
     colorAnalysis: '颜色分析',
@@ -100,6 +118,9 @@ const translations: Record<Language, Translations> = {
     temperature: '色温',
     seasonalTendency: '季节倾向',
     analyzeAnother: '分析另一个颜色',
+    skinToneMatch: '肤色匹配度',
+    bestMatch: '最佳匹配',
+    colorValues: '颜色数值',
     
     // Seasons
     spring: '春季型',
