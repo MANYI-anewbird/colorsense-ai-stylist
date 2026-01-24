@@ -13,19 +13,19 @@ const temperatureConfig = {
   warm: {
     label: 'Warm',
     icon: Flame,
-    className: 'bg-fashion-warm/20 text-orange-700 border-fashion-warm/30',
-    iconClass: 'text-fashion-warm',
+    className: 'bg-gradient-to-r from-beauty-coral/20 to-beauty-peach/30 text-beauty-coral border-beauty-coral/30',
+    iconClass: 'text-beauty-coral',
   },
   cool: {
     label: 'Cool',
     icon: Snowflake,
-    className: 'bg-fashion-cool/20 text-blue-700 border-fashion-cool/30',
-    iconClass: 'text-fashion-cool',
+    className: 'bg-gradient-to-r from-beauty-lavender/20 to-beauty-blush/30 text-beauty-lavender border-beauty-lavender/30',
+    iconClass: 'text-beauty-lavender',
   },
   neutral: {
     label: 'Neutral',
     icon: CircleDot,
-    className: 'bg-muted text-muted-foreground border-border',
+    className: 'bg-gradient-to-r from-beauty-blush/20 to-muted/30 text-muted-foreground border-beauty-blush/30',
     iconClass: 'text-muted-foreground',
   },
 };

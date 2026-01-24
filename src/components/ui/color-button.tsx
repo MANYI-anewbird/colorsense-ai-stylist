@@ -9,20 +9,20 @@ const colorButtonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-primary text-primary-foreground shadow-card hover:shadow-elevated hover:bg-primary/90",
+          "bg-gradient-to-r from-beauty-rose to-beauty-coral text-white shadow-card hover:shadow-elevated hover:opacity-90",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-gradient-to-r from-beauty-lavender/20 to-beauty-blush/30 text-foreground hover:from-beauty-lavender/30 hover:to-beauty-blush/40 border border-beauty-lavender/30",
         outline:
-          "border-2 border-border bg-transparent hover:bg-secondary hover:border-primary/20",
-        ghost: "hover:bg-secondary hover:text-secondary-foreground",
+          "border-2 border-beauty-rose/30 bg-transparent hover:bg-beauty-blush/20 hover:border-beauty-rose/50",
+        ghost: "hover:bg-beauty-blush/20 hover:text-beauty-rose",
         accent:
-          "bg-accent text-accent-foreground hover:bg-accent/80",
+          "bg-gradient-to-r from-beauty-peach to-beauty-coral/40 text-foreground hover:opacity-90",
         camera:
-          "bg-primary text-primary-foreground shadow-elevated hover:shadow-picker",
+          "bg-gradient-to-r from-beauty-rose to-beauty-coral text-white shadow-elevated hover:shadow-picker",
         gallery:
-          "bg-card text-card-foreground border border-border shadow-card hover:shadow-elevated hover:border-primary/30",
+          "bg-gradient-to-r from-beauty-lavender/15 to-beauty-blush/25 text-foreground border border-beauty-lavender/30 shadow-card hover:shadow-elevated hover:border-beauty-lavender/50",
         analyze:
-          "bg-primary text-primary-foreground shadow-elevated hover:shadow-picker",
+          "bg-gradient-to-r from-beauty-rose via-beauty-coral to-beauty-lavender text-white shadow-elevated hover:shadow-picker",
       },
       size: {
         sm: "h-10 px-4 text-sm rounded-lg",

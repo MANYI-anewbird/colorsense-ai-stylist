@@ -7,13 +7,11 @@ import { MetricBar } from '@/components/MetricBar';
 import { SeasonCard } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
 import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
-import { AIExplanationCard } from '@/components/AIExplanationCard';
 import { ColorButton } from '@/components/ui/color-button';
 import type { ColorAnalysis } from '@/lib/color-utils';
 
 interface ResultState {
   analysis: ColorAnalysis;
-  aiExplanation: string;
 }
 
 export default function ResultPage() {
@@ -26,7 +24,7 @@ export default function ResultPage() {
     return null;
   }
 
-  const { analysis, aiExplanation } = state;
+  const { analysis } = state;
   const { color, metrics, confidence, confidenceNote } = analysis;
 
   const formatRgb = (rgb: { r: number; g: number; b: number }) =>
@@ -92,11 +90,6 @@ export default function ResultPage() {
             <span className="text-sm text-muted-foreground block mb-3">Seasonal Tendency:</span>
             <SeasonCard season={metrics.seasonalTendency} />
           </div>
-        </div>
-
-        {/* AI Explanation */}
-        <div className="mt-8 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-          <AIExplanationCard explanation={aiExplanation} />
         </div>
 
         {/* Action Button */}

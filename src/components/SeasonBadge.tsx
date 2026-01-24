@@ -15,29 +15,33 @@ const seasonConfig = {
     label: 'Spring',
     description: 'Warm & Light',
     icon: Flower2,
-    className: 'bg-season-spring/20 text-amber-700 border-season-spring/30',
-    iconClass: 'text-season-spring',
+    className: 'bg-gradient-to-br from-beauty-rose/15 to-beauty-coral/15 text-beauty-rose border-beauty-rose/30',
+    iconClass: 'text-beauty-rose',
+    cardBg: 'bg-gradient-to-br from-beauty-rose/10 to-beauty-peach/20',
   },
   summer: {
     label: 'Summer',
     description: 'Cool & Light',
     icon: Sun,
-    className: 'bg-season-summer/20 text-sky-700 border-season-summer/30',
-    iconClass: 'text-season-summer',
+    className: 'bg-gradient-to-br from-beauty-lavender/15 to-beauty-blush/15 text-beauty-lavender border-beauty-lavender/30',
+    iconClass: 'text-beauty-lavender',
+    cardBg: 'bg-gradient-to-br from-beauty-lavender/10 to-beauty-blush/20',
   },
   autumn: {
     label: 'Autumn',
     description: 'Warm & Deep',
     icon: Leaf,
-    className: 'bg-season-autumn/20 text-orange-800 border-season-autumn/30',
-    iconClass: 'text-season-autumn',
+    className: 'bg-gradient-to-br from-beauty-coral/15 to-beauty-gold/15 text-beauty-coral border-beauty-coral/30',
+    iconClass: 'text-beauty-coral',
+    cardBg: 'bg-gradient-to-br from-beauty-coral/10 to-beauty-gold/20',
   },
   winter: {
     label: 'Winter',
     description: 'Cool & Deep',
     icon: Snowflake,
-    className: 'bg-season-winter/20 text-blue-800 border-season-winter/30',
-    iconClass: 'text-season-winter',
+    className: 'bg-gradient-to-br from-beauty-lavender/20 to-beauty-rose/15 text-beauty-lavender border-beauty-lavender/30',
+    iconClass: 'text-beauty-lavender',
+    cardBg: 'bg-gradient-to-br from-beauty-lavender/15 to-beauty-rose/10',
   },
 };
 
@@ -89,9 +93,9 @@ export function SeasonCard({ season }: SeasonCardProps) {
   const Icon = config.icon;
 
   return (
-    <div className={cn('rounded-2xl border-2 p-4', config.className)}>
+    <div className={cn('rounded-2xl border-2 p-4 shadow-card', config.className, config.cardBg)}>
       <div className="flex items-center gap-3">
-        <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center', config.className)}>
+        <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center bg-white/50 backdrop-blur-sm')}>
           <Icon className={cn('w-6 h-6', config.iconClass)} />
         </div>
         <div>

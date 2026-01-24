@@ -75,6 +75,14 @@ export default {
           cool: "hsl(var(--fashion-cool))",
           neutral: "hsl(var(--fashion-neutral))",
         },
+        beauty: {
+          rose: "hsl(var(--beauty-rose))",
+          coral: "hsl(var(--beauty-coral))",
+          lavender: "hsl(var(--beauty-lavender))",
+          peach: "hsl(var(--beauty-peach))",
+          blush: "hsl(var(--beauty-blush))",
+          gold: "hsl(var(--beauty-gold))",
+        },
         season: {
           spring: "hsl(var(--season-spring))",
           summer: "hsl(var(--season-summer))",
