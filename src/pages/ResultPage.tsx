@@ -40,9 +40,14 @@ export default function ResultPage() {
       <Header title={t.colorAnalysis} showBack />
 
       <main className="container px-4 py-4 pb-20">
-        {/* Color Swatch - More compact */}
+        {/* Color Swatch - More compact with compatibility */}
         <div className="flex flex-col items-center animate-scale-in">
-          <ColorSwatch hex={color.hex} size="lg" />
+          <ColorSwatch 
+            hex={color.hex} 
+            size="lg" 
+            showCompatibility={true}
+            colorMetrics={metrics}
+          />
           <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
         </div>
 
