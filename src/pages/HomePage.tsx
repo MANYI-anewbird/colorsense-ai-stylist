@@ -73,10 +73,10 @@ export default function HomePage() {
             <img 
               src={taglineEn} 
               alt="Snap a photo. Understand your colors." 
-              className="mt-4 w-64 h-auto mx-auto"
+              className="mt-5 w-80 h-auto mx-auto mix-blend-multiply"
             />
           ) : (
-            <p className="mt-4 text-base text-neutral-500 font-light tracking-wide">
+            <p className="mt-4 text-lg text-neutral-600 font-medium tracking-wide italic">
               {t.tagline}
             </p>
           )}
