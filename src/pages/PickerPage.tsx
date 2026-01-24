@@ -1,19 +1,24 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorPicker } from '@/components/ColorPicker';
 import { ColorButton } from '@/components/ui/color-button';
-import { analyzeColor, type ColorAnalysis } from '@/lib/color-utils';
+import { analyzeColor, type ColorAnalysis, type AnalysisResult } from '@/lib/color-utils';
+import { computeMatchScoreWithBreakdown } from '@/lib/compatibility-utils';
+import { clamp } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSkinTone } from '@/contexts/SkinToneContext';
 
 export default function PickerPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { skinTone, getSkinToneInfo } = useSkinTone();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -47,13 +52,22 @@ export default function PickerPage() {
     setPosition({ x, y });
   }, []);
 
-  const handleAnalyze = async () => {
+  const performAnalysis = async (useAI: boolean) => {
     if (!canvasRef.current) {
       toast.error(t.imageNotReady);
       return;
     }
 
-    setIsAnalyzing(true);
+    if (!skinTone) {
+      toast.error('Please select your color season first');
+      return;
+    }
+
+    if (useAI) {
+      setIsAnalyzingAI(true);
+    } else {
+      setIsAnalyzing(true);
+    }
 
     try {
       const ctx = canvasRef.current.getContext('2d');
@@ -66,38 +80,91 @@ export default function PickerPage() {
       const radius = 20; // Sampling radius in pixels
       const localAnalysis: ColorAnalysis = analyzeColor(imgData, position.x, position.y, radius);
 
-      // Call backend for AI explanation
-      const { data, error } = await supabase.functions.invoke('analyze-color', {
-        body: {
-          color: localAnalysis.color,
-          metrics: localAnalysis.metrics,
-        },
-      });
+      // Calculate rule-based score with breakdown
+      const { score: ruleScore, breakdown } = computeMatchScoreWithBreakdown(
+        localAnalysis.metrics,
+        skinTone
+      );
 
-      if (error) {
-        console.error('API Error:', error);
-        // Navigate with local analysis only
-        navigate('/result', {
-          state: {
-            analysis: localAnalysis,
-          },
-        });
-        return;
+      const skinToneInfo = getSkinToneInfo(skinTone);
+      if (!skinToneInfo) {
+        throw new Error('Skin tone info not found');
       }
 
-      // Navigate to result with full analysis
+      const result: AnalysisResult = {
+        analysis: localAnalysis,
+        ruleScore,
+        breakdown,
+      };
+
+      if (useAI) {
+        // Call AI analysis endpoint
+        try {
+          const { data: aiData, error: aiError } = await supabase.functions.invoke('analyze-ai', {
+            body: {
+              user_season: skinToneInfo.nameEn,
+              color_hex: localAnalysis.color.hex,
+              color_hsl: localAnalysis.color.hsl,
+              rule_score: ruleScore,
+              breakdown,
+            },
+          });
+
+          if (aiError || !aiData) {
+            console.error('AI API Error:', aiError);
+            // Fallback to rule-only
+            result.aiAnalysis = {
+              delta: 0,
+              insight: t.aiUnavailable,
+              advice: 'Consider the rule-based score as a general guideline.',
+              fallback: true,
+            };
+            result.finalScore = ruleScore;
+          } else {
+            // Validate AI response
+            const delta = typeof aiData.delta === 'number' ? aiData.delta : 0;
+            const clampedDelta = clamp(delta, -15, 15);
+            const finalScore = clamp(ruleScore + clampedDelta, 0, 100);
+
+            result.aiAnalysis = {
+              delta: clampedDelta,
+              insight: aiData.insight || 'AI analysis completed.',
+              advice: aiData.advice || 'Consider this color for your wardrobe.',
+              fallback: aiData.fallback || false,
+            };
+            result.finalScore = finalScore;
+          }
+        } catch (aiError) {
+          console.error('AI analysis error:', aiError);
+          // Fallback to rule-only
+          result.aiAnalysis = {
+            delta: 0,
+            insight: t.aiUnavailable,
+            advice: 'Consider the rule-based score as a general guideline.',
+            fallback: true,
+          };
+          result.finalScore = ruleScore;
+        }
+      } else {
+        // Rule-only analysis
+        result.finalScore = ruleScore;
+      }
+
+      // Navigate to result
       navigate('/result', {
-        state: {
-          analysis: localAnalysis,
-        },
+        state: { result },
       });
     } catch (error) {
       console.error('Analysis error:', error);
       toast.error(t.analyzeFailed);
     } finally {
       setIsAnalyzing(false);
+      setIsAnalyzingAI(false);
     }
   };
+
+  const handleAnalyze = () => performAnalysis(false);
+  const handleAnalyzeWithAI = () => performAnalysis(true);
 
   if (!imageData) {
     return null;
@@ -115,14 +182,14 @@ export default function PickerPage() {
           />
         </div>
 
-        {/* Analyze Button */}
-        <div className="mt-6 safe-area-bottom">
+        {/* Analyze Buttons */}
+        <div className="mt-6 space-y-3 safe-area-bottom">
           <ColorButton
             variant="analyze"
             size="lg"
             className="w-full"
             onClick={handleAnalyze}
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || isAnalyzingAI}
           >
             {isAnalyzing ? (
               <>
@@ -136,6 +203,31 @@ export default function PickerPage() {
               </>
             )}
           </ColorButton>
+
+          <div>
+            <ColorButton
+              variant="outline"
+              size="lg"
+              className="w-full border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              onClick={handleAnalyzeWithAI}
+              disabled={isAnalyzing || isAnalyzingAI}
+            >
+              {isAnalyzingAI ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {t.analyzing}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  {t.analyzeWithAI}
+                </>
+              )}
+            </ColorButton>
+            <p className="text-xs text-muted-foreground text-center mt-1.5">
+              {t.aiAnalysisCaption}
+            </p>
+          </div>
         </div>
       </main>
     </div>

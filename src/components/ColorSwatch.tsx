@@ -12,6 +12,8 @@ interface ColorSwatchProps {
   className?: string;
   showCompatibility?: boolean;
   colorMetrics?: ColorMetrics;
+  customScore?: number; // Override calculated score
+  scoreLabel?: string; // Custom label for the score (e.g., "AI Match Score")
 }
 
 // Calculate relative luminance to determine if text should be black
@@ -82,7 +84,7 @@ export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = f
             {score}
           </div>
           <div className={cn('text-xs font-medium mt-1 drop-shadow-md', labelColorClass)}>
-            {language === 'zh' ? '推荐指数' : 'Match Score'}
+            {scoreLabel || (language === 'zh' ? '推荐指数' : 'Match Score')}
           </div>
         </div>
       )}
