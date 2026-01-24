@@ -8,6 +8,7 @@ import { SeasonCard } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
 import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
 import { ColorButton } from '@/components/ui/color-button';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColorAnalysis } from '@/lib/color-utils';
 
 interface ResultState {
@@ -17,6 +18,7 @@ interface ResultState {
 export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const state = location.state as ResultState | undefined;
 
   if (!state?.analysis) {
@@ -35,7 +37,7 @@ export default function ResultPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Color Analysis" showBack />
+      <Header title={t.colorAnalysis} showBack />
 
       <main className="container px-4 py-4 pb-20">
         {/* Color Swatch - More compact */}
@@ -61,16 +63,16 @@ export default function ResultPage() {
 
         {/* Metrics - Compact */}
         <div className="mt-5 space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <h2 className="text-base font-semibold text-foreground">Color Metrics</h2>
+          <h2 className="text-base font-semibold text-foreground">{t.colorMetrics}</h2>
           
           <div className="space-y-3">
             <MetricBar
-              label="Lightness"
+              label={t.lightness}
               value={metrics.lightness}
               variant="lightness"
             />
             <MetricBar
-              label="Saturation"
+              label={t.saturation}
               value={metrics.saturation}
               variant="saturation"
             />
@@ -79,15 +81,15 @@ export default function ResultPage() {
 
         {/* Temperature & Season - Compact */}
         <div className="mt-5 space-y-3 animate-slide-up" style={{ animationDelay: '0.25s' }}>
-          <h2 className="text-base font-semibold text-foreground">Color Classification</h2>
+          <h2 className="text-base font-semibold text-foreground">{t.colorClassification}</h2>
           
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Temperature:</span>
+            <span className="text-sm text-muted-foreground">{t.temperature}:</span>
             <TemperatureBadge temperature={metrics.temperature} size="sm" />
           </div>
 
           <div>
-            <span className="text-sm text-muted-foreground block mb-2">Seasonal Tendency:</span>
+            <span className="text-sm text-muted-foreground block mb-2">{t.seasonalTendency}:</span>
             <SeasonCard season={metrics.seasonalTendency} />
           </div>
         </div>
@@ -101,7 +103,7 @@ export default function ResultPage() {
             onClick={() => navigate('/')}
           >
             <RotateCcw className="w-5 h-5" />
-            Analyze Another Color
+            {t.analyzeAnother}
           </ColorButton>
         </div>
       </main>
