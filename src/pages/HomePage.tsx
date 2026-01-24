@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image, Lightbulb } from 'lucide-react';
-import { ColorButton } from '@/components/ui/color-button';
 import colorsenseLogo from '@/assets/colorsense-logo.png';
 
 export default function HomePage() {
@@ -35,7 +34,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white flex flex-col relative overflow-hidden">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -45,62 +44,62 @@ export default function HomePage() {
         className="hidden"
       />
 
+      {/* Subtle decorative color accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-gradient-to-br from-rose-200/30 to-orange-200/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-20 w-48 h-48 bg-gradient-to-bl from-violet-200/25 to-blue-200/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-10 left-1/4 w-56 h-56 bg-gradient-to-tr from-amber-200/20 to-rose-200/15 rounded-full blur-3xl" />
+      </div>
+
       {/* Hero Section */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8 relative z-10">
         {/* Logo */}
-        <div className="animate-fade-in mb-8 relative z-10">
+        <div className="animate-fade-in mb-10">
           <img 
             src={colorsenseLogo} 
             alt="Color Sense Studio" 
-            className="w-64 h-auto mx-auto"
+            className="w-72 h-auto mx-auto drop-shadow-sm"
           />
         </div>
 
-        {/* Main CTA Buttons - Black/White Style */}
-        <div className="w-full max-w-sm space-y-4 animate-slide-up relative z-10">
-          <ColorButton
-            variant="camera"
-            size="xl"
-            className="w-full bg-neutral-900 text-white hover:bg-neutral-800 border-0 shadow-elevated"
-            onClick={handleCameraClick}
-          >
-            <Camera className="w-6 h-6" />
-            Take Photo
-          </ColorButton>
+        {/* Main CTA Buttons - Side by Side */}
+        <div className="w-full max-w-sm animate-slide-up">
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleCameraClick}
+              className="flex flex-col items-center justify-center gap-2 py-5 px-4 bg-neutral-900 text-white rounded-2xl shadow-lg hover:bg-neutral-800 active:scale-[0.98] transition-all duration-200"
+            >
+              <Camera className="w-6 h-6" />
+              <span className="text-sm font-medium">Take Photo</span>
+            </button>
 
-          <ColorButton
-            variant="gallery"
-            size="lg"
-            className="w-full bg-white border-2 border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:border-neutral-300"
-            onClick={handleGalleryClick}
-          >
-            <Image className="w-5 h-5" />
-            Upload from Gallery
-          </ColorButton>
+            <button
+              onClick={handleGalleryClick}
+              className="flex flex-col items-center justify-center gap-2 py-5 px-4 bg-white text-neutral-900 rounded-2xl shadow-lg border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all duration-200"
+            >
+              <Image className="w-6 h-6" />
+              <span className="text-sm font-medium">Gallery</span>
+            </button>
+          </div>
         </div>
 
-        {/* Tip Card */}
-        <div className="mt-12 w-full max-w-sm animate-fade-in relative z-10" style={{ animationDelay: '0.2s' }}>
-          <div className="bg-white rounded-2xl p-5 border border-neutral-200 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                <Lightbulb className="w-5 h-5 text-neutral-600" />
-              </div>
-              <div>
-                <p className="font-medium text-neutral-900">Pro Tip</p>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  For best results, use natural daylight and avoid harsh shadows on your clothing.
-                </p>
-              </div>
+        {/* Compact Tip */}
+        <div className="mt-8 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
+          <div className="flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-sm rounded-xl border border-neutral-100">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center flex-shrink-0">
+              <Lightbulb className="w-4 h-4 text-amber-600" />
             </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Use natural daylight for best color accuracy
+            </p>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="py-6 px-6 safe-area-bottom relative z-10">
-        <p className="text-center text-xs text-muted-foreground">
-          ✨ AI-powered beauty color analysis
+      <footer className="py-4 px-6 safe-area-bottom relative z-10">
+        <p className="text-center text-[10px] text-muted-foreground/70">
+          AI-powered professional color analysis
         </p>
       </footer>
     </div>
