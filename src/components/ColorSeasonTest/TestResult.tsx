@@ -76,21 +76,23 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
       </div>
 
       {/* Action Buttons */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
+        {/* Secondary button - subtle */}
         <button
           onClick={handleUseResult}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 active:scale-[0.98] transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 text-neutral-500 rounded-xl font-medium hover:text-neutral-700 hover:bg-neutral-100 active:scale-[0.98] transition-all"
         >
-          <Check className="w-5 h-5" />
-          {language === 'zh' ? '使用此结果' : 'Use this result'}
+          <Check className="w-4 h-4" />
+          <span className="text-sm">{language === 'zh' ? '使用此估算' : 'Use this estimate'}</span>
         </button>
 
+        {/* Primary button - highlighted with glow */}
         <button
           onClick={onConsultant}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-white text-neutral-700 rounded-xl font-medium border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3.5 bg-neutral-900 text-white rounded-xl font-medium shadow-lg shadow-neutral-900/25 hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/30 active:scale-[0.98] transition-all ring-1 ring-neutral-800"
         >
-          <MessageCircle className="w-5 h-5" />
-          {language === 'zh' ? '咨询色彩顾问' : 'Ask a Color Consultant'}
+          <MessageCircle className="w-4 h-4" />
+          <span className="text-sm">{language === 'zh' ? '获取专业色彩报告' : 'Get a professional color report'}</span>
         </button>
       </div>
     </div>
