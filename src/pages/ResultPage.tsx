@@ -1,12 +1,13 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Share2, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorSwatch, CopyableColor } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
 import { SeasonCard } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
 import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
+import { SkinToneMatch } from '@/components/SkinToneMatch';
 import { ColorButton } from '@/components/ui/color-button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColorAnalysis } from '@/lib/color-utils';
@@ -36,33 +37,52 @@ export default function ResultPage() {
     `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <Header title={t.colorAnalysis} showBack />
 
-      <main className="container px-4 py-4 pb-20">
-        {/* Color Swatch - More compact */}
-        <div className="flex flex-col items-center animate-scale-in">
-          <ColorSwatch hex={color.hex} size="lg" />
-          <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
+      <main className="container px-4 py-4 pb-24">
+        {/* Hero Color Display */}
+        <div className="relative flex flex-col items-center animate-scale-in">
+          {/* Glow effect behind swatch */}
+          <div 
+            className="absolute w-40 h-40 rounded-full blur-3xl opacity-30"
+            style={{ backgroundColor: color.hex }}
+          />
+          <ColorSwatch hex={color.hex} size="xl" className="relative z-10" />
+          <div className="mt-4 flex items-center gap-2">
+            <p className="text-2xl font-bold text-foreground tracking-wide">{color.hex}</p>
+          </div>
         </div>
 
-        {/* Copyable Values - Tighter grid */}
-        <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <CopyableColor label="HEX" value={color.hex} />
-          <CopyableColor label="RGB" value={formatRgb(color.rgb)} displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
-          <CopyableColor label="HSL" value={formatHsl(color.hsl)} displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
-          <CopyableColor label="LAB" value={`lab(${color.lab.l}, ${color.lab.a}, ${color.lab.b})`} displayValue={`${color.lab.l}, ${color.lab.a}, ${color.lab.b}`} />
+        {/* Color Values Grid */}
+        <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t.colorValues}</h2>
+          <div className="grid grid-cols-2 gap-2">
+            <CopyableColor label="HEX" value={color.hex} />
+            <CopyableColor label="RGB" value={formatRgb(color.rgb)} displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
+            <CopyableColor label="HSL" value={formatHsl(color.hsl)} displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
+            <CopyableColor label="LAB" value={`lab(${color.lab.l}, ${color.lab.a}, ${color.lab.b})`} displayValue={`${color.lab.l}, ${color.lab.a}, ${color.lab.b}`} />
+          </div>
         </div>
 
         {/* Confidence Indicator */}
         {(confidence !== 'high' || confidenceNote) && (
-          <div className="mt-4 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+          <div className="mt-5 animate-slide-up" style={{ animationDelay: '0.15s' }}>
             <ConfidenceIndicator confidence={confidence} note={confidenceNote} />
           </div>
         )}
 
-        {/* Metrics - Compact */}
-        <div className="mt-5 space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        {/* Skin Tone Matching - NEW FEATURE */}
+        <div className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-card to-muted/30 border border-border/50 shadow-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <SkinToneMatch
+            colorTemperature={metrics.temperature}
+            colorLightness={metrics.lightness}
+            colorSaturation={metrics.saturation}
+          />
+        </div>
+
+        {/* Color Metrics */}
+        <div className="mt-6 space-y-4 animate-slide-up" style={{ animationDelay: '0.25s' }}>
           <h2 className="text-base font-semibold text-foreground">{t.colorMetrics}</h2>
           
           <div className="space-y-3">
@@ -79,8 +99,8 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Temperature & Season - Compact */}
-        <div className="mt-5 space-y-3 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+        {/* Temperature & Season */}
+        <div className="mt-6 space-y-3 animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <h2 className="text-base font-semibold text-foreground">{t.colorClassification}</h2>
           
           <div className="flex items-center gap-2">
@@ -94,12 +114,12 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Action Button - Black/White style */}
-        <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
+        {/* Action Buttons */}
+        <div className="mt-8 space-y-3 animate-slide-up" style={{ animationDelay: '0.35s' }}>
           <ColorButton
             variant="outline"
             size="lg"
-            className="w-full bg-neutral-900 text-white border-neutral-900 hover:bg-neutral-800 hover:border-neutral-800"
+            className="w-full bg-gradient-to-r from-neutral-900 to-neutral-800 text-white border-transparent hover:from-neutral-800 hover:to-neutral-700 shadow-lg"
             onClick={() => navigate('/')}
           >
             <RotateCcw className="w-5 h-5" />

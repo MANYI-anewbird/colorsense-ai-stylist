@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { rgbToHex } from '@/lib/color-utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ColorPickerProps {
   imageSrc: string;
@@ -8,6 +9,7 @@ interface ColorPickerProps {
 }
 
 export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: ColorPickerProps) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -16,6 +18,9 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
   const [currentColor, setCurrentColor] = useState('#888888');
   const [zoomImageData, setZoomImageData] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  
+  const instructionText = t.pickerInstruction;
+  const selectedColorText = t.selectedColor;
 
   // Load and draw image
   useEffect(() => {
@@ -198,15 +203,15 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
             style={{ backgroundColor: currentColor }}
           />
           <div>
-            <p className="text-sm font-medium text-foreground">{currentColor}</p>
-            <p className="text-xs text-muted-foreground">Selected color</p>
+            <p className="text-sm font-bold text-foreground tracking-wide">{currentColor}</p>
+            <p className="text-xs text-muted-foreground">{selectedColorText}</p>
           </div>
         </div>
       </div>
 
       {/* Instructions */}
       <p className="mt-4 text-center text-sm text-muted-foreground">
-        Drag the picker to select a color from your image
+        {instructionText}
       </p>
     </div>
   );

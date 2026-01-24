@@ -37,7 +37,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-rose-50/30 flex flex-col relative overflow-hidden">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -52,55 +52,81 @@ export default function HomePage() {
         <LanguageSwitcher />
       </div>
 
-      {/* Subtle decorative color accents */}
+      {/* Elegant decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-64 h-64 bg-gradient-to-br from-rose-200/30 to-orange-200/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-20 w-48 h-48 bg-gradient-to-bl from-violet-200/25 to-blue-200/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 left-1/4 w-56 h-56 bg-gradient-to-tr from-amber-200/20 to-rose-200/15 rounded-full blur-3xl" />
+        {/* Gradient orbs */}
+        <div className="absolute -top-32 -left-32 w-80 h-80 bg-gradient-to-br from-rose-200/40 to-pink-300/30 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 -right-24 w-64 h-64 bg-gradient-to-bl from-violet-200/35 to-indigo-300/25 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-gradient-to-tr from-amber-200/30 to-orange-200/20 rounded-full blur-3xl" />
+        
+        {/* Skin tone gradient strip - subtle branding */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#F5E6DC] via-[#C9A882] to-[#5C3D2E] opacity-40" />
       </div>
 
       {/* Hero Section */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8 relative z-10">
-        {/* Logo & Tagline Group */}
-        <div className="animate-fade-in mb-10 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 relative z-10">
+        {/* Logo & Hero Text */}
+        <div className="animate-fade-in mb-8 text-center max-w-sm">
           <img 
             src={colorsenseLogo} 
             alt="Color Sense Studio" 
-            className="w-72 h-auto mx-auto drop-shadow-sm"
+            className="w-64 h-auto mx-auto drop-shadow-md"
           />
-          <p className="mt-4 text-base text-neutral-500 font-light tracking-wide">
-            {t.tagline}
+          <h1 className="mt-6 text-xl font-semibold text-foreground tracking-tight">
+            {t.heroTitle}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            {t.heroSubtitle}
           </p>
         </div>
 
-        {/* Main CTA Buttons - Side by Side */}
-        <div className="w-full max-w-sm animate-slide-up">
-          <div className="grid grid-cols-2 gap-3">
+        {/* Feature highlights - Visual preview of what the app does */}
+        <div className="w-full max-w-xs mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="flex items-center justify-center gap-1">
+            {/* Skin tone preview dots */}
+            {['#F5E6DC', '#E5C9AB', '#C9A882', '#A67C52', '#6B4423'].map((color, i) => (
+              <div
+                key={color}
+                className="w-6 h-6 rounded-full border-2 border-white shadow-md transition-transform hover:scale-110"
+                style={{ backgroundColor: color, marginLeft: i > 0 ? '-8px' : 0, zIndex: 5 - i }}
+              />
+            ))}
+            <span className="ml-3 text-xs text-muted-foreground">10+ {t.skinToneMatch?.split(' ')[0] || 'Skin Tones'}</span>
+          </div>
+        </div>
+
+        {/* Main CTA Buttons */}
+        <div className="w-full max-w-sm animate-slide-up" style={{ animationDelay: '0.15s' }}>
+          <div className="grid grid-cols-2 gap-4">
             <button
               onClick={handleCameraClick}
-              className="flex flex-col items-center justify-center gap-2 py-5 px-4 bg-neutral-900 text-white rounded-2xl shadow-lg hover:bg-neutral-800 active:scale-[0.98] transition-all duration-200"
+              className="group flex flex-col items-center justify-center gap-3 py-6 px-4 bg-gradient-to-br from-neutral-900 to-neutral-800 text-white rounded-2xl shadow-xl hover:shadow-2xl hover:from-neutral-800 hover:to-neutral-700 active:scale-[0.98] transition-all duration-300"
             >
-              <Camera className="w-6 h-6" />
-              <span className="text-sm font-medium">{t.takePhoto}</span>
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                <Camera className="w-6 h-6" />
+              </div>
+              <span className="text-sm font-semibold tracking-wide">{t.takePhoto}</span>
             </button>
 
             <button
               onClick={handleGalleryClick}
-              className="flex flex-col items-center justify-center gap-2 py-5 px-4 bg-white text-neutral-900 rounded-2xl shadow-lg border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all duration-200"
+              className="group flex flex-col items-center justify-center gap-3 py-6 px-4 bg-white text-neutral-900 rounded-2xl shadow-xl border border-neutral-200/80 hover:shadow-2xl hover:border-neutral-300 active:scale-[0.98] transition-all duration-300"
             >
-              <Image className="w-6 h-6" />
-              <span className="text-sm font-medium">{t.gallery}</span>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-50 to-violet-50 flex items-center justify-center group-hover:from-rose-100 group-hover:to-violet-100 transition-colors">
+                <Image className="w-6 h-6 text-neutral-700" />
+              </div>
+              <span className="text-sm font-semibold tracking-wide">{t.gallery}</span>
             </button>
           </div>
         </div>
 
-        {/* Compact Tip */}
-        <div className="mt-8 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
-          <div className="flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-sm rounded-xl border border-neutral-100">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center flex-shrink-0">
-              <Lightbulb className="w-4 h-4 text-amber-600" />
+        {/* Pro Tip */}
+        <div className="mt-8 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.25s' }}>
+          <div className="flex items-center gap-3 px-4 py-3.5 bg-gradient-to-r from-amber-50/80 to-orange-50/60 backdrop-blur-sm rounded-xl border border-amber-200/50">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Lightbulb className="w-4.5 h-4.5 text-white" />
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-amber-900/80 leading-relaxed font-medium">
               {t.tip}
             </p>
           </div>
@@ -108,8 +134,8 @@ export default function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-4 px-6 safe-area-bottom relative z-10">
-        <p className="text-center text-[10px] text-muted-foreground/70">
+      <footer className="py-5 px-6 safe-area-bottom relative z-10">
+        <p className="text-center text-[11px] text-muted-foreground/60 font-medium tracking-wide">
           {t.footer}
         </p>
       </footer>
