@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, Sparkles, Lightbulb } from 'lucide-react';
+import { Camera, Image, Lightbulb } from 'lucide-react';
 import { ColorButton } from '@/components/ui/color-button';
+import colorsenseLogo from '@/assets/colorsense-logo.png';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -46,17 +47,13 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        {/* Logo / Brand */}
+        {/* Logo */}
         <div className="animate-fade-in mb-8 relative z-10">
-          <div className="w-24 h-24 rounded-[2rem] bg-neutral-900 flex items-center justify-center shadow-elevated mb-6 mx-auto">
-            <Sparkles className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-neutral-900 text-center tracking-tight">
-            ColorSense
-          </h1>
-          <p className="text-muted-foreground text-center mt-2 text-lg">
-            Discover your perfect palette
-          </p>
+          <img 
+            src={colorsenseLogo} 
+            alt="Color Sense Studio" 
+            className="w-64 h-auto mx-auto"
+          />
         </div>
 
         {/* Main CTA Buttons - Black/White Style */}
