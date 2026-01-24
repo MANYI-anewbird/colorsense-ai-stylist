@@ -66,12 +66,12 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Main CTA Buttons */}
+        {/* Main CTA Buttons - Black/White Style */}
         <div className="w-full max-w-sm space-y-4 animate-slide-up relative z-10">
           <ColorButton
             variant="camera"
             size="xl"
-            className="w-full bg-gradient-to-r from-beauty-rose to-beauty-coral hover:from-beauty-rose/90 hover:to-beauty-coral/90 border-0 shadow-elevated"
+            className="w-full bg-neutral-900 text-white hover:bg-neutral-800 border-0 shadow-elevated"
             onClick={handleCameraClick}
           >
             <Camera className="w-6 h-6" />
@@ -81,7 +81,7 @@ export default function HomePage() {
           <ColorButton
             variant="gallery"
             size="lg"
-            className="w-full bg-gradient-to-r from-beauty-lavender/20 to-beauty-blush/30 border border-beauty-lavender/30 text-foreground hover:from-beauty-lavender/30 hover:to-beauty-blush/40"
+            className="w-full bg-white border-2 border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:border-neutral-300"
             onClick={handleGalleryClick}
           >
             <Image className="w-5 h-5" />
