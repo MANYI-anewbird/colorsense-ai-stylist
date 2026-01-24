@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowLeft, Camera, CameraOff, Check } from 'lucide-react';
+import { ArrowLeft, Camera, CameraOff, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TestOption {
@@ -211,19 +211,36 @@ export function TestStep({
           </div>
         </div>
 
-        {/* Selection criteria */}
-        <div className="mt-4 mb-4 px-2">
-          <div className="flex flex-col gap-1.5">
-            {CRITERIA.map((criterion, index) => (
-              <div 
-                key={index}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <Check className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
-                <span>{language === 'zh' ? criterion.zh : criterion.en}</span>
+        {/* Selection criteria - enhanced */}
+        <div className="mt-4 mb-4">
+          <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-2xl p-4 shadow-lg">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               </div>
-            ))}
+              <span className="text-xs font-medium text-white/80 uppercase tracking-wider">
+                {language === 'zh' ? '选择更好一侧的标准' : 'Pick the Better Side'}
+              </span>
+            </div>
+            
+            {/* Criteria list */}
+            <div className="flex flex-col gap-2.5">
+              {CRITERIA.map((criterion, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center gap-3 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/70">
+                    {index + 1}
+                  </div>
+                  <span className="text-sm font-medium text-white">
+                    {language === 'zh' ? criterion.zh : criterion.en}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
