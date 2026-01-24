@@ -124,8 +124,8 @@ export default function HomePage() {
         </div>
 
         {/* Compact Tip */}
-        <div className="mt-6 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
-          <div className="flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-sm rounded-xl border border-neutral-100">
+        <div className="mt-3 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
+          <div className="flex items-center gap-3 px-4 py-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center flex-shrink-0">
               <Lightbulb className="w-4 h-4 text-amber-600" />
             </div>
