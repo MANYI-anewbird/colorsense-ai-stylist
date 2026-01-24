@@ -15,7 +15,7 @@ interface MetricBarProps {
 const variantStyles: Record<BarVariant, string> = {
   default: 'bg-primary',
   lightness: 'bg-gradient-to-r from-neutral-800 via-amber-400 to-neutral-100',
-  saturation: 'bg-gradient-to-r from-rose-400 via-fuchsia-500 to-violet-400',
+  saturation: 'bg-gradient-to-r from-neutral-300 via-neutral-500 to-neutral-800',
 };
 
 export function MetricBar({
