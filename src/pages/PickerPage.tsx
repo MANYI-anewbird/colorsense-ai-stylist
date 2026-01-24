@@ -105,7 +105,7 @@ export default function PickerPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header title={t.selectColor} showBack />
+      <Header title={t.selectColor} showBack backTo="/" />
 
       <main className="flex-1 container px-4 py-6 flex flex-col">
         <div className="flex-1">

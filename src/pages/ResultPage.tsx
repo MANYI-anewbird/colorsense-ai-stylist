@@ -37,7 +37,7 @@ export default function ResultPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title={t.colorAnalysis} showBack />
+      <Header title={t.colorAnalysis} showBack backTo="/picker" />
 
       <main className="container px-4 py-4 pb-20">
         {/* Color Swatch - More compact with compatibility */}
