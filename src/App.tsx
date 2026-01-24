@@ -10,6 +10,7 @@ import PickerPage from "./pages/PickerPage";
 import ResultPage from "./pages/ResultPage";
 import NotFound from "./pages/NotFound";
 
+// Initialize query client
 const queryClient = new QueryClient();
 
 const App = () => (
