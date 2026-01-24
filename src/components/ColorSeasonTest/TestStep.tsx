@@ -159,10 +159,10 @@ export function TestStep({
         )}
       </div>
 
-      {/* Camera comparison area */}
-      <div className="flex-1 flex flex-col px-4 pb-4">
-        {/* Two cards with camera cutout */}
-        <div className="relative flex-1 flex rounded-3xl overflow-hidden shadow-lg">
+      {/* Camera comparison area - takes priority */}
+      <div className="flex-1 flex flex-col px-4 pb-3 min-h-0">
+        {/* Two cards with camera cutout - flex-1 to take most space */}
+        <div className="relative flex-1 flex rounded-3xl overflow-hidden shadow-lg min-h-[280px]">
           {/* Left color card */}
           <div 
             className="flex-1 relative"
@@ -180,7 +180,7 @@ export function TestStep({
             <div className="relative">
               {/* Circular mask/cutout effect */}
               <div 
-                className="w-36 h-44 rounded-[50%] overflow-hidden border-4 border-white shadow-xl"
+                className="w-32 h-40 rounded-[50%] overflow-hidden border-4 border-white shadow-xl"
                 style={{
                   boxShadow: '0 8px 32px rgba(0,0,0,0.15), inset 0 0 0 2px rgba(255,255,255,0.5)'
                 }}
@@ -195,15 +195,15 @@ export function TestStep({
                 />
                 {cameraError && (
                   <div className="w-full h-full bg-neutral-200 flex flex-col items-center justify-center text-neutral-400">
-                    <CameraOff className="w-8 h-8 mb-1" />
-                    <span className="text-xs">
+                    <CameraOff className="w-6 h-6 mb-1" />
+                    <span className="text-[10px]">
                       {language === 'zh' ? '无法访问相机' : 'Camera unavailable'}
                     </span>
                   </div>
                 )}
                 {!cameraActive && !cameraError && (
                   <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
-                    <Camera className="w-8 h-8 text-neutral-300 animate-pulse" />
+                    <Camera className="w-6 h-6 text-neutral-300 animate-pulse" />
                   </div>
                 )}
               </div>
@@ -211,16 +211,16 @@ export function TestStep({
           </div>
         </div>
 
-        {/* Selection criteria - dark tag style, vertical */}
-        <div className="mt-4 mb-4">
-          <p className="text-center text-xs text-muted-foreground mb-3">
+        {/* Selection criteria - compact */}
+        <div className="mt-3 mb-2">
+          <p className="text-center text-[10px] text-muted-foreground mb-2">
             {language === 'zh' ? '哪一侧让你看起来...' : 'Which side makes you look...'}
           </p>
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {CRITERIA.map((criterion, index) => (
               <div 
                 key={index}
-                className="px-4 py-2 rounded-full bg-neutral-600 text-white text-sm font-medium"
+                className="px-3 py-1 rounded-full bg-neutral-600 text-white text-[11px] font-medium"
               >
                 {language === 'zh' ? criterion.zh : criterion.en}
               </div>
@@ -228,11 +228,11 @@ export function TestStep({
           </div>
         </div>
 
-        {/* Selection buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Selection buttons - compact */}
+        <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => isThreeOptionStep ? handleThreeOptionSelect(leftOption.id) : onSelect(leftOption.id)}
-            className="py-3 px-4 rounded-xl font-medium transition-all duration-200 border-2 border-neutral-200 bg-white hover:border-neutral-900 hover:bg-neutral-50 active:scale-[0.98]"
+            className="py-2.5 px-3 rounded-xl font-medium transition-all duration-200 border-2 border-neutral-200 bg-white hover:border-neutral-900 hover:bg-neutral-50 active:scale-[0.98]"
           >
             <span className="text-sm text-foreground">
               {language === 'zh' ? leftOption.labelZh : leftOption.labelEn}
@@ -240,7 +240,7 @@ export function TestStep({
           </button>
           <button
             onClick={() => isThreeOptionStep ? handleThreeOptionSelect(rightOption.id) : onSelect(rightOption.id)}
-            className="py-3 px-4 rounded-xl font-medium transition-all duration-200 border-2 border-neutral-200 bg-white hover:border-neutral-900 hover:bg-neutral-50 active:scale-[0.98]"
+            className="py-2.5 px-3 rounded-xl font-medium transition-all duration-200 border-2 border-neutral-200 bg-white hover:border-neutral-900 hover:bg-neutral-50 active:scale-[0.98]"
           >
             <span className="text-sm text-foreground">
               {language === 'zh' ? rightOption.labelZh : rightOption.labelEn}
