@@ -29,12 +29,12 @@ export interface SkinToneInfo {
 }
 
 export const SKIN_TONES: SkinToneInfo[] = [
-  // Spring types - colors from reference chart circles
+  // Spring types - colors from user-provided swatches
   {
     id: 'spring-light',
     nameEn: 'Light Spring',
     nameZh: '浅春型',
-    color: '#C5CFA8', // sage/light olive green from chart
+    color: '#C5C8A0', // light sage green from image 1
     season: 'spring',
     characteristics: { temperature: 'warm', depth: 'light', chroma: 'bright' }
   },
@@ -42,7 +42,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'spring-true',
     nameEn: 'Warm Spring',
     nameZh: '暖春型',
-    color: '#E8C864', // golden/mustard yellow from chart
+    color: '#C8B090', // warm tan/beige from image 2
     season: 'spring',
     characteristics: { temperature: 'warm', depth: 'medium', chroma: 'true' }
   },
@@ -50,7 +50,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
     id: 'spring-bright',
     nameEn: 'Clear Spring',
     nameZh: '净春型',
-    color: '#DEBB78', // warm tan/golden from chart
+    color: '#D4B870', // golden yellow from image 3
     season: 'spring',
     characteristics: { temperature: 'warm', depth: 'medium', chroma: 'bright' }
   },
