@@ -134,22 +134,23 @@ export function TestStep({
                     boxShadow: '0 8px 32px rgba(0,0,0,0.15), inset 0 0 0 2px rgba(255,255,255,0.5)'
                   }}
                 >
-                  {cameraActive ? (
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover scale-x-[-1]"
-                    />
-                  ) : cameraError ? (
+                  {/* Video element always rendered so ref can attach */}
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover scale-x-[-1] ${cameraActive ? 'block' : 'hidden'}`}
+                  />
+                  {cameraError && (
                     <div className="w-full h-full bg-neutral-200 flex flex-col items-center justify-center text-neutral-400">
                       <CameraOff className="w-8 h-8 mb-1" />
                       <span className="text-xs">
                         {language === 'zh' ? '无法访问相机' : 'Camera unavailable'}
                       </span>
                     </div>
-                  ) : (
+                  )}
+                  {!cameraActive && !cameraError && (
                     <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
                       <Camera className="w-8 h-8 text-neutral-300 animate-pulse" />
                     </div>
