@@ -78,7 +78,6 @@ export default function PickerPage() {
         navigate('/result', {
           state: {
             analysis: localAnalysis,
-            aiExplanation: 'AI analysis is temporarily unavailable. Here are your color metrics based on local analysis.',
           },
         });
         return;
@@ -88,7 +87,6 @@ export default function PickerPage() {
       navigate('/result', {
         state: {
           analysis: localAnalysis,
-          aiExplanation: data.explanation,
         },
       });
     } catch (error) {
