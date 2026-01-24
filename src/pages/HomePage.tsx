@@ -53,13 +53,16 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-8 relative z-10">
-        {/* Logo */}
-        <div className="animate-fade-in mb-10">
+        {/* Logo & Tagline Group */}
+        <div className="animate-fade-in mb-10 text-center">
           <img 
             src={colorsenseLogo} 
             alt="Color Sense Studio" 
             className="w-72 h-auto mx-auto drop-shadow-sm"
           />
+          <p className="mt-4 text-base text-neutral-500 font-light tracking-wide">
+            Snap a photo. Understand your colors.
+          </p>
         </div>
 
         {/* Main CTA Buttons - Side by Side */}
