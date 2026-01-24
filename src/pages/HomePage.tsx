@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, Sparkles, Sun, Heart } from 'lucide-react';
+import { Camera, Image, Sun } from 'lucide-react';
 import { ColorButton } from '@/components/ui/color-button';
+import logo from '@/assets/logo.png';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -55,10 +56,10 @@ export default function HomePage() {
 
         {/* Logo / Brand */}
         <div className="animate-fade-in mb-8 relative z-10">
-          <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-beauty-rose via-beauty-coral to-beauty-lavender flex items-center justify-center shadow-elevated mb-6 mx-auto">
-            <Heart className="w-12 h-12 text-white fill-white/30" />
+          <div className="w-28 h-28 mx-auto mb-4">
+            <img src={logo} alt="ColorSense Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-beauty-rose via-beauty-coral to-beauty-lavender bg-clip-text text-transparent text-center tracking-tight">
+          <h1 className="text-4xl font-bold text-foreground text-center tracking-tight">
             ColorSense
           </h1>
           <p className="text-muted-foreground text-center mt-2 text-lg">
