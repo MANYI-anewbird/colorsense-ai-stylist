@@ -80,7 +80,7 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
         {/* Secondary button - subtle */}
         <button
           onClick={handleUseResult}
-          className="w-full flex items-center justify-center gap-2 py-3 text-neutral-500 rounded-xl font-medium hover:text-neutral-700 hover:bg-neutral-100 active:scale-[0.98] transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 text-neutral-500 rounded-xl font-medium border border-neutral-200 hover:text-neutral-700 hover:bg-neutral-50 active:scale-[0.98] transition-all"
         >
           <Check className="w-4 h-4" />
           <span className="text-sm">{language === 'zh' ? '使用此估算' : 'Use this estimate'}</span>
