@@ -211,16 +211,19 @@ export function TestStep({
           </div>
         </div>
 
-        {/* Selection criteria - compact */}
+        {/* Selection criteria - polished design */}
         <div className="mt-3 mb-2">
-          <p className="text-center text-[10px] text-muted-foreground mb-2">
+          <p className="text-center text-[10px] text-muted-foreground/70 mb-2.5 uppercase tracking-wider">
             {language === 'zh' ? '哪一侧让你看起来...' : 'Which side makes you look...'}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {CRITERIA.map((criterion, index) => (
               <div 
                 key={index}
-                className="px-3 py-1 rounded-full bg-neutral-600 text-white text-[11px] font-medium"
+                className="px-4 py-1.5 rounded-full bg-neutral-800 text-white text-xs font-semibold shadow-md"
+                style={{
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)'
+                }}
               >
                 {language === 'zh' ? criterion.zh : criterion.en}
               </div>
