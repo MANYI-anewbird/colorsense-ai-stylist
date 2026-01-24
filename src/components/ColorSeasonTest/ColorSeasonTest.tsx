@@ -105,8 +105,6 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           totalSteps={3}
           titleEn="Warm vs Cool"
           titleZh="暖色调 vs 冷色调"
-          instructionEn="Put your finger in the middle and see which side makes your skin look brighter and less yellow."
-          instructionZh="把手指放在中间，看看哪一边让你的皮肤看起来更明亮、更少黄调。"
           options={STEP_1_OPTIONS}
           onSelect={handleStep1Select}
           onBack={() => setScreen('find')}
@@ -119,8 +117,6 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           totalSteps={3}
           titleEn="Bright vs Soft"
           titleZh="清晰 vs 柔和"
-          instructionEn="Which side makes your skin look cleaner and more refined?"
-          instructionZh="哪一边让你的皮肤看起来更干净、更精致？"
           options={STEP_2_OPTIONS}
           onSelect={handleStep2Select}
           onBack={() => setScreen('test-1')}
@@ -133,8 +129,6 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           totalSteps={3}
           titleEn="Light / Medium / Deep"
           titleZh="浅色 / 中等 / 深色"
-          instructionEn="Which one makes your skin look more balanced and defined?"
-          instructionZh="哪一个让你的皮肤看起来更平衡、更有轮廓感？"
           options={STEP_3_OPTIONS}
           onSelect={handleStep3Select}
           onBack={() => setScreen('test-2')}
