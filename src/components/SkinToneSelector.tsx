@@ -28,7 +28,7 @@ export function SkinToneSelector() {
 
   const seasonGroups = [
     { key: 'spring', tones: springTones, labelEn: 'Spring', labelZh: '春季型', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-    { key: 'summer', tones: summerTones, labelEn: 'Summer', labelZh: '夏季型', color: 'bg-rose-100 text-rose-700 border-rose-200' },
+    { key: 'summer', tones: summerTones, labelEn: 'Summer', labelZh: '夏季型', color: 'bg-violet-100 text-violet-700 border-violet-200' },
     { key: 'autumn', tones: autumnTones, labelEn: 'Autumn', labelZh: '秋季型', color: 'bg-orange-100 text-orange-700 border-orange-200' },
     { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: '冬季型', color: 'bg-sky-100 text-sky-700 border-sky-200' },
   ];
