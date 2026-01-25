@@ -64,7 +64,9 @@ export function MetricBar({
             "absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-[3px] border-neutral-800 shadow-lg transition-all duration-300",
             isHovered && "scale-110 border-neutral-900 shadow-xl"
           )}
-          style={{ left: `calc(${percentage}% - 10px + 10px)` }}
+          // Dot is 20px wide; this keeps the dot CENTER aligned with the filled percentage
+          // and prevents drift caused by padding/overflow.
+          style={{ left: `calc((100% - 20px) * ${percentage / 100})` }}
         />
       </div>
     </div>
