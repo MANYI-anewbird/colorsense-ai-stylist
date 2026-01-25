@@ -140,8 +140,8 @@ export default function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-1.5 px-6 safe-area-bottom relative z-10">
-        <div className="h-0.5 mb-1.5 bg-gradient-to-r from-editorial-magenta via-editorial-yellow to-editorial-cyan opacity-40 rounded-full" />
+      <footer className="py-0.5 px-6 safe-area-bottom relative z-10">
+        <div className="h-0.5 mb-1 bg-gradient-to-r from-editorial-magenta via-editorial-yellow to-editorial-cyan opacity-40 rounded-full" />
         <p className="text-center text-[10px] text-muted-foreground">
           {t.footer}
         </p>
