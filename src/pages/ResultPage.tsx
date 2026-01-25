@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RotateCcw } from 'lucide-react';
 import { Header } from '@/components/Header';
-import { ColorSwatch, CopyableColor } from '@/components/ColorSwatch';
+import { ColorSwatch, ColorValueCard } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
 import { SeasonBadge } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
@@ -29,11 +29,6 @@ export default function ResultPage() {
   const { analysis } = state;
   const { color, metrics, confidence, confidenceNote } = analysis;
 
-  const formatRgb = (rgb: { r: number; g: number; b: number }) =>
-    `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-
-  const formatHsl = (hsl: { h: number; s: number; l: number }) =>
-    `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,12 +49,11 @@ export default function ResultPage() {
           <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
         </div>
 
-        {/* Copyable Values - Editorial cards */}
+        {/* Color Values - Editorial cards */}
         <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
-          <CopyableColor label="HEX" value={color.hex} />
-          <CopyableColor label="RGB" value={formatRgb(color.rgb)} displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
-          <CopyableColor label="HSL" value={formatHsl(color.hsl)} displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
-          <CopyableColor label="LAB" value={`lab(${color.lab.l}, ${color.lab.a}, ${color.lab.b})`} displayValue={`${color.lab.l}, ${color.lab.a}, ${color.lab.b}`} />
+          <ColorValueCard label="HSL" displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
+          <ColorValueCard label="RGB" displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
+          <ColorValueCard label="LAB" displayValue={`${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)}`} fullWidth />
         </div>
 
         {/* Confidence Indicator */}
