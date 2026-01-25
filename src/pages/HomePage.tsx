@@ -51,8 +51,7 @@ export default function HomePage() {
         className="hidden"
       />
 
-      {/* Editorial Color Stripe - Top accent */}
-      <div className="color-stripe h-1.5" />
+      {/* Top accent removed per user request */}
 
       {/* Top Bar - Skin Tone Badge (Left) & Language Switcher (Right) */}
       <div className="absolute top-6 left-4 right-4 z-20 safe-area-top flex items-center justify-between">
@@ -81,7 +80,7 @@ export default function HomePage() {
           <img 
             src="/brand/logo-source.png" 
             alt="Color Sense Studio" 
-            className="block w-80 max-w-full h-auto mx-auto drop-shadow-sm object-contain"
+            className="block w-[22rem] max-w-[90vw] h-auto mx-auto drop-shadow-sm object-contain"
           />
         </div>
 
