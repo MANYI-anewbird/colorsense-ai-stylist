@@ -142,7 +142,7 @@ export default function HomePage() {
         </div>
 
         {/* Skin Tone Selector */}
-        <div className="mt-2 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
+        <div className="mt-4 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
           <div className="bg-card rounded-xl border border-border p-4 shadow-card hover-glow">
             <SkinToneSelector />
           </div>
