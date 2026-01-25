@@ -53,23 +53,26 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
 
   if (submitted) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full bg-background">
+        {/* Editorial Color Stripe - Top accent */}
+        <div className="h-1 w-full bg-gradient-to-r from-editorial-magenta via-editorial-coral via-editorial-yellow via-editorial-cyan to-editorial-violet" />
+
         {/* Header */}
-        <div className="flex items-center px-4 py-3">
+        <div className="flex items-center px-4 py-3 border-b border-border">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 rounded-full hover:bg-neutral-100 transition-colors"
+            className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-neutral-700" />
+            <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
         </div>
 
         {/* Success Content */}
         <div className="flex-1 flex flex-col items-center justify-center px-8">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
-            <Check className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 shadow-lg">
+            <Check className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground mb-3 text-center">
+          <h2 className="text-xl font-bold text-foreground mb-3 text-center tracking-tight">
             {language === 'zh' ? '预约成功！' : 'Booking Confirmed!'}
           </h2>
           <p className="text-sm text-muted-foreground text-center leading-relaxed max-w-xs">
@@ -79,7 +82,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           </p>
           <Button 
             onClick={onBack}
-            className="mt-8 bg-neutral-900 hover:bg-neutral-800 text-white"
+            className="mt-8 bg-foreground hover:bg-foreground/90 text-background font-semibold px-8"
           >
             {language === 'zh' ? '返回' : 'Done'}
           </Button>
@@ -89,33 +92,36 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
+      {/* Editorial Color Stripe - Top accent */}
+      <div className="h-1 w-full bg-gradient-to-r from-editorial-magenta via-editorial-coral via-editorial-yellow via-editorial-cyan to-editorial-violet" />
+
       {/* Header */}
-      <div className="flex items-center px-4 py-3">
+      <div className="flex items-center px-4 py-3 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full hover:bg-neutral-100 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-neutral-700" />
+          <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
-        <h1 className="ml-2 text-lg font-semibold text-foreground">
+        <h1 className="ml-2 text-lg font-bold text-foreground tracking-tight">
           {language === 'zh' ? '预约电话咨询' : 'Book a Call'}
         </h1>
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
-        <p className="text-sm text-muted-foreground mb-6">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4">
+        <p className="text-sm text-muted-foreground mb-5">
           {language === 'zh' 
             ? '填写您的信息，我们将在您选择的时间回电。' 
             : 'Fill in your details and we will call you at your selected time.'}
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Name */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-              <User className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <User className="w-3.5 h-3.5 text-muted-foreground" />
               {language === 'zh' ? '姓名' : 'Name'}
             </label>
             <Input
@@ -123,14 +129,14 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
               onChange={(e) => setName(e.target.value)}
               placeholder={language === 'zh' ? '请输入您的姓名' : 'Enter your name'}
               maxLength={100}
-              className="bg-white"
+              className="bg-background border-2 border-border focus:border-foreground transition-colors"
             />
           </div>
 
           {/* Phone */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Phone className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <Phone className="w-3.5 h-3.5 text-muted-foreground" />
               {language === 'zh' ? '电话号码' : 'Phone Number'}
             </label>
             <Input
@@ -139,14 +145,14 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
               placeholder={language === 'zh' ? '请输入您的电话号码' : 'Enter your phone number'}
               type="tel"
               maxLength={20}
-              className="bg-white"
+              className="bg-background border-2 border-border focus:border-foreground transition-colors"
             />
           </div>
 
           {/* Date */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               {language === 'zh' ? '可用日期' : 'Available Date'}
             </label>
             <Popover>
@@ -154,7 +160,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal bg-white",
+                    "w-full justify-start text-left font-normal bg-background border-2 border-border hover:border-foreground transition-colors",
                     !date && "text-muted-foreground"
                   )}
                 >
@@ -175,12 +181,12 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           </div>
 
           {/* Time */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
               {language === 'zh' ? '可用时间' : 'Available Time'}
             </label>
             <Select value={time} onValueChange={setTime}>
-              <SelectTrigger className="bg-white">
+              <SelectTrigger className="bg-background border-2 border-border focus:border-foreground transition-colors">
                 <SelectValue placeholder={language === 'zh' ? '选择时间' : 'Select time'} />
               </SelectTrigger>
               <SelectContent>
@@ -194,13 +200,13 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           </div>
 
           {/* Timezone */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Globe className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <Globe className="w-3.5 h-3.5 text-muted-foreground" />
               {language === 'zh' ? '时区' : 'Timezone'}
             </label>
             <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger className="bg-white">
+              <SelectTrigger className="bg-background border-2 border-border focus:border-foreground transition-colors">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -216,11 +222,11 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
       </div>
 
       {/* Submit Button */}
-      <div className="px-4 pb-6 pt-2">
+      <div className="px-4 pb-6 pt-3 border-t border-border">
         <Button
           onClick={handleSubmit}
           disabled={!isFormValid || isSubmitting}
-          className="w-full bg-neutral-900 hover:bg-neutral-800 text-white disabled:opacity-50"
+          className="w-full bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 disabled:opacity-50"
         >
           {isSubmitting 
             ? (language === 'zh' ? '提交中...' : 'Submitting...') 
