@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type BarVariant = 'default' | 'lightness' | 'saturation';
@@ -26,28 +26,45 @@ export function MetricBar({
   variant = 'default',
   showPercentage = true,
 }: MetricBarProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
 
   return (
-    <div className="space-y-1.5">
+    <div 
+      className="space-y-1.5 group cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="text-sm text-muted-foreground">
+        <span className={cn(
+          "text-sm font-semibold transition-colors duration-200",
+          isHovered ? "text-foreground" : "text-muted-foreground"
+        )}>
           {showPercentage ? `${Math.round(value)}${unit}` : value}
         </span>
       </div>
-      <div className="relative h-2.5 bg-muted rounded-full overflow-hidden">
-        {/* Full gradient background */}
-        <div className={cn('absolute inset-0', variantStyles[variant])} />
-        {/* Gray overlay for unfilled portion */}
+      {/* Bar container with padding for indicator overflow */}
+      <div className="relative px-2.5">
+        <div className={cn(
+          "relative h-3 bg-muted rounded-full overflow-hidden transition-all duration-300",
+          isHovered && "shadow-md"
+        )}>
+          {/* Full gradient background */}
+          <div className={cn('absolute inset-0', variantStyles[variant])} />
+          {/* Gray overlay for unfilled portion */}
+          <div 
+            className="absolute top-0 right-0 h-full bg-muted/80 transition-all duration-500"
+            style={{ width: `${100 - percentage}%` }}
+          />
+        </div>
+        {/* Indicator dot - positioned outside overflow:hidden container */}
         <div 
-          className="absolute top-0 right-0 h-full bg-muted/80"
-          style={{ width: `${100 - percentage}%` }}
-        />
-        {/* Indicator dot */}
-        <div 
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-neutral-700 shadow-sm transition-all duration-500"
-          style={{ left: `calc(${percentage}% - 6px)` }}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-[3px] border-neutral-800 shadow-lg transition-all duration-300",
+            isHovered && "scale-110 border-neutral-900 shadow-xl"
+          )}
+          style={{ left: `calc(${percentage}% - 10px + 10px)` }}
         />
       </div>
     </div>
