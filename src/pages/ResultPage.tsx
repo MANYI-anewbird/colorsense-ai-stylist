@@ -2,12 +2,11 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RotateCcw } from 'lucide-react';
 import { Header } from '@/components/Header';
-import { ColorSwatch, CopyableColor } from '@/components/ColorSwatch';
+import { ColorSwatch, ColorValueCard } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
 import { SeasonBadge } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
 import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
-import { ColorButton } from '@/components/ui/color-button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColorAnalysis } from '@/lib/color-utils';
 
@@ -29,37 +28,41 @@ export default function ResultPage() {
   const { analysis } = state;
   const { color, metrics, confidence, confidenceNote } = analysis;
 
-  const formatRgb = (rgb: { r: number; g: number; b: number }) =>
-    `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-
-  const formatHsl = (hsl: { h: number; s: number; l: number }) =>
-    `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-
   return (
     <div className="min-h-screen bg-background">
       {/* Editorial Color Stripe - Top accent */}
-      <div className="color-stripe h-1" />
+      <div className="color-stripe h-1.5" />
       
       <Header title={t.colorAnalysis} showBack backTo="/picker" />
 
-      <main className="container px-4 py-4 pb-20">
-        {/* Color Swatch - More compact with compatibility */}
+      <main className="container px-4 py-4 pb-24">
+        {/* Color Swatch - Editorial hero */}
         <div className="flex flex-col items-center animate-scale-in">
-          <ColorSwatch 
-            hex={color.hex} 
-            size="lg" 
-            showCompatibility={true}
-            colorMetrics={metrics}
-          />
-          <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
+          <div className="relative">
+            <ColorSwatch 
+              hex={color.hex} 
+              size="xl" 
+              showCompatibility={true}
+              colorMetrics={metrics}
+            />
+            {/* Decorative color dots */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              <div className="w-2 h-2 rounded-full bg-editorial-magenta" />
+              <div className="w-2 h-2 rounded-full bg-editorial-coral" />
+              <div className="w-2 h-2 rounded-full bg-editorial-yellow" />
+              <div className="w-2 h-2 rounded-full bg-editorial-cyan" />
+              <div className="w-2 h-2 rounded-full bg-editorial-violet" />
+            </div>
+          </div>
+          <p className="mt-5 text-2xl font-bold text-foreground tracking-tight">{color.hex}</p>
         </div>
 
-        {/* Copyable Values - Editorial cards */}
-        <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
-          <CopyableColor label="HEX" value={color.hex} />
-          <CopyableColor label="RGB" value={formatRgb(color.rgb)} displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
-          <CopyableColor label="HSL" value={formatHsl(color.hsl)} displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
-          <CopyableColor label="LAB" value={`lab(${color.lab.l}, ${color.lab.a}, ${color.lab.b})`} displayValue={`${color.lab.l}, ${color.lab.a}, ${color.lab.b}`} />
+        {/* Color Values - Editorial grid, equal height, fixed layout */}
+        <div className="mt-6 grid grid-cols-2 gap-3 animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
+          <ColorValueCard label="HEX" value={color.hex} />
+          <ColorValueCard label="RGB" value={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
+          <ColorValueCard label="HSL" value={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
+          <ColorValueCard label="LAB" value={`${color.lab.l}, ${color.lab.a}, ${color.lab.b}`} />
         </div>
 
         {/* Confidence Indicator */}
@@ -69,11 +72,11 @@ export default function ResultPage() {
           </div>
         )}
 
-        {/* Metrics - Editorial style */}
-        <div className="mt-5 space-y-4 animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
-          <h2 className="text-base font-semibold text-foreground">{t.colorMetrics}</h2>
+        {/* Metrics Section - Editorial card */}
+        <div className="mt-6 p-4 bg-secondary rounded-2xl border border-border animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">{t.colorMetrics}</h2>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <MetricBar
               label={t.lightness}
               value={metrics.lightness}
@@ -87,18 +90,13 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Temperature & Season - Editorial badges */}
-        <div className="mt-5 space-y-3 animate-slide-up-color" style={{ animationDelay: '0.25s' }}>
-          <h2 className="text-base font-semibold text-foreground">{t.colorClassification}</h2>
+        {/* Classification Section - Editorial badges in card */}
+        <div className="mt-4 p-4 bg-secondary rounded-2xl border border-border animate-slide-up-color" style={{ animationDelay: '0.25s' }}>
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">{t.colorClassification}</h2>
           
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t.temperature}:</span>
-            <TemperatureBadge temperature={metrics.temperature} size="sm" />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t.seasonalTendency}:</span>
-            <SeasonBadge season={metrics.seasonalTendency} size="sm" />
+          <div className="flex flex-wrap gap-2">
+            <TemperatureBadge temperature={metrics.temperature} size="md" />
+            <SeasonBadge season={metrics.seasonalTendency} size="md" />
           </div>
         </div>
 
@@ -106,7 +104,7 @@ export default function ResultPage() {
         <div className="mt-6 animate-slide-up-color" style={{ animationDelay: '0.35s' }}>
           <button
             onClick={() => navigate('/')}
-            className="group w-full relative flex items-center justify-center gap-2 py-4 bg-foreground text-background rounded-2xl font-semibold overflow-hidden active:scale-[0.98] transition-all"
+            className="group w-full relative flex items-center justify-center gap-2.5 py-4 bg-foreground text-background rounded-2xl font-semibold overflow-hidden active:scale-[0.98] transition-all"
           >
             {/* Hover gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-editorial-cyan via-editorial-violet to-editorial-magenta opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -115,6 +113,9 @@ export default function ResultPage() {
           </button>
         </div>
       </main>
+
+      {/* Bottom color stripe */}
+      <div className="fixed bottom-0 left-0 right-0 color-stripe h-1 safe-area-bottom" />
     </div>
   );
 }

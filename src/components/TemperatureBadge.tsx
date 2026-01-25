@@ -13,17 +13,17 @@ interface TemperatureBadgeProps {
 const temperatureConfig = {
   warm: {
     icon: Flame,
-    className: 'bg-gradient-to-r from-beauty-coral/20 to-beauty-peach/30 text-beauty-coral border-beauty-coral/30',
-    iconClass: 'text-beauty-coral',
+    className: 'bg-editorial-coral/15 text-foreground border-editorial-coral/50',
+    iconClass: 'text-editorial-coral',
   },
   cool: {
     icon: Snowflake,
-    className: 'bg-gradient-to-r from-beauty-lavender/20 to-beauty-blush/30 text-beauty-lavender border-beauty-lavender/30',
-    iconClass: 'text-beauty-lavender',
+    className: 'bg-editorial-cyan/15 text-foreground border-editorial-cyan/50',
+    iconClass: 'text-editorial-cyan',
   },
   neutral: {
     icon: CircleDot,
-    className: 'bg-gradient-to-r from-beauty-blush/20 to-muted/30 text-muted-foreground border-beauty-blush/30',
+    className: 'bg-muted text-foreground border-border',
     iconClass: 'text-muted-foreground',
   },
 };
