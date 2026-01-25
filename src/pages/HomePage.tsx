@@ -120,7 +120,7 @@ export default function HomePage() {
         </div>
 
         {/* Tip */}
-        <div className="mt-3 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+        <div className="mt-5 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center gap-2 px-2.5 py-1.5 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
             <div className="w-5 h-5 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
               <Lightbulb className="w-3 h-3 text-foreground" />
