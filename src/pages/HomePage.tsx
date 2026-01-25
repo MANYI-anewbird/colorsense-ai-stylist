@@ -77,21 +77,18 @@ export default function HomePage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center px-5 py-2 relative z-10 min-h-0">
-        {/* Logo */}
+        {/* Logo + Tagline Group */}
         <div className="animate-fade-in text-center flex-shrink-0">
           <img 
             src="/brand/logo-source.png" 
             alt="Color Sense Studio" 
             className="block w-72 max-w-full h-auto mx-auto drop-shadow-sm object-contain"
           />
-        </div>
-
-        {/* Tagline */}
-        <div className="mb-2 animate-slide-up-color">
+          {/* Tagline - directly below logo */}
           <img 
             src={taglineImage} 
             alt={t.tagline}
-            className="w-72 h-auto mx-auto"
+            className="w-72 h-auto mx-auto -mt-2"
           />
         </div>
 
