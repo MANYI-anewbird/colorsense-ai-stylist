@@ -49,11 +49,11 @@ export default function ResultPage() {
           <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
         </div>
 
-        {/* Color Values - Editorial cards with copy */}
+        {/* Color Values - Editorial cards */}
         <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
-          <ColorValueCard label="HSL" value={`hsl(${color.hsl.h}, ${color.hsl.s}%, ${color.hsl.l}%)`} displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
-          <ColorValueCard label="RGB" value={`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`} displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
-          <ColorValueCard label="LAB" value={`lab(${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)})`} displayValue={`${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)}`} fullWidth />
+          <ColorValueCard label="HSL" displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
+          <ColorValueCard label="RGB" displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
+          <ColorValueCard label="LAB" displayValue={`${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)}`} fullWidth />
         </div>
 
         {/* Confidence Indicator */}
@@ -63,11 +63,11 @@ export default function ResultPage() {
           </div>
         )}
 
-        {/* Metrics - Editorial dashboard style */}
-        <div className="mt-5 space-y-3 animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t.colorMetrics}</h2>
+        {/* Metrics - Editorial style */}
+        <div className="mt-5 space-y-4 animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+          <h2 className="text-base font-semibold text-foreground">{t.colorMetrics}</h2>
           
-          <div className="space-y-2">
+          <div className="space-y-3">
             <MetricBar
               label={t.lightness}
               value={metrics.lightness}
