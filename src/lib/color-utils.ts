@@ -154,7 +154,49 @@ export function getTemperature(hsl: HSL): 'warm' | 'cool' | 'neutral' {
   return 'neutral';
 }
 
-// Determine seasonal tendency
+/**
+ * Determine chroma (Clear vs Soft) from LAB color space
+ * Clear = high chroma, Soft = low chroma
+ */
+function getChroma(lab: LAB, saturation: number): 'clear' | 'soft' {
+  // Calculate chroma from LAB (distance from neutral axis)
+  const chroma = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+  
+  // Thresholds: can be adjusted if needed
+  // Clear = high chroma/saturation, Soft = low chroma/saturation
+  const isClear = chroma > 40 || saturation > 50;
+  
+  return isClear ? 'clear' : 'soft';
+}
+
+/**
+ * Determine lightness/value category
+ */
+function getLightnessCategory(lightness: number): 'light' | 'medium' | 'deep' {
+  // Thresholds: can be adjusted if needed
+  if (lightness > 65) return 'light';
+  if (lightness < 35) return 'deep';
+  return 'medium';
+}
+
+/**
+ * Determine seasonal tendency using 12-season color theory
+ * 
+ * Decision tree:
+ * 1. Temperature (Warm/Cool) → determines family
+ * 2. Chroma (Clear/Soft) → determines season within family
+ * 3. Lightness (Light/Medium/Deep) → used for subtype selection (if needed)
+ * 
+ * Rules:
+ * - Warm + Clear → Spring
+ * - Warm + Soft → Autumn
+ * - Cool + Clear → Winter
+ * - Cool + Soft → Summer
+ * 
+ * This ensures:
+ * - Spring/Autumn are always Warm
+ * - Summer/Winter are always Cool
+ */
 export function getSeasonalTendency(
   hsl: HSL,
   lab: LAB
@@ -162,41 +204,44 @@ export function getSeasonalTendency(
   const temperature = getTemperature(hsl);
   const lightness = lab.l;
   const saturation = hsl.s;
+  
+  const chroma = getChroma(lab, saturation);
+  const lightnessCategory = getLightnessCategory(lightness);
 
-  // Calculate chroma from LAB
-  const chroma = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
-  const highChroma = chroma > 40 || saturation > 50;
-
-  const isWarm = temperature === 'warm' || temperature === 'neutral';
-  const isCool = temperature === 'cool';
-  const isLight = lightness > 55;
-  const isDark = lightness <= 55;
-
-  // Spring: warm + light + high saturation
-  if (isWarm && isLight && highChroma) {
-    return 'spring';
-  }
-
-  // Summer: cool + light + low saturation
-  if (isCool && isLight && !highChroma) {
-    return 'summer';
-  }
-
-  // Autumn: warm + dark + low saturation
-  if (isWarm && isDark && !highChroma) {
-    return 'autumn';
-  }
-
-  // Winter: cool + dark + high saturation
-  if (isCool && isDark && highChroma) {
-    return 'winter';
-  }
-
-  // Fallback logic for neutral or edge cases
-  if (isLight) {
-    return highChroma ? 'spring' : 'summer';
+  // Primary decision tree: Temperature → Chroma → Season
+  if (temperature === 'warm') {
+    // Warm colors: Spring (Clear) or Autumn (Soft)
+    if (chroma === 'clear') {
+      return 'spring';
+    } else {
+      return 'autumn';
+    }
+  } else if (temperature === 'cool') {
+    // Cool colors: Winter (Clear) or Summer (Soft)
+    if (chroma === 'clear') {
+      return 'winter';
+    } else {
+      return 'summer';
+    }
   } else {
-    return highChroma ? 'winter' : 'autumn';
+    // Neutral temperature: use chroma and lightness to determine most likely season
+    // This is a fallback for truly neutral colors
+    if (chroma === 'clear') {
+      // Clear neutral: likely Spring (if light) or Winter (if dark)
+      // Use lightness as tiebreaker
+      if (lightnessCategory === 'light' || lightnessCategory === 'medium') {
+        return 'spring'; // Light/medium clear → Spring
+      } else {
+        return 'winter'; // Deep clear → Winter
+      }
+    } else {
+      // Soft neutral: likely Summer (if light) or Autumn (if dark)
+      if (lightnessCategory === 'light' || lightnessCategory === 'medium') {
+        return 'summer'; // Light/medium soft → Summer
+      } else {
+        return 'autumn'; // Deep soft → Autumn
+      }
+    }
   }
 }
 
