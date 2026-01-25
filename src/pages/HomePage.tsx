@@ -111,16 +111,16 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-2.5">
             <button
               onClick={handleCameraClick}
-              className="group relative flex flex-col items-center justify-center gap-1.5 py-6 px-3 bg-foreground text-background rounded-xl overflow-hidden tap-color-feedback"
+              className="group relative flex flex-col items-center justify-center gap-2 py-10 px-3 bg-foreground text-background rounded-xl overflow-hidden tap-color-feedback"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Camera className="w-6 h-6 relative z-10" />
-              <span className="text-sm font-semibold relative z-10">{t.takePhoto}</span>
+              <Camera className="w-7 h-7 relative z-10" />
+              <span className="text-base font-semibold relative z-10">{t.takePhoto}</span>
             </button>
 
             <button
               onClick={handleGalleryClick}
-              className="group relative flex flex-col items-center justify-center gap-1.5 py-6 px-3 bg-background text-foreground rounded-xl border-2 border-foreground overflow-hidden tap-color-feedback"
+              className="group relative flex flex-col items-center justify-center gap-2 py-10 px-3 bg-background text-foreground rounded-xl border-2 border-foreground overflow-hidden tap-color-feedback"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-editorial-cyan via-editorial-violet to-editorial-magenta opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Image className="w-6 h-6 relative z-10 group-hover:text-white transition-colors duration-300" />
