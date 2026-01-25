@@ -80,7 +80,7 @@ export default function HomePage() {
           <img 
             src="/brand/logo-source.png" 
             alt="Color Sense Studio" 
-            className="block w-[22rem] max-w-[90vw] h-auto mx-auto drop-shadow-sm object-contain"
+            className="block w-80 max-w-full h-auto mx-auto drop-shadow-sm object-contain"
           />
         </div>
 
