@@ -87,7 +87,7 @@ export default function HomePage() {
         </div>
 
         {/* Tagline */}
-        <div className="mb-2 animate-slide-up-color flex-shrink-0">
+        <div className="mb-2 animate-slide-up-color">
           <img 
             src={taglineImage} 
             alt={t.tagline}
@@ -96,7 +96,7 @@ export default function HomePage() {
         </div>
 
         {/* Color Bar */}
-        <div className="w-full max-w-xs mb-3 animate-slide-up-color flex-shrink-0">
+        <div className="w-full max-w-xs mb-3 animate-slide-up-color">
           <div className="grid grid-cols-5 h-2 rounded-full overflow-hidden shadow-sm">
             <div className="bg-editorial-magenta" />
             <div className="bg-editorial-coral" />
@@ -106,50 +106,45 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Expandable Content Area */}
-        <div className="flex-1 w-full max-w-sm flex flex-col gap-3 min-h-0">
-          {/* Main CTA Buttons - flex-1 to grow */}
-          <div className="flex-1 min-h-[100px] animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
-            <div className="grid grid-cols-2 gap-2.5 h-full">
-              <button
-                onClick={handleCameraClick}
-                className="group relative flex flex-col items-center justify-center gap-2 bg-foreground text-background rounded-xl overflow-hidden tap-color-feedback"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <Camera className="w-7 h-7 relative z-10" />
-                <span className="text-sm font-semibold relative z-10">{t.takePhoto}</span>
-              </button>
+        {/* Main CTA Buttons */}
+        <div className="w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              onClick={handleCameraClick}
+              className="group relative flex flex-col items-center justify-center gap-1.5 py-6 px-3 bg-foreground text-background rounded-xl overflow-hidden tap-color-feedback"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Camera className="w-6 h-6 relative z-10" />
+              <span className="text-sm font-semibold relative z-10">{t.takePhoto}</span>
+            </button>
 
-              <button
-                onClick={handleGalleryClick}
-                className="group relative flex flex-col items-center justify-center gap-2 bg-background text-foreground rounded-xl border-2 border-foreground overflow-hidden tap-color-feedback"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-editorial-cyan via-editorial-violet to-editorial-magenta opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <Image className="w-7 h-7 relative z-10 group-hover:text-white transition-colors duration-300" />
-                <span className="text-sm font-semibold relative z-10 group-hover:text-white transition-colors duration-300">{t.gallery}</span>
-              </button>
-            </div>
+            <button
+              onClick={handleGalleryClick}
+              className="group relative flex flex-col items-center justify-center gap-1.5 py-6 px-3 bg-background text-foreground rounded-xl border-2 border-foreground overflow-hidden tap-color-feedback"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-editorial-cyan via-editorial-violet to-editorial-magenta opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Image className="w-6 h-6 relative z-10 group-hover:text-white transition-colors duration-300" />
+              <span className="text-sm font-semibold relative z-10 group-hover:text-white transition-colors duration-300">{t.gallery}</span>
+            </button>
           </div>
+        </div>
 
-          {/* Skin Tone Selector - flex-1 to grow */}
-          <div className="flex-1 min-h-[60px] animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
-            <div className="bg-card rounded-xl border border-border p-3 shadow-card hover-glow h-full flex items-center">
-              <div className="w-full">
-                <SkinToneSelector />
-              </div>
-            </div>
+        {/* Skin Tone Selector */}
+        <div className="mt-3 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-card rounded-xl border border-border p-2.5 shadow-card hover-glow">
+            <SkinToneSelector />
           </div>
+        </div>
 
-          {/* Tip - fixed height */}
-          <div className="flex-shrink-0 animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center gap-2 px-2.5 py-1.5 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
-              <div className="w-5 h-5 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
-                <Lightbulb className="w-3 h-3 text-foreground" />
-              </div>
-              <p className="text-[10px] text-foreground/70 leading-snug font-medium">
-                {t.tip}
-              </p>
+        {/* Tip */}
+        <div className="mt-2 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center gap-2 px-2.5 py-1.5 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
+            <div className="w-5 h-5 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
+              <Lightbulb className="w-3 h-3 text-foreground" />
             </div>
+            <p className="text-[10px] text-foreground/70 leading-snug font-medium">
+              {t.tip}
+            </p>
           </div>
         </div>
       </div>
