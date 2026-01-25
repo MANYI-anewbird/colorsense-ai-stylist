@@ -51,18 +51,16 @@ export default function HomePage() {
         className="hidden"
       />
 
-      {/* Top accent removed per user request */}
-
-      {/* Top Bar - Skin Tone Badge (Left) & Language Switcher (Right) */}
-      <div className="absolute top-6 left-4 right-4 z-20 safe-area-top flex items-center justify-between">
+      {/* Top Black Bar with Skin Tone & Language */}
+      <div className="bg-foreground text-background px-4 py-2.5 safe-area-top flex items-center justify-between">
         {/* Skin Tone Badge - Left */}
         <div className="flex items-center">
           {skinTone ? (
             <SkinToneBadge showLabel={true} size="sm" />
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 backdrop-blur-sm rounded-full">
-              <Palette className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground font-medium">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-background/10 backdrop-blur-sm rounded-full">
+              <Palette className="w-3.5 h-3.5 text-background/70" />
+              <span className="text-[10px] text-background/70 font-medium">
                 {language === 'zh' ? '未设置肤色' : 'No skin tone'}
               </span>
             </div>
@@ -74,7 +72,7 @@ export default function HomePage() {
       </div>
 
       {/* Main Content - Scrollable */}
-      <div className="flex-1 flex flex-col items-center px-5 py-8 pt-24 relative z-10 overflow-y-auto min-h-0">
+      <div className="flex-1 flex flex-col items-center px-5 py-6 relative z-10 overflow-y-auto min-h-0">
         {/* Logo & Tagline Group - flex-shrink-0 so logo is never clipped */}
         <div className="animate-fade-in mb-4 text-center flex-shrink-0 overflow-visible">
           <img 
