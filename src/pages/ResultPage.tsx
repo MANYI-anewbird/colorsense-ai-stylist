@@ -81,18 +81,19 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Temperature & Season - Editorial badges */}
+        {/* Temperature & Season - Editorial badges side by side */}
         <div className="mt-5 space-y-3 animate-slide-up-color" style={{ animationDelay: '0.25s' }}>
           <h2 className="text-base font-semibold text-foreground">{t.colorClassification}</h2>
           
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t.temperature}:</span>
-            <TemperatureBadge temperature={metrics.temperature} size="sm" />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t.seasonalTendency}:</span>
-            <SeasonBadge season={metrics.seasonalTendency} size="sm" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">{t.temperature}</span>
+              <TemperatureBadge temperature={metrics.temperature} size="md" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
+              <SeasonBadge season={metrics.seasonalTendency} size="md" />
+            </div>
           </div>
         </div>
 
