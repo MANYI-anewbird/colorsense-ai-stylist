@@ -51,24 +51,28 @@ export default function HomePage() {
         className="hidden"
       />
 
-      {/* Top Black Bar with Skin Tone & Language */}
-      <div className="bg-foreground text-background px-4 py-2.5 safe-area-top flex items-center justify-between">
-        {/* Skin Tone Badge - Left */}
-        <div className="flex items-center">
-          {skinTone ? (
-            <SkinToneBadge showLabel={true} size="sm" />
-          ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-background/10 backdrop-blur-sm rounded-full">
-              <Palette className="w-3.5 h-3.5 text-background/70" />
-              <span className="text-[10px] text-background/70 font-medium">
-                {language === 'zh' ? '未设置肤色' : 'No skin tone'}
-              </span>
-            </div>
-          )}
+      {/* Top Navigation Bar */}
+      <div className="bg-foreground safe-area-top">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Skin Tone Badge - Left */}
+          <div className="flex items-center">
+            {skinTone ? (
+              <SkinToneBadge showLabel={true} size="sm" variant="dark" />
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                <Palette className="w-3.5 h-3.5 text-white/60" />
+                <span className="text-xs text-white/60 font-medium">
+                  {language === 'zh' ? '选择肤色' : 'Set skin tone'}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {/* Language Switcher - Right */}
+          <LanguageSwitcher variant="dark" />
         </div>
-        
-        {/* Language Switcher - Right */}
-        <LanguageSwitcher />
+        {/* Subtle bottom accent line */}
+        <div className="h-0.5 bg-gradient-to-r from-editorial-magenta via-editorial-yellow to-editorial-cyan opacity-60" />
       </div>
 
       {/* Main Content - Scrollable */}
