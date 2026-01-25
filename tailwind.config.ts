@@ -27,6 +27,12 @@ export default {
           "Arial",
           "sans-serif",
         ],
+        editorial: [
+          "SF Pro Display",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -70,11 +76,24 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        // Editorial vibrant colors
+        editorial: {
+          magenta: "hsl(var(--editorial-magenta))",
+          coral: "hsl(var(--editorial-coral))",
+          yellow: "hsl(var(--editorial-yellow))",
+          cyan: "hsl(var(--editorial-cyan))",
+          violet: "hsl(var(--editorial-violet))",
+          lime: "hsl(var(--editorial-lime))",
+          orange: "hsl(var(--editorial-orange))",
+          pink: "hsl(var(--editorial-pink))",
+        },
+        // Fashion accent colors
         fashion: {
           warm: "hsl(var(--fashion-warm))",
           cool: "hsl(var(--fashion-cool))",
           neutral: "hsl(var(--fashion-neutral))",
         },
+        // Beauty colors (legacy support)
         beauty: {
           rose: "hsl(var(--beauty-rose))",
           coral: "hsl(var(--beauty-coral))",
@@ -83,6 +102,7 @@ export default {
           blush: "hsl(var(--beauty-blush))",
           gold: "hsl(var(--beauty-gold))",
         },
+        // Seasonal colors
         season: {
           spring: "hsl(var(--season-spring))",
           summer: "hsl(var(--season-summer))",
@@ -113,6 +133,7 @@ export default {
         card: "var(--shadow-card)",
         elevated: "var(--shadow-elevated)",
         picker: "var(--shadow-picker)",
+        "color-glow": "0 8px 30px -8px",
       },
       keyframes: {
         "accordion-down": {
@@ -139,6 +160,20 @@ export default {
           from: { opacity: "0", transform: "scale(0.95)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "color-shift": {
+          "0%": { filter: "hue-rotate(0deg)" },
+          "100%": { filter: "hue-rotate(360deg)" },
+        },
+        "bounce-color": {
+          "0%, 100%": { 
+            transform: "translateY(0)",
+            boxShadow: "0 0 0 0 hsl(var(--editorial-magenta) / 0.4)"
+          },
+          "50%": { 
+            transform: "translateY(-4px)",
+            boxShadow: "0 8px 20px -4px hsl(var(--editorial-magenta) / 0.3)"
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -147,6 +182,8 @@ export default {
         "slide-up": "slide-up 0.4s ease-out",
         "slide-down": "slide-down 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
+        "color-shift": "color-shift 10s linear infinite",
+        "bounce-color": "bounce-color 2s ease-in-out infinite",
       },
     },
   },

@@ -97,13 +97,15 @@ export function SkinToneSelector() {
           {language === 'zh' ? '基于12色季理论' : 'Based on 12-season color theory'}
         </p>
 
-        {/* "I don't know" Button */}
+        {/* "I don't know" Button - Editorial style */}
         <button
           onClick={() => setShowTest(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 mb-4 bg-violet-100 text-violet-700 rounded-xl hover:bg-violet-200 transition-colors text-sm font-medium"
+          className="group w-full relative flex items-center justify-center gap-2 py-3.5 mb-4 bg-foreground text-background rounded-xl overflow-hidden text-sm font-semibold tap-color-feedback"
         >
-          <HelpCircle className="w-4 h-4" />
-          {language === 'zh' ? '我不知道我的色季' : "I don't know my color season"}
+          {/* Hover gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <HelpCircle className="w-4 h-4 relative z-10" />
+          <span className="relative z-10">{language === 'zh' ? '我不知道我的色季' : "I don't know my color season"}</span>
         </button>
 
         <div className="space-y-3">
@@ -121,10 +123,10 @@ export function SkinToneSelector() {
                       onClick={() => handleSelect(tone.id)}
                       className={`
                         relative flex flex-col items-center gap-1.5 p-2 rounded-xl 
-                        border-2 transition-all duration-200
+                        border-2 transition-all duration-200 tap-color-feedback
                         ${isSelected 
-                          ? 'border-neutral-900 bg-neutral-50' 
-                          : 'border-neutral-200 bg-white hover:border-neutral-300'
+                          ? 'border-foreground bg-secondary' 
+                          : 'border-border bg-card hover:border-foreground/30'
                         }
                       `}
                     >
