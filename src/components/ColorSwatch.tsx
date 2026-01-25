@@ -66,23 +66,40 @@ export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = f
 interface ColorValueCardProps {
   label: string;
   displayValue: string;
+  copyValue: string;
   fullWidth?: boolean;
 }
 
-export function ColorValueCard({ label, displayValue, fullWidth = false }: ColorValueCardProps) {
+export function ColorValueCard({ label, displayValue, copyValue, fullWidth = false }: ColorValueCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(copyValue);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
-    <div
+    <button
+      onClick={handleCopy}
       className={cn(
-        "flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/50",
+        "flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors text-left w-full group",
         fullWidth && "col-span-2"
       )}
     >
-      <div className="text-left">
+      <div>
         <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
         <p className="text-xs font-mono font-semibold text-foreground mt-0.5">
           {displayValue}
         </p>
       </div>
-    </div>
+      <div className="text-muted-foreground group-hover:text-foreground transition-colors">
+        {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+      </div>
+    </button>
   );
 }

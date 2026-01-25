@@ -51,9 +51,9 @@ export default function ResultPage() {
 
         {/* Color Values - Editorial cards */}
         <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
-          <ColorValueCard label="HSL" displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} />
-          <ColorValueCard label="RGB" displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} />
-          <ColorValueCard label="LAB" displayValue={`${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)}`} fullWidth />
+          <ColorValueCard label="HSL" displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} copyValue={`hsl(${color.hsl.h}, ${color.hsl.s}%, ${color.hsl.l}%)`} />
+          <ColorValueCard label="RGB" displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} copyValue={`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`} />
+          <ColorValueCard label="LAB" displayValue={`${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)}`} copyValue={`lab(${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)})`} fullWidth />
         </div>
 
         {/* Confidence Indicator */}
