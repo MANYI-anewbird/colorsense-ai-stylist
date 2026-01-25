@@ -78,21 +78,16 @@ export default function HomePage() {
       {/* Main Content - Scrollable */}
       <div className="flex-1 flex flex-col items-center px-5 py-8 pt-20 relative z-10 overflow-y-auto">
         {/* Logo & Tagline Group */}
-        <div className="animate-fade-in mb-6 text-center">
+        <div className="animate-fade-in mb-4 text-center">
           <img 
             src={colorsenseLogo} 
             alt="Color Sense Studio" 
-            className="w-64 h-auto mx-auto drop-shadow-sm"
-          />
-          <img 
-            src={taglineImage} 
-            alt={t.tagline}
-            className="mt-3 w-72 h-auto mx-auto"
+            className="w-80 h-auto mx-auto drop-shadow-sm"
           />
         </div>
 
         {/* Editorial Hero Section - Color Blocks */}
-        <div className="w-full max-w-sm mb-6 animate-slide-up-color">
+        <div className="w-full max-w-sm mb-1.5 animate-slide-up-color">
           <div className="grid grid-cols-5 h-3 rounded-full overflow-hidden shadow-sm">
             <div className="bg-editorial-magenta" />
             <div className="bg-editorial-coral" />
@@ -100,6 +95,15 @@ export default function HomePage() {
             <div className="bg-editorial-cyan" />
             <div className="bg-editorial-violet" />
           </div>
+        </div>
+
+        {/* Tagline - moved below color bar */}
+        <div className="mb-5 animate-slide-up-color">
+          <img 
+            src={taglineImage} 
+            alt={t.tagline}
+            className="w-72 h-auto mx-auto"
+          />
         </div>
 
         {/* Main CTA Buttons - Editorial Style */}
@@ -138,12 +142,12 @@ export default function HomePage() {
         </div>
 
         {/* Compact Tip - Editorial accent */}
-        <div className="mt-4 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center gap-3 px-4 py-3 bg-editorial-yellow/10 rounded-xl border border-editorial-yellow/20">
-            <div className="w-8 h-8 rounded-lg bg-editorial-yellow flex items-center justify-center flex-shrink-0">
-              <Lightbulb className="w-4 h-4 text-foreground" />
+        <div className="mt-3 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
+            <div className="w-6 h-6 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
+              <Lightbulb className="w-3.5 h-3.5 text-foreground" />
             </div>
-            <p className="text-xs text-foreground/70 leading-relaxed font-medium">
+            <p className="text-[11px] text-foreground/70 leading-snug font-medium">
               {t.tip}
             </p>
           </div>
