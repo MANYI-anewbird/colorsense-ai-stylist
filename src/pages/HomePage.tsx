@@ -97,7 +97,7 @@ export default function HomePage() {
         </div>
 
         {/* Main CTA Buttons */}
-        <div className="w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
+        <div className="mt-4 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
           <div className="grid grid-cols-2 gap-2.5">
             <button
               onClick={handleCameraClick}
