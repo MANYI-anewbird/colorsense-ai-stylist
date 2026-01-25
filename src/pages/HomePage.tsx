@@ -87,7 +87,7 @@ export default function HomePage() {
         </div>
 
         {/* Editorial Hero Section - Color Blocks */}
-        <div className="w-full max-w-sm mb-1.5 animate-slide-up-color">
+        <div className="w-full max-w-sm animate-slide-up-color">
           <div className="grid grid-cols-5 h-3 rounded-full overflow-hidden shadow-sm">
             <div className="bg-editorial-magenta" />
             <div className="bg-editorial-coral" />
@@ -98,7 +98,7 @@ export default function HomePage() {
         </div>
 
         {/* Tagline - moved below color bar */}
-        <div className="mb-5 animate-slide-up-color">
+        <div className="mt-1 mb-5 animate-slide-up-color">
           <img 
             src={taglineImage} 
             alt={t.tagline}
