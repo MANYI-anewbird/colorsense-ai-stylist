@@ -27,10 +27,10 @@ export function SkinToneSelector() {
   const winterTones = SKIN_TONES.filter(t => t.season === 'winter');
 
   const seasonGroups = [
-    { key: 'spring', tones: springTones, labelEn: 'Spring', labelZh: '春季型' },
-    { key: 'summer', tones: summerTones, labelEn: 'Summer', labelZh: '夏季型' },
-    { key: 'autumn', tones: autumnTones, labelEn: 'Autumn', labelZh: '秋季型' },
-    { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: '冬季型' },
+    { key: 'spring', tones: springTones, labelEn: 'Spring', labelZh: '春季型', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+    { key: 'summer', tones: summerTones, labelEn: 'Summer', labelZh: '夏季型', color: 'bg-rose-100 text-rose-700 border-rose-200' },
+    { key: 'autumn', tones: autumnTones, labelEn: 'Autumn', labelZh: '秋季型', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+    { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: '冬季型', color: 'bg-sky-100 text-sky-700 border-sky-200' },
   ];
 
   const handleTestComplete = () => {
@@ -111,9 +111,9 @@ export function SkinToneSelector() {
         <div className="space-y-3">
           {seasonGroups.map((group) => (
             <div key={group.key} className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground px-1">
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide border ${group.color}`}>
                 {language === 'zh' ? group.labelZh : group.labelEn}
-              </p>
+              </span>
               <div className="grid grid-cols-3 gap-2">
                 {group.tones.map((tone) => {
                   const isSelected = skinTone === tone.id;
