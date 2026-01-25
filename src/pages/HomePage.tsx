@@ -75,29 +75,29 @@ export default function HomePage() {
         <div className="h-0.5 bg-gradient-to-r from-editorial-magenta via-editorial-yellow to-editorial-cyan opacity-60" />
       </div>
 
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 flex flex-col items-center px-5 py-3 relative z-10 overflow-y-auto min-h-0">
-        {/* Logo & Tagline Group - flex-shrink-0 so logo is never clipped */}
-        <div className="animate-fade-in mb-2 text-center flex-shrink-0 overflow-visible">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center px-5 py-2 relative z-10 min-h-0">
+        {/* Logo */}
+        <div className="animate-fade-in text-center flex-shrink-0">
           <img 
             src="/brand/logo-source.png" 
             alt="Color Sense Studio" 
-            className="block w-80 max-w-full h-auto mx-auto drop-shadow-sm object-contain"
+            className="block w-72 max-w-full h-auto mx-auto drop-shadow-sm object-contain"
           />
         </div>
 
-        {/* Tagline - above color bar */}
-        <div className="mb-0.5 animate-slide-up-color">
+        {/* Tagline */}
+        <div className="mb-2 animate-slide-up-color">
           <img 
             src={taglineImage} 
             alt={t.tagline}
-            className="w-72 h-auto mx-auto"
+            className="w-60 h-auto mx-auto"
           />
         </div>
 
-        {/* Editorial Hero Section - Color Blocks */}
-        <div className="w-full max-w-sm mb-4 animate-slide-up-color">
-          <div className="grid grid-cols-5 h-3 rounded-full overflow-hidden shadow-sm">
+        {/* Color Bar */}
+        <div className="w-full max-w-xs mb-3 animate-slide-up-color">
+          <div className="grid grid-cols-5 h-2 rounded-full overflow-hidden shadow-sm">
             <div className="bg-editorial-magenta" />
             <div className="bg-editorial-coral" />
             <div className="bg-editorial-yellow" />
@@ -106,57 +106,52 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Main CTA Buttons - Editorial Style */}
+        {/* Main CTA Buttons */}
         <div className="w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               onClick={handleCameraClick}
-              className="group relative flex flex-col items-center justify-center gap-3 py-10 px-4 bg-foreground text-background rounded-2xl overflow-hidden tap-color-feedback"
+              className="group relative flex flex-col items-center justify-center gap-1.5 py-6 px-3 bg-foreground text-background rounded-xl overflow-hidden tap-color-feedback"
             >
-              {/* Hover color overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Camera className="w-8 h-8 relative z-10" />
-              <span className="text-base font-semibold relative z-10">{t.takePhoto}</span>
+              <Camera className="w-6 h-6 relative z-10" />
+              <span className="text-sm font-semibold relative z-10">{t.takePhoto}</span>
             </button>
 
             <button
               onClick={handleGalleryClick}
-              className="group relative flex flex-col items-center justify-center gap-3 py-10 px-4 bg-background text-foreground rounded-2xl border-2 border-foreground overflow-hidden tap-color-feedback"
+              className="group relative flex flex-col items-center justify-center gap-1.5 py-6 px-3 bg-background text-foreground rounded-xl border-2 border-foreground overflow-hidden tap-color-feedback"
             >
-              {/* Hover color overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-editorial-cyan via-editorial-violet to-editorial-magenta opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="absolute inset-0 text-white" />
-              </div>
-              <Image className="w-8 h-8 relative z-10 group-hover:text-white transition-colors duration-300" />
-              <span className="text-base font-semibold relative z-10 group-hover:text-white transition-colors duration-300">{t.gallery}</span>
+              <Image className="w-6 h-6 relative z-10 group-hover:text-white transition-colors duration-300" />
+              <span className="text-sm font-semibold relative z-10 group-hover:text-white transition-colors duration-300">{t.gallery}</span>
             </button>
           </div>
         </div>
 
-        {/* Skin Tone Selector Section - Editorial Card */}
-        <div className="mt-4 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
-          <div className="bg-card rounded-2xl border border-border p-3 shadow-card hover-glow">
+        {/* Skin Tone Selector */}
+        <div className="mt-3 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-card rounded-xl border border-border p-2.5 shadow-card hover-glow">
             <SkinToneSelector />
           </div>
         </div>
 
-        {/* Compact Tip - Editorial accent */}
+        {/* Tip */}
         <div className="mt-2 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
-            <div className="w-6 h-6 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
-              <Lightbulb className="w-3.5 h-3.5 text-foreground" />
+          <div className="flex items-center gap-2 px-2.5 py-1.5 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
+            <div className="w-5 h-5 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
+              <Lightbulb className="w-3 h-3 text-foreground" />
             </div>
-            <p className="text-[11px] text-foreground/70 leading-snug font-medium">
+            <p className="text-[10px] text-foreground/70 leading-snug font-medium">
               {t.tip}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Footer with color accent */}
-      <footer className="py-2 px-6 safe-area-bottom relative z-10">
-        <div className="color-stripe mb-3 h-0.5 opacity-50" />
+      {/* Footer */}
+      <footer className="py-1.5 px-6 safe-area-bottom relative z-10">
+        <div className="h-0.5 mb-1.5 bg-gradient-to-r from-editorial-magenta via-editorial-yellow to-editorial-cyan opacity-40 rounded-full" />
         <p className="text-center text-[10px] text-muted-foreground">
           {t.footer}
         </p>
