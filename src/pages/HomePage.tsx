@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image, Lightbulb, Palette, Sparkles } from 'lucide-react';
-import colorsenseLogo from '@/assets/colorsense-logo.png';
 import taglineImage from '@/assets/tagline.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -76,13 +75,13 @@ export default function HomePage() {
       </div>
 
       {/* Main Content - Scrollable */}
-      <div className="flex-1 flex flex-col items-center px-5 py-8 pt-20 relative z-10 overflow-y-auto">
-        {/* Logo & Tagline Group */}
-        <div className="animate-fade-in mb-4 text-center">
+      <div className="flex-1 flex flex-col items-center px-5 py-8 pt-24 relative z-10 overflow-y-auto min-h-0">
+        {/* Logo & Tagline Group - flex-shrink-0 so logo is never clipped */}
+        <div className="animate-fade-in mb-4 text-center flex-shrink-0 overflow-visible">
           <img 
-            src={colorsenseLogo} 
+            src="/brand/logo-source.png" 
             alt="Color Sense Studio" 
-            className="w-80 h-auto mx-auto drop-shadow-sm"
+            className="block w-80 max-w-full h-auto mx-auto drop-shadow-sm object-contain"
           />
         </div>
 

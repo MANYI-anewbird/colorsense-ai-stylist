@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate app icon assets from logo-source.png.
- * Crops to eye mark (no text), adds safe padding, outputs PNGs + favicon.ico.
+ * Full logo kept (no cropping). Add padding to square, then safe padding for rounded masks.
  */
 
 import sharp from "sharp";
@@ -16,9 +16,8 @@ const SRC = join(ROOT, "public/brand/logo-source.png");
 const ICONS_DIR = join(ROOT, "public/icons");
 const PUBLIC_DIR = join(ROOT, "public");
 
-// Crop: remove top ~28% (text), take centered square from remainder. Add ~10% safe padding.
-const CROP_TOP_RATIO = 0.28;
-const PADDING_RATIO = 0.10;
+// Safe padding ~12% so icon isn't clipped in iOS rounded masks. No cropping.
+const PADDING_RATIO = 0.12;
 
 async function main() {
   await mkdir(ICONS_DIR, { recursive: true });
@@ -29,19 +28,26 @@ async function main() {
   const h = meta.height ?? 0;
   if (!w || !h) throw new Error("Could not read image dimensions");
 
-  const cropTop = Math.round(h * CROP_TOP_RATIO);
-  const remainH = h - cropTop;
-  const size = Math.min(w, remainH);
-  const left = Math.round((w - size) / 2);
-  const top = cropTop + Math.round((remainH - size) / 2);
+  // Center full logo in a square (no cropping)
+  const size = Math.max(w, h);
+  const padLeft = Math.floor((size - w) / 2);
+  const padRight = size - w - padLeft;
+  const padTop = Math.floor((size - h) / 2);
+  const padBottom = size - h - padTop;
 
-  const cropped = await img
-    .extract({ left, top, width: size, height: size })
+  const squared = await img
+    .extend({
+      top: padTop,
+      bottom: padBottom,
+      left: padLeft,
+      right: padRight,
+      background: { r: 255, g: 255, b: 255, alpha: 0 },
+    })
     .png()
     .toBuffer();
 
   const pad = Math.round(size * PADDING_RATIO);
-  const base = await sharp(cropped)
+  const base = await sharp(squared)
     .extend({
       top: pad,
       bottom: pad,
