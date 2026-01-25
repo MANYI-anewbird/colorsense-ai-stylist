@@ -76,9 +76,9 @@ export default function HomePage() {
       </div>
 
       {/* Main Content - Scrollable */}
-      <div className="flex-1 flex flex-col items-center px-5 py-6 relative z-10 overflow-y-auto min-h-0">
+      <div className="flex-1 flex flex-col items-center px-5 py-3 relative z-10 overflow-y-auto min-h-0">
         {/* Logo & Tagline Group - flex-shrink-0 so logo is never clipped */}
-        <div className="animate-fade-in mb-4 text-center flex-shrink-0 overflow-visible">
+        <div className="animate-fade-in mb-2 text-center flex-shrink-0 overflow-visible">
           <img 
             src="/brand/logo-source.png" 
             alt="Color Sense Studio" 
@@ -87,7 +87,7 @@ export default function HomePage() {
         </div>
 
         {/* Tagline - above color bar */}
-        <div className="mb-1 animate-slide-up-color">
+        <div className="mb-0.5 animate-slide-up-color">
           <img 
             src={taglineImage} 
             alt={t.tagline}
@@ -96,7 +96,7 @@ export default function HomePage() {
         </div>
 
         {/* Editorial Hero Section - Color Blocks */}
-        <div className="w-full max-w-sm mb-5 animate-slide-up-color">
+        <div className="w-full max-w-sm mb-4 animate-slide-up-color">
           <div className="grid grid-cols-5 h-3 rounded-full overflow-hidden shadow-sm">
             <div className="bg-editorial-magenta" />
             <div className="bg-editorial-coral" />
@@ -135,14 +135,14 @@ export default function HomePage() {
         </div>
 
         {/* Skin Tone Selector Section - Editorial Card */}
-        <div className="mt-5 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
-          <div className="bg-card rounded-2xl border border-border p-4 shadow-card hover-glow">
+        <div className="mt-4 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-card rounded-2xl border border-border p-3 shadow-card hover-glow">
             <SkinToneSelector />
           </div>
         </div>
 
         {/* Compact Tip - Editorial accent */}
-        <div className="mt-3 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
+        <div className="mt-2 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center gap-2.5 px-3 py-2 bg-editorial-yellow/10 rounded-lg border border-editorial-yellow/20">
             <div className="w-6 h-6 rounded-md bg-editorial-yellow flex items-center justify-center flex-shrink-0">
               <Lightbulb className="w-3.5 h-3.5 text-foreground" />
@@ -155,7 +155,7 @@ export default function HomePage() {
       </div>
 
       {/* Footer with color accent */}
-      <footer className="py-4 px-6 safe-area-bottom relative z-10">
+      <footer className="py-2 px-6 safe-area-bottom relative z-10">
         <div className="color-stripe mb-3 h-0.5 opacity-50" />
         <p className="text-center text-[10px] text-muted-foreground">
           {t.footer}
