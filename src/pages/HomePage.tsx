@@ -91,7 +91,7 @@ export default function HomePage() {
           <img 
             src={taglineImage} 
             alt={t.tagline}
-            className="w-60 h-auto mx-auto"
+            className="w-72 h-auto mx-auto"
           />
         </div>
 
