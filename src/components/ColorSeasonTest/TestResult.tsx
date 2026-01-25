@@ -75,24 +75,26 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Editorial style */}
       <div className="space-y-2.5">
-        {/* Secondary button - subtle */}
+        {/* Secondary button - outline */}
         <button
           onClick={handleUseResult}
-          className="w-full flex items-center justify-center gap-2 py-3 text-neutral-500 rounded-xl font-medium border border-neutral-200 hover:text-neutral-700 hover:bg-neutral-50 active:scale-[0.98] transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground rounded-xl font-medium border-2 border-border hover:text-foreground hover:border-foreground/50 active:scale-[0.98] transition-all"
         >
           <Check className="w-4 h-4" />
           <span className="text-sm">{language === 'zh' ? '使用此估算' : 'Use this estimate'}</span>
         </button>
 
-        {/* Primary button - highlighted with gradient */}
+        {/* Primary button - Editorial gradient */}
         <button
           onClick={onConsultant}
-          className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 text-white rounded-xl font-medium shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 active:scale-[0.98] transition-all"
+          className="group w-full relative flex items-center justify-center gap-2 py-3.5 bg-foreground text-background rounded-xl font-semibold overflow-hidden active:scale-[0.98] transition-all"
         >
-          <MessageCircle className="w-4 h-4" />
-          <span className="text-sm">{language === 'zh' ? '获取专业色彩报告' : 'Get a professional color report'}</span>
+          {/* Hover gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <MessageCircle className="w-4 h-4 relative z-10" />
+          <span className="text-sm relative z-10">{language === 'zh' ? '获取专业色彩报告' : 'Get a professional color report'}</span>
         </button>
       </div>
     </div>

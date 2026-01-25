@@ -2,128 +2,147 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ColorSense Design System - Beauty & Cosmetics Aesthetic */
+/* ColorSense Design System - Editorial Vibrant Aesthetic */
 
 @layer base {
   :root {
-    /* Core palette - Soft cream with warm undertones */
-    --background: 30 30% 98%;
-    --foreground: 340 20% 15%;
+    /* Core palette - Clean white with vibrant accents */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 340 20% 15%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 340 20% 15%;
+    --popover-foreground: 0 0% 8%;
 
-    /* Primary - Rose Pink */
-    --primary: 340 75% 55%;
+    /* Primary - Electric Magenta */
+    --primary: 328 85% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Soft Lavender */
-    --secondary: 280 30% 96%;
-    --secondary-foreground: 280 40% 30%;
+    /* Secondary - Soft gray */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 20%;
 
-    /* Muted tones - Blush */
-    --muted: 340 25% 95%;
-    --muted-foreground: 340 15% 45%;
+    /* Muted tones */
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Accent - Coral Peach */
-    --accent: 15 85% 92%;
-    --accent-foreground: 15 70% 40%;
+    /* Accent - Vivid Coral */
+    --accent: 16 100% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Beauty gradient colors */
-    --beauty-rose: 340 75% 55%;
-    --beauty-coral: 15 85% 60%;
-    --beauty-lavender: 280 55% 65%;
-    --beauty-peach: 25 90% 75%;
-    --beauty-blush: 350 70% 85%;
-    --beauty-gold: 40 85% 55%;
+    /* Editorial Color Palette - Bold & Vibrant */
+    --editorial-magenta: 328 85% 55%;
+    --editorial-coral: 16 100% 60%;
+    --editorial-yellow: 48 100% 55%;
+    --editorial-cyan: 185 95% 45%;
+    --editorial-violet: 270 80% 60%;
+    --editorial-lime: 85 75% 50%;
+    --editorial-orange: 28 100% 55%;
+    --editorial-pink: 340 85% 65%;
 
-    /* Fashion accent colors - More vibrant */
-    --fashion-warm: 15 90% 58%;
-    --fashion-cool: 280 65% 60%;
-    --fashion-neutral: 340 20% 55%;
+    /* Color Block backgrounds - for editorial sections */
+    --block-magenta: 328 85% 55%;
+    --block-coral: 16 100% 60%;
+    --block-yellow: 48 100% 55%;
+    --block-cyan: 185 95% 45%;
+    --block-violet: 270 80% 60%;
+    --block-black: 0 0% 8%;
 
-    /* Seasonal colors - Beauty palette */
-    --season-spring: 340 70% 65%;
-    --season-summer: 280 55% 65%;
-    --season-autumn: 25 75% 50%;
-    --season-winter: 340 45% 40%;
+    /* Seasonal colors - Vibrant version */
+    --season-spring: 85 75% 50%;
+    --season-summer: 185 95% 45%;
+    --season-autumn: 28 100% 55%;
+    --season-winter: 270 80% 60%;
+
+    /* Fashion accent colors */
+    --fashion-warm: 28 100% 55%;
+    --fashion-cool: 185 95% 45%;
+    --fashion-neutral: 0 0% 50%;
 
     /* Status colors */
-    --success: 155 70% 45%;
+    --success: 155 85% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 35 95% 55%;
-    --warning-foreground: 0 0% 100%;
-    --destructive: 0 75% 55%;
+    --warning: 42 100% 50%;
+    --warning-foreground: 0 0% 8%;
+    --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders and inputs - Soft rose tint */
-    --border: 340 20% 90%;
-    --input: 340 20% 90%;
-    --ring: 340 75% 55%;
+    /* Borders and inputs */
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 328 85% 55%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Glass effect - Warm tint */
-    --glass-bg: 340 30% 100% / 0.85;
-    --glass-border: 340 50% 90% / 0.3;
+    /* Glass effect */
+    --glass-bg: 0 0% 100% / 0.9;
+    --glass-border: 0 0% 0% / 0.05;
 
-    /* Shadows - Soft rose shadows */
-    --shadow-subtle: 0 1px 3px 0 hsl(340 30% 50% / 0.06), 0 1px 2px -1px hsl(340 30% 50% / 0.04);
-    --shadow-card: 0 4px 6px -1px hsl(340 30% 50% / 0.08), 0 2px 4px -2px hsl(340 30% 50% / 0.06);
-    --shadow-elevated: 0 10px 20px -3px hsl(340 40% 50% / 0.12), 0 4px 6px -4px hsl(340 40% 50% / 0.08);
-    --shadow-picker: 0 25px 50px -12px hsl(340 50% 40% / 0.2);
+    /* Shadows - Crisp & bold */
+    --shadow-subtle: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+    --shadow-card: 0 4px 12px -2px hsl(0 0% 0% / 0.08);
+    --shadow-elevated: 0 12px 24px -4px hsl(0 0% 0% / 0.12);
+    --shadow-picker: 0 20px 40px -8px hsl(0 0% 0% / 0.15);
+    --shadow-color: 0 8px 24px -4px;
 
-    /* Sidebar (keeping for compatibility) */
-    --sidebar-background: 30 30% 98%;
-    --sidebar-foreground: 340 20% 30%;
-    --sidebar-primary: 340 75% 55%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 328 85% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 340 25% 95%;
-    --sidebar-accent-foreground: 340 20% 25%;
-    --sidebar-border: 340 20% 90%;
-    --sidebar-ring: 340 75% 55%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 328 85% 55%;
+
+    /* Beauty colors (legacy support) */
+    --beauty-rose: 328 85% 55%;
+    --beauty-coral: 16 100% 60%;
+    --beauty-lavender: 270 80% 60%;
+    --beauty-peach: 28 100% 70%;
+    --beauty-blush: 340 85% 80%;
+    --beauty-gold: 48 100% 55%;
   }
 
   .dark {
-    --background: 340 15% 8%;
-    --foreground: 340 10% 95%;
+    --background: 0 0% 6%;
+    --foreground: 0 0% 95%;
 
-    --card: 340 12% 12%;
-    --card-foreground: 340 10% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 340 12% 12%;
-    --popover-foreground: 340 10% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 340 70% 60%;
+    --primary: 328 85% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 340 15% 18%;
-    --secondary-foreground: 340 10% 90%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 340 12% 18%;
-    --muted-foreground: 340 10% 60%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 15 40% 25%;
-    --accent-foreground: 15 60% 85%;
+    --accent: 16 100% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 55% 40%;
+    --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 340 12% 22%;
-    --input: 340 12% 22%;
-    --ring: 340 70% 60%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 328 85% 60%;
 
-    --sidebar-background: 340 15% 10%;
-    --sidebar-foreground: 340 10% 90%;
-    --sidebar-primary: 340 70% 60%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 328 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 340 12% 18%;
-    --sidebar-accent-foreground: 340 10% 90%;
-    --sidebar-border: 340 12% 22%;
-    --sidebar-ring: 340 70% 60%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 328 85% 60%;
   }
 }
 
@@ -137,7 +156,6 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* iOS-like smooth scrolling */
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
@@ -145,19 +163,54 @@
 }
 
 @layer components {
+  /* Editorial Color Block - Bold solid backgrounds */
+  .color-block {
+    @apply relative overflow-hidden;
+  }
+
+  .color-block-magenta {
+    background-color: hsl(var(--editorial-magenta));
+    color: white;
+  }
+
+  .color-block-coral {
+    background-color: hsl(var(--editorial-coral));
+    color: white;
+  }
+
+  .color-block-yellow {
+    background-color: hsl(var(--editorial-yellow));
+    color: hsl(0 0% 8%);
+  }
+
+  .color-block-cyan {
+    background-color: hsl(var(--editorial-cyan));
+    color: white;
+  }
+
+  .color-block-violet {
+    background-color: hsl(var(--editorial-violet));
+    color: white;
+  }
+
+  .color-block-black {
+    background-color: hsl(0 0% 8%);
+    color: white;
+  }
+
   /* Glass card effect */
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-[var(--shadow-card)];
+    @apply bg-card/90 backdrop-blur-xl border border-border/50 shadow-card;
   }
 
   /* Elevated card */
   .elevated-card {
-    @apply bg-card shadow-[var(--shadow-elevated)] border border-border/30;
+    @apply bg-card shadow-elevated border border-border/30;
   }
 
   /* Color swatch display */
   .color-swatch {
-    @apply rounded-2xl shadow-[var(--shadow-picker)] transition-all duration-300;
+    @apply rounded-2xl shadow-picker transition-all duration-300;
   }
 
   /* Metric bar container */
@@ -175,14 +228,79 @@
     @apply min-h-[48px] px-6 py-3 rounded-xl font-medium transition-all duration-200 active:scale-[0.98];
   }
 
+  /* Editorial button with color accent */
+  .editorial-button {
+    @apply relative overflow-hidden font-semibold tracking-tight;
+  }
+
+  .editorial-button::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, 
+      hsl(var(--editorial-magenta)) 0%, 
+      hsl(var(--editorial-coral)) 50%, 
+      hsl(var(--editorial-yellow)) 100%
+    );
+  }
+
+  .editorial-button:hover::before {
+    @apply opacity-100;
+  }
+
   /* Picker circle */
   .picker-circle {
-    @apply w-12 h-12 rounded-full border-4 border-white shadow-[var(--shadow-picker)] cursor-move;
+    @apply w-12 h-12 rounded-full border-4 border-white shadow-picker cursor-move;
   }
 
   /* Zoom preview */
   .zoom-preview {
-    @apply w-24 h-24 rounded-2xl border-4 border-white shadow-[var(--shadow-elevated)] overflow-hidden;
+    @apply w-24 h-24 rounded-2xl border-4 border-white shadow-elevated overflow-hidden;
+  }
+
+  /* Color stripe decorative element */
+  .color-stripe {
+    @apply h-1 w-full;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--editorial-magenta)) 0%,
+      hsl(var(--editorial-coral)) 20%,
+      hsl(var(--editorial-yellow)) 40%,
+      hsl(var(--editorial-lime)) 60%,
+      hsl(var(--editorial-cyan)) 80%,
+      hsl(var(--editorial-violet)) 100%
+    );
+  }
+
+  /* Interactive color hover effect */
+  .color-hover-effect {
+    @apply relative overflow-hidden;
+  }
+
+  .color-hover-effect::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-all duration-300 ease-out;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--editorial-magenta) / 0.1) 0%,
+      hsl(var(--editorial-cyan) / 0.1) 100%
+    );
+  }
+
+  .color-hover-effect:hover::after {
+    @apply opacity-100;
+  }
+
+  /* Vibrant text gradient */
+  .text-vibrant-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--editorial-magenta)) 0%,
+      hsl(var(--editorial-coral)) 50%,
+      hsl(var(--editorial-violet)) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 
@@ -196,7 +314,7 @@
     padding-top: env(safe-area-inset-top, 20px);
   }
 
-  /* Animated gradient for loading states */
+  /* Animated shimmer for loading states */
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
     background: linear-gradient(
@@ -209,12 +327,8 @@
   }
 
   @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 
   /* Fade in animation */
@@ -248,14 +362,106 @@
       transform: scale(1);
     }
   }
+
+  /* Interactive color burst on click */
+  .color-burst {
+    @apply relative;
+  }
+
+  .color-burst::before {
+    content: '';
+    @apply absolute inset-0 rounded-inherit opacity-0 scale-100;
+    background: radial-gradient(
+      circle,
+      hsl(var(--editorial-magenta) / 0.3) 0%,
+      transparent 70%
+    );
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .color-burst:active::before {
+    @apply opacity-100 scale-150;
+  }
+
+  /* Rainbow border animation */
+  .rainbow-border {
+    @apply relative;
+  }
+
+  .rainbow-border::before {
+    content: '';
+    @apply absolute -inset-[2px] rounded-inherit -z-10;
+    background: linear-gradient(
+      var(--rainbow-angle, 0deg),
+      hsl(var(--editorial-magenta)),
+      hsl(var(--editorial-coral)),
+      hsl(var(--editorial-yellow)),
+      hsl(var(--editorial-cyan)),
+      hsl(var(--editorial-violet)),
+      hsl(var(--editorial-magenta))
+    );
+    animation: rainbow-rotate 3s linear infinite;
+  }
+
+  @keyframes rainbow-rotate {
+    to { --rainbow-angle: 360deg; }
+  }
+
+  /* Color pulse effect */
+  .color-pulse {
+    animation: colorPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes colorPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(var(--editorial-magenta) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 12px hsl(var(--editorial-magenta) / 0);
+    }
+  }
+
+  /* Slide in from bottom with color */
+  .animate-slide-up-color {
+    animation: slideUpColor 0.5s ease-out forwards;
+  }
+
+  @keyframes slideUpColor {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+      filter: saturate(0);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: saturate(1);
+    }
+  }
+
+  /* Hover scale with color glow */
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+
+  .hover-glow:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px -8px hsl(var(--editorial-magenta) / 0.3);
+  }
+
+  /* Interactive tap feedback with color */
+  .tap-color-feedback {
+    @apply transition-all duration-150;
+  }
+
+  .tap-color-feedback:active {
+    transform: scale(0.97);
+    filter: brightness(1.1);
+  }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
+@property --rainbow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }

@@ -105,6 +105,9 @@ export default function PickerPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Editorial Color Stripe - Top accent */}
+      <div className="color-stripe h-1" />
+      
       <Header title={t.selectColor} showBack backTo="/" />
 
       <main className="flex-1 container px-4 py-6 flex flex-col">
@@ -115,24 +118,24 @@ export default function PickerPage() {
           />
         </div>
 
-        {/* Analyze Button */}
+        {/* Analyze Button - Editorial style */}
         <div className="mt-6 safe-area-bottom">
           <ColorButton
             variant="analyze"
             size="lg"
-            className="w-full"
+            className="w-full group relative overflow-hidden"
             onClick={handleAnalyze}
             disabled={isAnalyzing}
           >
             {isAnalyzing ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t.analyzing}
+                <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+                <span className="relative z-10">{t.analyzing}</span>
               </>
             ) : (
               <>
-                <Wand2 className="w-5 h-5" />
-                {t.analyzeColor}
+                <Wand2 className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">{t.analyzeColor}</span>
               </>
             )}
           </ColorButton>

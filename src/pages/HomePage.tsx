@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, Lightbulb, Palette } from 'lucide-react';
+import { Camera, Image, Lightbulb, Palette, Sparkles } from 'lucide-react';
 import colorsenseLogo from '@/assets/colorsense-logo.png';
 import taglineImage from '@/assets/tagline.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -42,7 +42,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -52,16 +52,19 @@ export default function HomePage() {
         className="hidden"
       />
 
+      {/* Editorial Color Stripe - Top accent */}
+      <div className="color-stripe h-1.5" />
+
       {/* Top Bar - Skin Tone Badge (Left) & Language Switcher (Right) */}
-      <div className="absolute top-4 left-4 right-4 z-20 safe-area-top flex items-center justify-between">
+      <div className="absolute top-6 left-4 right-4 z-20 safe-area-top flex items-center justify-between">
         {/* Skin Tone Badge - Left */}
         <div className="flex items-center">
           {skinTone ? (
             <SkinToneBadge showLabel={true} size="sm" />
           ) : (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-white/70 backdrop-blur-sm rounded-full border border-neutral-200/50">
-              <Palette className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="text-[10px] text-neutral-400">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 backdrop-blur-sm rounded-full">
+              <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground font-medium">
                 {language === 'zh' ? '未设置肤色' : 'No skin tone'}
               </span>
             </div>
@@ -72,73 +75,85 @@ export default function HomePage() {
         <LanguageSwitcher />
       </div>
 
-      {/* Subtle decorative color accents */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-64 h-64 bg-gradient-to-br from-rose-200/30 to-orange-200/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-20 w-48 h-48 bg-gradient-to-bl from-violet-200/25 to-blue-200/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 left-1/4 w-56 h-56 bg-gradient-to-tr from-amber-200/20 to-rose-200/15 rounded-full blur-3xl" />
-      </div>
-
       {/* Main Content - Scrollable */}
-      <div className="flex-1 flex flex-col items-center px-5 py-8 pt-16 relative z-10 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center px-5 py-8 pt-20 relative z-10 overflow-y-auto">
         {/* Logo & Tagline Group */}
-        <div className="animate-fade-in mb-8 text-center">
+        <div className="animate-fade-in mb-6 text-center">
           <img 
             src={colorsenseLogo} 
             alt="Color Sense Studio" 
-            className="w-72 h-auto mx-auto drop-shadow-sm"
+            className="w-64 h-auto mx-auto drop-shadow-sm"
           />
           <img 
             src={taglineImage} 
             alt={t.tagline}
-            className="mt-4 w-80 h-auto mx-auto"
+            className="mt-3 w-72 h-auto mx-auto"
           />
         </div>
 
-        {/* Main CTA Buttons - Side by Side */}
-        <div className="w-full max-w-sm animate-slide-up">
+        {/* Editorial Hero Section - Color Blocks */}
+        <div className="w-full max-w-sm mb-6 animate-slide-up-color">
+          <div className="grid grid-cols-5 h-3 rounded-full overflow-hidden shadow-sm">
+            <div className="bg-editorial-magenta" />
+            <div className="bg-editorial-coral" />
+            <div className="bg-editorial-yellow" />
+            <div className="bg-editorial-cyan" />
+            <div className="bg-editorial-violet" />
+          </div>
+        </div>
+
+        {/* Main CTA Buttons - Editorial Style */}
+        <div className="w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCameraClick}
-              className="flex flex-col items-center justify-center gap-3 py-10 px-4 bg-neutral-900 text-white rounded-2xl shadow-lg hover:bg-neutral-800 active:scale-[0.98] transition-all duration-200"
+              className="group relative flex flex-col items-center justify-center gap-3 py-10 px-4 bg-foreground text-background rounded-2xl overflow-hidden tap-color-feedback"
             >
-              <Camera className="w-8 h-8" />
-              <span className="text-base font-medium">{t.takePhoto}</span>
+              {/* Hover color overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Camera className="w-8 h-8 relative z-10" />
+              <span className="text-base font-semibold relative z-10">{t.takePhoto}</span>
             </button>
 
             <button
               onClick={handleGalleryClick}
-              className="flex flex-col items-center justify-center gap-3 py-10 px-4 bg-white text-neutral-900 rounded-2xl shadow-lg border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98] transition-all duration-200"
+              className="group relative flex flex-col items-center justify-center gap-3 py-10 px-4 bg-background text-foreground rounded-2xl border-2 border-foreground overflow-hidden tap-color-feedback"
             >
-              <Image className="w-8 h-8" />
-              <span className="text-base font-medium">{t.gallery}</span>
+              {/* Hover color overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-editorial-cyan via-editorial-violet to-editorial-magenta opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="absolute inset-0 text-white" />
+              </div>
+              <Image className="w-8 h-8 relative z-10 group-hover:text-white transition-colors duration-300" />
+              <span className="text-base font-semibold relative z-10 group-hover:text-white transition-colors duration-300">{t.gallery}</span>
             </button>
           </div>
         </div>
 
-        {/* Skin Tone Selector Section */}
-        <div className="mt-6 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-neutral-100 p-4 shadow-sm">
+        {/* Skin Tone Selector Section - Editorial Card */}
+        <div className="mt-5 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-card rounded-2xl border border-border p-4 shadow-card hover-glow">
             <SkinToneSelector />
           </div>
         </div>
 
-        {/* Compact Tip */}
-        <div className="mt-3 w-full max-w-sm animate-fade-in" style={{ animationDelay: '0.15s' }}>
-          <div className="flex items-center gap-3 px-4 py-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center flex-shrink-0">
-              <Lightbulb className="w-4 h-4 text-amber-600" />
+        {/* Compact Tip - Editorial accent */}
+        <div className="mt-4 w-full max-w-sm animate-slide-up-color" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center gap-3 px-4 py-3 bg-editorial-yellow/10 rounded-xl border border-editorial-yellow/20">
+            <div className="w-8 h-8 rounded-lg bg-editorial-yellow flex items-center justify-center flex-shrink-0">
+              <Lightbulb className="w-4 h-4 text-foreground" />
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-foreground/70 leading-relaxed font-medium">
               {t.tip}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer with color accent */}
       <footer className="py-4 px-6 safe-area-bottom relative z-10">
-        <p className="text-center text-[10px] text-muted-foreground/70">
+        <div className="color-stripe mb-3 h-0.5 opacity-50" />
+        <p className="text-center text-[10px] text-muted-foreground">
           {t.footer}
         </p>
       </footer>
