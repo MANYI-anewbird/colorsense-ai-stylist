@@ -2,11 +2,13 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { Flower2, Sun, Leaf, Snowflake } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { SKIN_TONES } from '@/contexts/SkinToneContext';
+import type { Season12, SeasonFamily } from '@/lib/color-utils';
 
-type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+type SeasonBadgeSeason = SeasonFamily | Season12;
 
 interface SeasonBadgeProps {
-  season: Season;
+  season: SeasonBadgeSeason;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
 }
@@ -65,11 +67,18 @@ const sizeClasses = {
 };
 
 export function SeasonBadge({ season, size = 'md', showLabel = true }: SeasonBadgeProps) {
-  const { t } = useLanguage();
-  const config = seasonConfig[season];
+  const { t, language } = useLanguage();
+  const family = (season.includes('-') ? season.split('-')[0] : season) as SeasonFamily;
+  const config = seasonConfig[family];
   const sizes = sizeClasses[size];
   const Icon = config.icon;
-  const label = t[season];
+  const label =
+    season.includes('-')
+      ? (() => {
+          const info = SKIN_TONES.find(s => s.id === season);
+          return language === 'zh' ? info?.nameZh : info?.nameEn;
+        })() ?? season
+      : t[family];
 
   return (
     <div
@@ -88,7 +97,7 @@ export function SeasonBadge({ season, size = 'md', showLabel = true }: SeasonBad
 }
 
 interface SeasonCardProps {
-  season: Season;
+  season: SeasonFamily;
 }
 
 export function SeasonCard({ season }: SeasonCardProps) {

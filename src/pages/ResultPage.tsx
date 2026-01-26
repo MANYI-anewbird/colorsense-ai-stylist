@@ -92,7 +92,7 @@ export default function ResultPage() {
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
-              <SeasonBadge season={metrics.seasonalTendency} size="md" />
+              <SeasonBadge season={metrics.season12} size="md" />
             </div>
           </div>
         </div>

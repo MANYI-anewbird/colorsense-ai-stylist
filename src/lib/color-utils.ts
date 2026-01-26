@@ -18,18 +18,84 @@ export interface LAB {
   b: number;
 }
 
+export interface LCH {
+  L: number;
+  C: number;
+  h: number; // hue angle in degrees [0, 360)
+}
+
+export type TemperatureCategory = 'warm' | 'cool' | 'neutral';
+export type ChromaCategory = 'clear' | 'soft' | 'medium';
+export type ValueCategory = 'light' | 'medium' | 'deep';
+export type SeasonFamily = 'spring' | 'summer' | 'autumn' | 'winter';
+
+// 12-season ids aligned with existing SkinTone types (minus null)
+export type Season12 =
+  | 'spring-light'
+  | 'spring-true' // Warm Spring
+  | 'spring-bright' // Clear Spring
+  | 'summer-light'
+  | 'summer-true' // Cool Summer
+  | 'summer-soft'
+  | 'autumn-soft'
+  | 'autumn-true' // Warm Autumn
+  | 'autumn-deep'
+  | 'winter-bright' // Clear Winter
+  | 'winter-true' // Cool Winter
+  | 'winter-deep';
+
+export interface SeasonThresholds {
+  temperature: {
+    warm: number; // b* >= warm => Warm
+    cool: number; // b* <= cool => Cool
+    strongWarm: number;
+    strongCool: number;
+  };
+  chroma: {
+    clear: number; // C* >= clear => Clear
+    soft: number; // C* <= soft => Soft
+    veryClear: number;
+    verySoft: number;
+  };
+  value: {
+    light: number; // L* >= light => Light
+    deep: number; // L* <= deep => Deep
+  };
+}
+
+export const DEFAULT_SEASON_THRESHOLDS: SeasonThresholds = {
+  temperature: {
+    warm: 8,
+    cool: -8,
+    strongCool: -12,
+    strongWarm: 18,
+  },
+  chroma: {
+    clear: 38,
+    soft: 22,
+    veryClear: 45,
+    verySoft: 20,
+  },
+  value: {
+    light: 72,
+    deep: 38,
+  },
+};
+
 export interface ColorValues {
   rgb: RGB;
   hex: string;
   hsl: HSL;
   lab: LAB;
+  lch: LCH;
 }
 
 export interface ColorMetrics {
   lightness: number;
   saturation: number;
-  temperature: 'warm' | 'cool' | 'neutral';
-  seasonalTendency: 'spring' | 'summer' | 'autumn' | 'winter';
+  temperature: TemperatureCategory;
+  seasonalTendency: SeasonFamily; // legacy 4-season family (used by compatibility scoring)
+  season12: Season12; // professional 12-season result
 }
 
 export interface ColorAnalysis {
@@ -46,6 +112,15 @@ export function rgbToHex(r: number, g: number, b: number): string {
     return hex.length === 1 ? '0' + hex : hex;
   };
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+export function hexToRgb(hex: string): RGB | null {
+  const cleaned = hex.trim().replace(/^#/, '');
+  if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) return null;
+  const r = parseInt(cleaned.slice(0, 2), 16);
+  const g = parseInt(cleaned.slice(2, 4), 16);
+  const b = parseInt(cleaned.slice(4, 6), 16);
+  return { r, g, b };
 }
 
 // RGB to HSL
@@ -86,172 +161,190 @@ export function rgbToHsl(r: number, g: number, b: number): HSL {
 
 // RGB to LAB (via XYZ)
 export function rgbToLab(r: number, g: number, b: number): LAB {
-  // Convert to sRGB
-  let rr = r / 255;
-  let gg = g / 255;
-  let bb = b / 255;
+  const srgbToLinear = (u: number) =>
+    u > 0.04045 ? Math.pow((u + 0.055) / 1.055, 2.4) : u / 12.92;
 
-  // Apply gamma correction
-  rr = rr > 0.04045 ? Math.pow((rr + 0.055) / 1.055, 2.4) : rr / 12.92;
-  gg = gg > 0.04045 ? Math.pow((gg + 0.055) / 1.055, 2.4) : gg / 12.92;
-  bb = bb > 0.04045 ? Math.pow((bb + 0.055) / 1.055, 2.4) : bb / 12.92;
+  // sRGB [0..1] -> linear RGB
+  const rr = srgbToLinear(r / 255);
+  const gg = srgbToLinear(g / 255);
+  const bb = srgbToLinear(b / 255);
 
-  // Convert to XYZ (D65 illuminant)
-  let x = (rr * 0.4124564 + gg * 0.3575761 + bb * 0.1804375) / 0.95047;
-  let y = rr * 0.2126729 + gg * 0.7151522 + bb * 0.0721750;
-  let z = (rr * 0.0193339 + gg * 0.1191920 + bb * 0.9503041) / 1.08883;
+  // linear RGB -> XYZ (D65)
+  const X = rr * 0.4124564 + gg * 0.3575761 + bb * 0.1804375;
+  const Y = rr * 0.2126729 + gg * 0.7151522 + bb * 0.0721750;
+  const Z = rr * 0.0193339 + gg * 0.1191920 + bb * 0.9503041;
 
-  // Convert to LAB
-  const epsilon = 0.008856;
-  const kappa = 903.3;
+  // Normalize by reference white (D65)
+  let x = X / 0.95047;
+  let y = Y / 1.0;
+  let z = Z / 1.08883;
 
-  x = x > epsilon ? Math.pow(x, 1 / 3) : (kappa * x + 16) / 116;
-  y = y > epsilon ? Math.pow(y, 1 / 3) : (kappa * y + 16) / 116;
-  z = z > epsilon ? Math.pow(z, 1 / 3) : (kappa * z + 16) / 116;
+  // XYZ -> LAB
+  const epsilon = 216 / 24389; // 0.008856...
+  const kappa = 24389 / 27; // 903.3...
+  const f = (t: number) => (t > epsilon ? Math.cbrt(t) : (kappa * t + 16) / 116);
+
+  x = f(x);
+  y = f(y);
+  z = f(z);
+
+  const l = 116 * y - 16;
+  const a = 500 * (x - y);
+  const bStar = 200 * (y - z);
 
   return {
-    l: Math.round((116 * y - 16) * 100) / 100,
-    a: Math.round((500 * (x - y)) * 100) / 100,
-    b: Math.round((200 * (y - z)) * 100) / 100,
+    l: Math.round(l * 100) / 100,
+    a: Math.round(a * 100) / 100,
+    b: Math.round(bStar * 100) / 100,
   };
+}
+
+export function labToLch(lab: LAB): LCH {
+  const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+  let h = (Math.atan2(lab.b, lab.a) * 180) / Math.PI;
+  if (h < 0) h += 360;
+  // If chroma is extremely low, hue is effectively undefined; keep 0 for determinism.
+  if (C < 1e-6) h = 0;
+  return {
+    L: lab.l,
+    C: Math.round(C * 100) / 100,
+    h: Math.round(h * 100) / 100,
+  };
+}
+
+function isWarmHue(h: number): boolean {
+  // Tie-break when b* is near neutral: reds/yellows are warm; cyans/blues are cool.
+  return h < 135 || h >= 315;
+}
+
+export function getTemperatureCategoryFromLab(
+  lab: { L: number; a: number; b: number },
+  _lch: { h: number },
+  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+): TemperatureCategory {
+  if (lab.b >= thresholds.temperature.warm) return 'warm';
+  if (lab.b <= thresholds.temperature.cool) return 'cool';
+  return 'neutral';
+}
+
+export function getChromaCategoryFromLch(
+  lch: { C: number },
+  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+): ChromaCategory {
+  if (lch.C >= thresholds.chroma.clear) return 'clear';
+  if (lch.C <= thresholds.chroma.soft) return 'soft';
+  return 'medium';
+}
+
+export function getValueCategoryFromLab(
+  lab: { L: number },
+  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+): ValueCategory {
+  if (lab.L >= thresholds.value.light) return 'light';
+  if (lab.L <= thresholds.value.deep) return 'deep';
+  return 'medium';
+}
+
+function resolveChromaForFamily(
+  chroma: ChromaCategory,
+  lch: { C: number },
+  thresholds: SeasonThresholds
+): 'clear' | 'soft' {
+  if (chroma === 'clear' || chroma === 'soft') return chroma;
+  const distToClear = Math.abs(lch.C - thresholds.chroma.clear);
+  const distToSoft = Math.abs(lch.C - thresholds.chroma.soft);
+  if (distToClear < distToSoft) return 'clear';
+  if (distToSoft < distToClear) return 'soft';
+  const midpoint = (thresholds.chroma.clear + thresholds.chroma.soft) / 2;
+  return lch.C >= midpoint ? 'clear' : 'soft';
+}
+
+export function determineSeasonFamilyFromLab(
+  lab: { L: number; a: number; b: number },
+  lch: { C: number; h: number },
+  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+): SeasonFamily {
+  const temperatureCategory = getTemperatureCategoryFromLab(lab, lch, thresholds);
+  const resolvedTemperature =
+    temperatureCategory === 'neutral' ? (isWarmHue(lch.h) ? 'warm' : 'cool') : temperatureCategory;
+  const chroma = getChromaCategoryFromLch(lch, thresholds);
+  const resolvedChroma = resolveChromaForFamily(chroma, lch, thresholds);
+
+  if (resolvedTemperature === 'warm') {
+    return resolvedChroma === 'clear' ? 'spring' : 'autumn';
+  }
+
+  return resolvedChroma === 'clear' ? 'winter' : 'summer';
+}
+
+/**
+ * Professional 12-season classification based on LAB/LCH.
+ *
+ * Hard constraints are enforced by design:
+ * - Summer family must be Cool + Soft
+ * - Winter family must be Cool + Clear
+ * - Spring family must be Warm + Clear
+ * - Autumn family must be Warm + Soft
+ */
+export function determineColorSeasonFromLab(
+  lab: { L: number; a: number; b: number },
+  lch: { L: number; C: number; h: number },
+  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+): Season12 {
+  const family = determineSeasonFamilyFromLab(lab, lch, thresholds);
+  const value = getValueCategoryFromLab(lab, thresholds);
+  const veryClear = lch.C >= thresholds.chroma.veryClear;
+  const verySoft = lch.C <= thresholds.chroma.verySoft;
+
+  switch (family) {
+    case 'spring': {
+      if (value === 'light') return 'spring-light';
+      if (veryClear) return 'spring-bright'; // Clear Spring
+      return 'spring-true'; // Warm Spring
+    }
+    case 'autumn': {
+      if (value === 'deep') return 'autumn-deep';
+      if (verySoft) return 'autumn-soft';
+      return 'autumn-true'; // Warm Autumn
+    }
+    case 'summer': {
+      if (value === 'light') return 'summer-light';
+      if (verySoft) return 'summer-soft';
+      return 'summer-true'; // Cool Summer
+    }
+    case 'winter': {
+      if (value === 'deep') return 'winter-deep';
+      if (veryClear) return 'winter-bright'; // Clear Winter
+      return 'winter-true'; // Cool Winter
+    }
+  }
 }
 
 // Get all color values from RGB
 export function getColorValues(r: number, g: number, b: number): ColorValues {
+  const lab = rgbToLab(r, g, b);
   return {
     rgb: { r: Math.round(r), g: Math.round(g), b: Math.round(b) },
     hex: rgbToHex(r, g, b),
     hsl: rgbToHsl(r, g, b),
-    lab: rgbToLab(r, g, b),
+    lab,
+    lch: labToLch(lab),
   };
-}
-
-// Determine color temperature
-export function getTemperature(hsl: HSL): 'warm' | 'cool' | 'neutral' {
-  const h = hsl.h;
-  const s = hsl.s;
-
-  // Low saturation = neutral
-  if (s < 15) return 'neutral';
-
-  // Warm colors: reds, oranges, yellows (0-60, 300-360)
-  if ((h >= 0 && h <= 60) || (h >= 300 && h <= 360)) {
-    return 'warm';
-  }
-
-  // Cool colors: blues, purples (180-300)
-  if (h >= 180 && h < 300) {
-    return 'cool';
-  }
-
-  // Greens (60-180): depends on yellow vs blue bias
-  if (h >= 60 && h < 180) {
-    if (h < 100) return 'warm'; // Yellow-green
-    if (h > 150) return 'cool'; // Blue-green
-    return 'neutral'; // True green
-  }
-
-  return 'neutral';
-}
-
-/**
- * Determine chroma (Clear vs Soft) from LAB color space
- * Clear = high chroma, Soft = low chroma
- */
-function getChroma(lab: LAB, saturation: number): 'clear' | 'soft' {
-  // Calculate chroma from LAB (distance from neutral axis)
-  const chroma = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
-  
-  // Thresholds: can be adjusted if needed
-  // Clear = high chroma/saturation, Soft = low chroma/saturation
-  const isClear = chroma > 40 || saturation > 50;
-  
-  return isClear ? 'clear' : 'soft';
-}
-
-/**
- * Determine lightness/value category
- */
-function getLightnessCategory(lightness: number): 'light' | 'medium' | 'deep' {
-  // Thresholds: can be adjusted if needed
-  if (lightness > 65) return 'light';
-  if (lightness < 35) return 'deep';
-  return 'medium';
-}
-
-/**
- * Determine seasonal tendency using 12-season color theory
- * 
- * Decision tree:
- * 1. Temperature (Warm/Cool) → determines family
- * 2. Chroma (Clear/Soft) → determines season within family
- * 3. Lightness (Light/Medium/Deep) → used for subtype selection (if needed)
- * 
- * Rules:
- * - Warm + Clear → Spring
- * - Warm + Soft → Autumn
- * - Cool + Clear → Winter
- * - Cool + Soft → Summer
- * 
- * This ensures:
- * - Spring/Autumn are always Warm
- * - Summer/Winter are always Cool
- */
-export function getSeasonalTendency(
-  hsl: HSL,
-  lab: LAB
-): 'spring' | 'summer' | 'autumn' | 'winter' {
-  const temperature = getTemperature(hsl);
-  const lightness = lab.l;
-  const saturation = hsl.s;
-  
-  const chroma = getChroma(lab, saturation);
-  const lightnessCategory = getLightnessCategory(lightness);
-
-  // Primary decision tree: Temperature → Chroma → Season
-  if (temperature === 'warm') {
-    // Warm colors: Spring (Clear) or Autumn (Soft)
-    if (chroma === 'clear') {
-      return 'spring';
-    } else {
-      return 'autumn';
-    }
-  } else if (temperature === 'cool') {
-    // Cool colors: Winter (Clear) or Summer (Soft)
-    if (chroma === 'clear') {
-      return 'winter';
-    } else {
-      return 'summer';
-    }
-  } else {
-    // Neutral temperature: use chroma and lightness to determine most likely season
-    // This is a fallback for truly neutral colors
-    if (chroma === 'clear') {
-      // Clear neutral: likely Spring (if light) or Winter (if dark)
-      // Use lightness as tiebreaker
-      if (lightnessCategory === 'light' || lightnessCategory === 'medium') {
-        return 'spring'; // Light/medium clear → Spring
-      } else {
-        return 'winter'; // Deep clear → Winter
-      }
-    } else {
-      // Soft neutral: likely Summer (if light) or Autumn (if dark)
-      if (lightnessCategory === 'light' || lightnessCategory === 'medium') {
-        return 'summer'; // Light/medium soft → Summer
-      } else {
-        return 'autumn'; // Deep soft → Autumn
-      }
-    }
-  }
 }
 
 // Get color metrics
 export function getColorMetrics(color: ColorValues): ColorMetrics {
+  const labDecision = { L: color.lab.l, a: color.lab.a, b: color.lab.b };
+  const lchDecision = color.lch;
+  const season12 = determineColorSeasonFromLab(labDecision, lchDecision);
+  const seasonalTendency = season12.split('-')[0] as SeasonFamily;
+
   return {
     lightness: Math.round(color.lab.l),
     saturation: color.hsl.s,
-    temperature: getTemperature(color.hsl),
-    seasonalTendency: getSeasonalTendency(color.hsl, color.lab),
+    temperature: getTemperatureCategoryFromLab(labDecision, lchDecision),
+    seasonalTendency,
+    season12,
   };
 }
 
