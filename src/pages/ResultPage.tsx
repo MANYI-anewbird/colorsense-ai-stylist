@@ -4,9 +4,9 @@ import { RotateCcw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorSwatch, ColorValueCard } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
-import { SeasonBadge } from '@/components/SeasonBadge';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
 import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
+import { ColorClassification } from '@/components/ColorClassification';
 import { ColorButton } from '@/components/ui/color-button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColorAnalysis } from '@/lib/color-utils';
@@ -85,14 +85,16 @@ export default function ResultPage() {
         <div className="mt-5 space-y-3 animate-slide-up-color" style={{ animationDelay: '0.25s' }}>
           <h2 className="text-base font-semibold text-foreground">{t.colorClassification}</h2>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">{t.temperature}</span>
               <TemperatureBadge temperature={metrics.temperature} size="md" />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
-              <SeasonBadge season={metrics.season12} size="md" />
+              <ColorClassification 
+                seasonMatch={metrics.seasonMatch} 
+                season12={metrics.season12} 
+              />
             </div>
           </div>
         </div>
