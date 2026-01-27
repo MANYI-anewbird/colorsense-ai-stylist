@@ -15,7 +15,7 @@ interface ColorValues {
 interface ColorMetrics {
   lightness: number;
   saturation: number;
-  temperature: 'warm' | 'cool' | 'neutral';
+  temperature: 'warm' | 'cool' | 'neutral' | 'neutral-warm' | 'neutral-cool';
   seasonalTendency: 'spring' | 'summer' | 'autumn' | 'winter';
 }
 
@@ -31,10 +31,12 @@ const seasonDescriptions = {
   winter: 'Winter colors are cool, deep, and high-contrast with clarity',
 };
 
-const temperatureDescriptions = {
+const temperatureDescriptions: Record<string, string> = {
   warm: 'warm undertones with red, orange, or yellow influences',
   cool: 'cool undertones with blue or purple influences',
   neutral: 'balanced undertones without strong warm or cool bias',
+  'neutral-warm': 'neutral undertones with a slight warm lean toward red, orange, or yellow',
+  'neutral-cool': 'neutral undertones with a slight cool lean toward blue or purple',
 };
 
 serve(async (req) => {

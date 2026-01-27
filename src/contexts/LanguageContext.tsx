@@ -37,6 +37,8 @@ interface Translations {
   warm: string;
   cool: string;
   neutral: string;
+  neutralWarm: string;
+  neutralCool: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -75,6 +77,8 @@ const translations: Record<Language, Translations> = {
     warm: 'Warm',
     cool: 'Cool',
     neutral: 'Neutral',
+    neutralWarm: 'Neutral-Warm',
+    neutralCool: 'Neutral-Cool',
   },
   zh: {
     // HomePage
@@ -111,6 +115,8 @@ const translations: Record<Language, Translations> = {
     warm: '暖色调',
     cool: '冷色调',
     neutral: '中性色调',
+    neutralWarm: '中性偏暖',
+    neutralCool: '中性偏冷',
   },
 };
 

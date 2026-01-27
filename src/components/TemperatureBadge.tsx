@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { Flame, Snowflake, CircleDot } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-type Temperature = 'warm' | 'cool' | 'neutral';
+type Temperature = 'warm' | 'cool' | 'neutral' | 'neutral-warm' | 'neutral-cool';
 
 interface TemperatureBadgeProps {
   temperature: Temperature;
@@ -25,6 +25,16 @@ const temperatureConfig = {
     icon: CircleDot,
     className: 'bg-gradient-to-r from-beauty-blush/20 to-muted/30 text-muted-foreground border-beauty-blush/30',
     iconClass: 'text-muted-foreground',
+  },
+  'neutral-warm': {
+    icon: CircleDot,
+    className: 'bg-gradient-to-r from-beauty-coral/15 to-beauty-peach/20 text-beauty-coral/80 border-beauty-coral/20',
+    iconClass: 'text-beauty-coral/80',
+  },
+  'neutral-cool': {
+    icon: CircleDot,
+    className: 'bg-gradient-to-r from-beauty-lavender/15 to-beauty-blush/20 text-beauty-lavender/80 border-beauty-lavender/20',
+    iconClass: 'text-beauty-lavender/80',
   },
 };
 
@@ -51,7 +61,11 @@ export function TemperatureBadge({ temperature, size = 'md' }: TemperatureBadgeP
   const config = temperatureConfig[temperature];
   const sizes = sizeClasses[size];
   const Icon = config.icon;
-  const label = t[temperature];
+  // Handle new neutral-warm/neutral-cool values
+  const label = 
+    temperature === 'neutral-warm' ? t.neutralWarm :
+    temperature === 'neutral-cool' ? t.neutralCool :
+    t[temperature as 'warm' | 'cool' | 'neutral'];
 
   return (
     <div

@@ -24,7 +24,7 @@ export interface LCH {
   h: number; // hue angle in degrees [0, 360)
 }
 
-export type TemperatureCategory = 'warm' | 'cool' | 'neutral';
+export type TemperatureCategory = 'warm' | 'cool' | 'neutral' | 'neutral-warm' | 'neutral-cool';
 export type ChromaCategory = 'clear' | 'soft' | 'medium';
 export type ValueCategory = 'light' | 'medium' | 'deep';
 export type SeasonFamily = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -220,11 +220,14 @@ function isWarmHue(h: number): boolean {
 export function getTemperatureCategoryFromLab(
   lab: { L: number; a: number; b: number },
   _lch: { h: number },
-  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+  _thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
 ): TemperatureCategory {
-  if (lab.b >= thresholds.temperature.warm) return 'warm';
-  if (lab.b <= thresholds.temperature.cool) return 'cool';
-  return 'neutral';
+  // New b-axis logic: b > 5: Warm, b < -5: Cool
+  // For neutral range (-5 <= b <= 5), return directional lean
+  if (lab.b > 5) return 'warm';
+  if (lab.b < -5) return 'cool';
+  // Neutral with directional lean: b >= 0 -> neutral-warm, b < 0 -> neutral-cool
+  return lab.b >= 0 ? 'neutral-warm' : 'neutral-cool';
 }
 
 export function getChromaCategoryFromLch(
@@ -278,46 +281,98 @@ export function determineSeasonFamilyFromLab(
 }
 
 /**
- * Professional 12-season classification based on LAB/LCH.
- *
- * Hard constraints are enforced by design:
- * - Summer family must be Cool + Soft
- * - Winter family must be Cool + Clear
- * - Spring family must be Warm + Clear
- * - Autumn family must be Warm + Soft
+ * Professional 12-season classification based on CIE LAB color space.
+ * 
+ * Implements the 12 Seasonal Color Analysis Theory with:
+ * - Grey trap handling (Chroma < 3.0 cannot be Autumn/Spring)
+ * - Temperature determination via b-axis
+ * - Comprehensive 12-season decision tree
  */
 export function determineColorSeasonFromLab(
   lab: { L: number; a: number; b: number },
   lch: { L: number; C: number; h: number },
-  thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
+  _thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
 ): Season12 {
-  const family = determineSeasonFamilyFromLab(lab, lch, thresholds);
-  const value = getValueCategoryFromLab(lab, thresholds);
-  const veryClear = lch.C >= thresholds.chroma.veryClear;
-  const verySoft = lch.C <= thresholds.chroma.verySoft;
-
-  switch (family) {
-    case 'spring': {
-      if (value === 'light') return 'spring-light';
-      if (veryClear) return 'spring-bright'; // Clear Spring
-      return 'spring-true'; // Warm Spring
+  const L = lab.L;
+  const C = lch.C; // Chroma = sqrt(a² + b²), already calculated in labToLch
+  
+  // Step 1: Handle Greyscale & Neutrals (The "Grey Trap")
+  // If Chroma < 3.0, color CANNOT be Autumn or Spring
+  if (C < 3.0) {
+    if (L > 65) {
+      return 'summer-light'; // Light Summer (Light Cool Neutral)
     }
-    case 'autumn': {
-      if (value === 'deep') return 'autumn-deep';
-      if (verySoft) return 'autumn-soft';
-      return 'autumn-true'; // Warm Autumn
+    if (L < 30) {
+      return 'winter-deep'; // Deep Winter (Dark Cool Neutral)
     }
-    case 'summer': {
-      if (value === 'light') return 'summer-light';
-      if (verySoft) return 'summer-soft';
-      return 'summer-true'; // Cool Summer
-    }
-    case 'winter': {
-      if (value === 'deep') return 'winter-deep';
-      if (veryClear) return 'winter-bright'; // Clear Winter
-      return 'winter-true'; // Cool Winter
-    }
+    return 'winter-true'; // Cool Winter (Standard Grey)
   }
+  
+  // Step 2: Determine Temperature (b-axis)
+  let temperature: 'warm' | 'cool' | 'neutral';
+  if (lab.b > 5) {
+    temperature = 'warm';
+  } else if (lab.b < -5) {
+    temperature = 'cool';
+  } else {
+    // Neutral: lean depends on slight b bias or a-axis
+    // If b is slightly positive, lean warm; if slightly negative, lean cool
+    temperature = lab.b >= 0 ? 'warm' : 'cool';
+  }
+  
+  // Step 3: The 12-Season Decision Tree
+  
+  // 1. Light Category (L > 70)
+  if (L > 70) {
+    if (temperature === 'warm') {
+      return 'spring-light';
+    }
+    // temperature === 'cool' or neutral-cool
+    return 'summer-light';
+  }
+  
+  // 2. Deep Category (L < 35)
+  if (L < 35) {
+    if (temperature === 'warm') {
+      return 'autumn-deep';
+    }
+    // temperature === 'cool' or neutral-cool
+    return 'winter-deep';
+  }
+  
+  // 3. Bright/Clear Category (Chroma > 50)
+  if (C > 50) {
+    if (temperature === 'warm') {
+      return 'spring-bright';
+    }
+    // temperature === 'cool' or neutral-cool
+    return 'winter-bright';
+  }
+  
+  // 4. Muted/Soft Category (Chroma < 25) AND not caught by Step 1 (C >= 3.0)
+  if (C < 25) {
+    if (temperature === 'warm') {
+      return 'autumn-soft';
+    }
+    // temperature === 'cool' (or neutral-cool, already resolved)
+    return 'summer-soft';
+  }
+  
+  // 5. True Seasons (Mid-range L: 35 <= L <= 70, Mid-to-High Chroma: 25 <= C <= 50)
+  if (temperature === 'warm') {
+    // Brighter warm colors -> True Spring, darker/muted warm -> True Autumn
+    if (C >= 35 && L >= 50) {
+      return 'spring-true'; // Brighter True Spring
+    }
+    return 'autumn-true'; // True Autumn
+  }
+  
+  // temperature === 'cool' or neutral-cool
+  // Sharper cool colors -> True Winter, softer cool -> True Summer
+  if (C >= 35 && L <= 55) {
+    return 'winter-true'; // Sharp True Winter
+  }
+  return 'summer-true'; // True Summer
 }
 
 // Get all color values from RGB

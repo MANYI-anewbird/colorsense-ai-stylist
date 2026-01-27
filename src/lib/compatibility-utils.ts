@@ -23,8 +23,14 @@ export function calculateCompatibilityScore(
   // Temperature match (most important - 30 points)
   if (temperature === skinChar.temperature) {
     score += 25;
-  } else if (temperature === 'neutral') {
-    score += 15; // Neutral works somewhat with both
+  } else if (temperature === 'neutral' || temperature === 'neutral-warm' || temperature === 'neutral-cool') {
+    // Neutral temperatures work somewhat with both, but lean matters
+    if ((temperature === 'neutral-warm' && skinChar.temperature === 'warm') ||
+        (temperature === 'neutral-cool' && skinChar.temperature === 'cool')) {
+      score += 18; // Better match when lean aligns
+    } else {
+      score += 15; // Neutral works somewhat with both
+    }
   } else {
     score -= 10; // Opposite temperature
   }
