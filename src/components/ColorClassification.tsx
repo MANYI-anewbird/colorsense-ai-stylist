@@ -69,7 +69,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
     );
   }
 
-  const { primarySeason, secondarySeason, confidence, isAmbiguous } = seasonMatch;
+  const { primarySeason, secondarySeason, confidence } = seasonMatch;
   
   // Get scores for primary and secondary
   const primaryScore = seasonMatch.breakdown.find(b => b.season === primarySeason)?.score ?? 0;
@@ -77,16 +77,18 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
     ? seasonMatch.breakdown.find(b => b.season === secondarySeason)?.score ?? 0
     : 0;
 
-  // Handle confident matches (no secondary season or high confidence)
-  if (!secondarySeason || confidence > 85) {
+  const CONFIDENCE_THRESHOLD = 60;
+
+  // Mode A: High Confidence (>= 60%)
+  if (confidence >= CONFIDENCE_THRESHOLD) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
           <SeasonBadge season={primarySeason} size="md" />
         </div>
         
-        {/* Confidence badge */}
+        {/* High Confidence badge */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {language === 'zh' ? '置信度' : 'Confidence'}
@@ -96,104 +98,100 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
             confidence >= 80 
               ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
               : confidence >= 60
-              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
           )}>
-            {confidence}%
+            {language === 'zh' ? '高置信度' : 'High Confidence'} {confidence}%
           </span>
         </div>
       </div>
     );
   }
 
-  // Handle hybrid/ambiguous matches
+  // Mode B: Low Confidence / Ambiguous (< 60%)
+  // Hide the large SeasonBadge, show ONLY the Hybrid Match section
   return (
     <div className="space-y-3">
-      {/* Primary Season */}
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
-        <SeasonBadge season={primarySeason} size="md" />
+      {/* Heading for ambiguous result */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-foreground">
+          {language === 'zh' ? '模糊结果' : 'Close Match'}
+        </h3>
+        <span className="text-xs text-muted-foreground">
+          {confidence}% {language === 'zh' ? '置信度' : 'confidence'}
+        </span>
       </div>
 
-      {/* Hybrid Match Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-foreground">
-            {language === 'zh' ? '混合匹配' : 'Hybrid Match'}
+      {/* Primary Season - Emphasized as the winner */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <div className={cn('w-4 h-4 rounded-full', getSeasonDotColor(primarySeason))} />
+          <span className="text-base font-bold text-foreground">
+            {getSeasonName(primarySeason, language)}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {language === 'zh' ? '模糊结果' : 'Ambiguous Result'}
+          <span className="text-sm text-muted-foreground">
+            ({primaryScore}%)
           </span>
         </div>
+        {secondarySeason && (
+          <div className="flex items-center gap-2 pl-6">
+            <span className="text-xs text-muted-foreground">
+              {language === 'zh' ? '次要匹配' : 'Secondary match'}:
+            </span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {getSeasonName(secondarySeason, language)} ({secondaryScore}%)
+            </span>
+          </div>
+        )}
+      </div>
 
-        {/* Dual-Colored Progress Bar */}
-        <div className="relative w-full h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-inner">
-          {/* Primary segment */}
+      {/* Dual-Colored Progress Bar - Main visualization */}
+      <div className="relative w-full h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-inner">
+        {/* Primary segment */}
+        <div
+          className={cn(
+            'absolute left-0 top-0 h-full flex items-center justify-start pl-4 transition-all duration-500 z-10',
+            getSeasonColorClasses(primarySeason)
+          )}
+          style={{ width: `${primaryScore}%` }}
+        >
+          {primaryScore >= 15 && (
+            <span className="text-sm font-bold text-white drop-shadow-lg">
+              {primaryScore}%
+            </span>
+          )}
+        </div>
+
+        {/* Secondary segment */}
+        {secondarySeason && (
           <div
             className={cn(
-              'absolute left-0 top-0 h-full flex items-center justify-start pl-3 transition-all duration-500 z-10',
-              getSeasonColorClasses(primarySeason)
+              'absolute right-0 top-0 h-full flex items-center justify-end pr-4 transition-all duration-500 z-10',
+              getSeasonColorClasses(secondarySeason).replace('to-r', 'to-l')
             )}
-            style={{ width: `${primaryScore}%` }}
+            style={{ width: `${secondaryScore}%` }}
           >
-            {primaryScore >= 20 && (
-              <span className="text-xs font-bold text-white drop-shadow-md">
-                {primaryScore}%
+            {secondaryScore >= 15 && (
+              <span className="text-sm font-bold text-white drop-shadow-lg">
+                {secondaryScore}%
               </span>
             )}
           </div>
+        )}
 
-          {/* Secondary segment */}
-          {secondarySeason && (
-            <div
-              className={cn(
-                'absolute right-0 top-0 h-full flex items-center justify-end pr-3 transition-all duration-500 z-10',
-                getSeasonColorClasses(secondarySeason).replace('to-r', 'to-l')
-              )}
-              style={{ width: `${secondaryScore}%` }}
-            >
-              {secondaryScore >= 20 && (
-                <span className="text-xs font-bold text-white drop-shadow-md">
-                  {secondaryScore}%
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Center divider (if both segments are visible and meet) */}
-          {primaryScore > 0 && secondaryScore > 0 && Math.abs(primaryScore - secondaryScore) < 30 && (
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/60 shadow-sm -translate-x-1/2 z-20" />
-          )}
-        </div>
-
-        {/* Season labels below the bar */}
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5">
-            <div className={cn('w-3 h-3 rounded-full', getSeasonDotColor(primarySeason))} />
-            <span className="text-muted-foreground">
-              {getSeasonName(primarySeason, language)}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {secondarySeason && (
-              <>
-                <span className="text-muted-foreground">
-                  {getSeasonName(secondarySeason, language)}
-                </span>
-                <div className={cn('w-3 h-3 rounded-full', getSeasonDotColor(secondarySeason))} />
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Helpful message */}
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          {language === 'zh' 
-            ? `此颜色位于 ${getSeasonName(primarySeason, language)} 和 ${secondarySeason ? getSeasonName(secondarySeason, language) : ''} 的边界之间。`
-            : `This color is on the border between ${getSeasonName(primarySeason, language)} and ${secondarySeason ? getSeasonName(secondarySeason, language) : ''}.`
-          }
-        </p>
+        {/* Center divider (if both segments are visible and meet) */}
+        {primaryScore > 0 && secondaryScore > 0 && Math.abs(primaryScore - secondaryScore) < 30 && (
+          <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/70 shadow-lg -translate-x-1/2 z-20" />
+        )}
       </div>
+
+      {/* Helpful message */}
+      <p className="text-xs text-muted-foreground leading-relaxed italic">
+        {language === 'zh' 
+          ? `此颜色可能属于 ${getSeasonName(primarySeason, language)}，但具有 ${secondarySeason ? getSeasonName(secondarySeason, language) : ''} 的强烈特征。`
+          : `This color likely belongs to ${getSeasonName(primarySeason, language)}, but with strong traits of ${secondarySeason ? getSeasonName(secondarySeason, language) : ''}.`
+        }
+      </p>
     </div>
   );
 }
