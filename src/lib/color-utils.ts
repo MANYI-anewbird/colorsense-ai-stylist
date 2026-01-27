@@ -311,36 +311,153 @@ export function determineSeasonFamilyFromLab(
 }
 
 /**
- * Ideal LAB centroids for each of the 12 seasons.
- * These represent the "perfect" color for each season in CIE LAB space.
- * Based on standard color theory and seasonal color analysis principles.
+ * Season metadata with attributes and LAB centroids
  */
-const SEASON_CENTROIDS: Record<Season12, { L: number; a: number; b: number }> = {
+interface SeasonMetadata {
+  centroidLab: { L: number; a: number; b: number };
+  isSoftSeason: boolean;
+  isBrightSeason: boolean;
+  isLightSeason: boolean;
+  isDeepSeason: boolean;
+  isCoolSeason: boolean;
+  isWarmSeason: boolean;
+  isTrueSeason: boolean;
+}
+
+const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
   // Spring seasons - warm, light to medium, clear/bright
-  'spring-light': { L: 85, a: 8, b: 25 }, // Light warm pastels
-  'spring-true': { L: 65, a: 15, b: 30 }, // True warm spring
-  'spring-bright': { L: 70, a: 20, b: 35 }, // Clear bright spring
+  'spring-light': {
+    centroidLab: { L: 85, a: 8, b: 25 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: true,
+    isDeepSeason: false,
+    isCoolSeason: false,
+    isWarmSeason: true,
+    isTrueSeason: false,
+  },
+  'spring-true': {
+    centroidLab: { L: 65, a: 15, b: 30 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: false,
+    isWarmSeason: true,
+    isTrueSeason: true,
+  },
+  'spring-bright': {
+    centroidLab: { L: 70, a: 20, b: 35 },
+    isSoftSeason: false,
+    isBrightSeason: true,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: false,
+    isWarmSeason: true,
+    isTrueSeason: false,
+  },
   
   // Summer seasons - cool, light to medium, soft/muted
-  'summer-light': { L: 80, a: -5, b: -8 }, // Light cool pastels
-  'summer-true': { L: 60, a: -8, b: -12 }, // True cool summer
-  'summer-soft': { L: 55, a: -6, b: -10 }, // Soft muted summer
+  'summer-light': {
+    centroidLab: { L: 80, a: -5, b: -8 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: true,
+    isDeepSeason: false,
+    isCoolSeason: true,
+    isWarmSeason: false,
+    isTrueSeason: false,
+  },
+  'summer-true': {
+    centroidLab: { L: 60, a: -8, b: -12 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: true,
+    isWarmSeason: false,
+    isTrueSeason: true,
+  },
+  'summer-soft': {
+    centroidLab: { L: 55, a: -6, b: -10 },
+    isSoftSeason: true,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: true,
+    isWarmSeason: false,
+    isTrueSeason: false,
+  },
   
   // Autumn seasons - warm, medium to deep, soft/muted
-  'autumn-soft': { L: 50, a: 10, b: 15 }, // Soft warm autumn
-  'autumn-true': { L: 45, a: 12, b: 18 }, // True warm autumn
-  'autumn-deep': { L: 30, a: 8, b: 12 }, // Deep warm autumn
+  'autumn-soft': {
+    centroidLab: { L: 50, a: 10, b: 15 },
+    isSoftSeason: true,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: false,
+    isWarmSeason: true,
+    isTrueSeason: false,
+  },
+  'autumn-true': {
+    centroidLab: { L: 45, a: 12, b: 18 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: false,
+    isWarmSeason: true,
+    isTrueSeason: true,
+  },
+  'autumn-deep': {
+    centroidLab: { L: 30, a: 8, b: 12 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: true,
+    isCoolSeason: false,
+    isWarmSeason: true,
+    isTrueSeason: false,
+  },
   
   // Winter seasons - cool, medium to deep, clear/bright
-  'winter-bright': { L: 50, a: -15, b: -20 }, // Clear bright winter
-  'winter-true': { L: 40, a: -12, b: -18 }, // True cool winter
-  'winter-deep': { L: 25, a: -8, b: -12 }, // Deep cool winter
+  'winter-bright': {
+    centroidLab: { L: 50, a: -15, b: -20 },
+    isSoftSeason: false,
+    isBrightSeason: true,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: true,
+    isWarmSeason: false,
+    isTrueSeason: false,
+  },
+  'winter-true': {
+    centroidLab: { L: 40, a: -12, b: -18 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: false,
+    isCoolSeason: true,
+    isWarmSeason: false,
+    isTrueSeason: true,
+  },
+  'winter-deep': {
+    centroidLab: { L: 25, a: -8, b: -12 },
+    isSoftSeason: false,
+    isBrightSeason: false,
+    isLightSeason: false,
+    isDeepSeason: true,
+    isCoolSeason: true,
+    isWarmSeason: false,
+    isTrueSeason: false,
+  },
 };
 
 /**
- * Calculate Euclidean distance in LAB color space
+ * Calculate DeltaE76 (Euclidean distance in LAB color space)
  */
-function calculateLabDistance(
+function calculateDeltaE76(
   lab1: { L: number; a: number; b: number },
   lab2: { L: number; a: number; b: number }
 ): number {
@@ -351,34 +468,124 @@ function calculateLabDistance(
 }
 
 /**
- * Calculate season match breakdown using distance-based algorithm.
- * Returns probabilities/percentages for all 12 seasons based on Euclidean distance.
+ * Feature thresholds (LAB-based)
+ */
+const FEATURE_THRESHOLDS = {
+  veryMuted: 18,
+  muted: 28,
+  clear: 35,
+  light: 80,
+  deep: 35,
+};
+
+/**
+ * Calculate warm/cool mismatch (0..1)
+ * Returns 0 if match, 1 if complete mismatch
+ */
+function calculateWarmCoolMismatch(
+  inputLab: { L: number; a: number; b: number },
+  seasonMetadata: SeasonMetadata
+): number {
+  // Determine input temperature
+  const isInputWarm = inputLab.b > 0;
+  const isInputCool = inputLab.b < 0;
+  
+  // Check mismatch
+  if (seasonMetadata.isWarmSeason && isInputCool) return 1.0;
+  if (seasonMetadata.isCoolSeason && isInputWarm) return 1.0;
+  
+  // Partial mismatch for neutral colors
+  if (Math.abs(inputLab.b) < 3) {
+    // Very neutral input
+    if (seasonMetadata.isWarmSeason || seasonMetadata.isCoolSeason) return 0.3;
+    return 0.1;
+  }
+  
+  return 0.0; // Match
+}
+
+/**
+ * Calculate season match breakdown using hierarchical penalty scoring system.
+ * Returns probabilities/percentages for all 12 seasons based on DeltaE76 + penalties.
  */
 export function calculateSeasonMatchBreakdown(
   lab: { L: number; a: number; b: number }
 ): SeasonMatchBreakdown {
-  // Calculate distances to all season centroids
-  const distances: Array<{ season: Season12; distance: number }> = [];
+  // Compute Chroma and Lightness
+  const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+  const L = lab.L;
   
-  for (const [season, centroid] of Object.entries(SEASON_CENTROIDS) as Array<[Season12, { L: number; a: number; b: number }]>) {
-    const distance = calculateLabDistance(lab, centroid);
-    distances.push({ season, distance });
+  // Determine feature flags
+  const isVeryMuted = C < FEATURE_THRESHOLDS.veryMuted;
+  const isMuted = C >= FEATURE_THRESHOLDS.veryMuted && C < FEATURE_THRESHOLDS.muted;
+  const isClear = C >= FEATURE_THRESHOLDS.clear;
+  const isLight = L > FEATURE_THRESHOLDS.light;
+  const isDeep = L < FEATURE_THRESHOLDS.deep;
+  
+  // Adaptive temperature reliability
+  const temperatureReliability = C < 20 ? 0.2 : (C >= 35 ? 1.0 : 0.6);
+  
+  // Calculate scores for all seasons
+  const seasonScores: Array<{
+    season: Season12;
+    baseScore: number;
+    penaltyMuted: number;
+    penaltyLightDeep: number;
+    penaltyTemperature: number;
+    totalScore: number;
+  }> = [];
+  
+  for (const [season, metadata] of Object.entries(SEASON_METADATA) as Array<[Season12, SeasonMetadata]>) {
+    // Base score: DeltaE76
+    const baseScore = calculateDeltaE76(lab, metadata.centroidLab);
+    
+    // Penalty: Muted vs Bright/Soft
+    let penaltyMuted = 0;
+    if (isVeryMuted) {
+      if (metadata.isBrightSeason) penaltyMuted += 60;
+      if (metadata.isTrueSeason) penaltyMuted += 25;
+      if (metadata.isLightSeason) penaltyMuted += 15;
+    }
+    if (isClear && metadata.isSoftSeason) {
+      penaltyMuted += 35;
+    }
+    
+    // Penalty: Light vs Deep
+    let penaltyLightDeep = 0;
+    if (isLight && metadata.isDeepSeason) {
+      penaltyLightDeep += 45;
+    }
+    if (isDeep && metadata.isLightSeason) {
+      penaltyLightDeep += 45;
+    }
+    
+    // Penalty: Temperature mismatch (reliability-weighted)
+    const warmCoolMismatch = calculateWarmCoolMismatch(lab, metadata);
+    const penaltyTemperature = warmCoolMismatch * 30 * temperatureReliability;
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature;
+    
+    seasonScores.push({
+      season,
+      baseScore,
+      penaltyMuted,
+      penaltyLightDeep,
+      penaltyTemperature,
+      totalScore,
+    });
   }
   
-  // Convert distances to scores (inverse relationship: closer = higher score)
-  // Use inverse distance with a small epsilon to avoid division by zero
-  const epsilon = 0.1;
-  const scores = distances.map(({ season, distance }) => ({
-    season,
-    score: 1 / (distance + epsilon),
-  }));
+  // Convert to confidence using softmax (lower score = better match)
+  // Use negative scores for softmax (we want lower totalScore = higher probability)
+  // To avoid numerical overflow, subtract the minimum (best) score
+  const minScore = Math.min(...seasonScores.map(s => s.totalScore));
+  const expScores = seasonScores.map(s => Math.exp(-(s.totalScore - minScore)));
+  const sumExpScores = expScores.reduce((sum, exp) => sum + exp, 0);
   
-  // Normalize scores to percentages (0-100%)
-  const totalScore = scores.reduce((sum, item) => sum + item.score, 0);
-  const breakdown = scores
-    .map(({ season, score }) => ({
-      season,
-      score: Math.round((score / totalScore) * 100),
+  const breakdown = seasonScores
+    .map((seasonScore, index) => ({
+      season: seasonScore.season,
+      score: Math.round((expScores[index] / sumExpScores) * 100),
     }))
     .sort((a, b) => b.score - a.score); // Sort descending
   
