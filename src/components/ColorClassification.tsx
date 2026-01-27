@@ -176,11 +176,14 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
         </div>
 
         {/* Secondary segment - Right side, immediately after primary */}
+        {/* Use gray color if secondary score is smaller than primary */}
         {secondarySeason && secondaryScore > 0 && (
           <div
             className={cn(
               'absolute top-0 h-full flex items-center justify-end pr-4 transition-all duration-500 z-10',
-              getSeasonColorClasses(secondarySeason)
+              secondaryScore < primaryScore
+                ? 'bg-gradient-to-r from-gray-400 to-gray-500' // Gray for smaller probability
+                : getSeasonColorClasses(secondarySeason) // Season color for larger or equal probability
             )}
             style={{ 
               left: `${primaryScore}%`,
