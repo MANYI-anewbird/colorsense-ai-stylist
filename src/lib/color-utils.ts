@@ -90,12 +90,21 @@ export interface ColorValues {
   lch: LCH;
 }
 
+export interface SeasonMatchBreakdown {
+  primarySeason: Season12; // The winner
+  secondarySeason: Season12 | null; // The runner-up (only if close, < 15% difference)
+  confidence: number; // 0-100%
+  breakdown: Array<{ season: Season12; score: number }>; // Full list sorted by score
+  isAmbiguous: boolean; // True if difference between #1 and #2 < 15%
+}
+
 export interface ColorMetrics {
   lightness: number;
   saturation: number;
   temperature: TemperatureCategory;
   seasonalTendency: SeasonFamily; // legacy 4-season family (used by compatibility scoring)
   season12: Season12; // professional 12-season result
+  seasonMatch?: SeasonMatchBreakdown; // Optional detailed match breakdown
 }
 
 export interface ColorAnalysis {
@@ -281,6 +290,104 @@ export function determineSeasonFamilyFromLab(
 }
 
 /**
+ * Ideal LAB centroids for each of the 12 seasons.
+ * These represent the "perfect" color for each season in CIE LAB space.
+ * Based on standard color theory and seasonal color analysis principles.
+ */
+const SEASON_CENTROIDS: Record<Season12, { L: number; a: number; b: number }> = {
+  // Spring seasons - warm, light to medium, clear/bright
+  'spring-light': { L: 85, a: 8, b: 25 }, // Light warm pastels
+  'spring-true': { L: 65, a: 15, b: 30 }, // True warm spring
+  'spring-bright': { L: 70, a: 20, b: 35 }, // Clear bright spring
+  
+  // Summer seasons - cool, light to medium, soft/muted
+  'summer-light': { L: 80, a: -5, b: -8 }, // Light cool pastels
+  'summer-true': { L: 60, a: -8, b: -12 }, // True cool summer
+  'summer-soft': { L: 55, a: -6, b: -10 }, // Soft muted summer
+  
+  // Autumn seasons - warm, medium to deep, soft/muted
+  'autumn-soft': { L: 50, a: 10, b: 15 }, // Soft warm autumn
+  'autumn-true': { L: 45, a: 12, b: 18 }, // True warm autumn
+  'autumn-deep': { L: 30, a: 8, b: 12 }, // Deep warm autumn
+  
+  // Winter seasons - cool, medium to deep, clear/bright
+  'winter-bright': { L: 50, a: -15, b: -20 }, // Clear bright winter
+  'winter-true': { L: 40, a: -12, b: -18 }, // True cool winter
+  'winter-deep': { L: 25, a: -8, b: -12 }, // Deep cool winter
+};
+
+/**
+ * Calculate Euclidean distance in LAB color space
+ */
+function calculateLabDistance(
+  lab1: { L: number; a: number; b: number },
+  lab2: { L: number; a: number; b: number }
+): number {
+  const dL = lab1.L - lab2.L;
+  const da = lab1.a - lab2.a;
+  const db = lab1.b - lab2.b;
+  return Math.sqrt(dL * dL + da * da + db * db);
+}
+
+/**
+ * Calculate season match breakdown using distance-based algorithm.
+ * Returns probabilities/percentages for all 12 seasons based on Euclidean distance.
+ */
+export function calculateSeasonMatchBreakdown(
+  lab: { L: number; a: number; b: number }
+): SeasonMatchBreakdown {
+  // Calculate distances to all season centroids
+  const distances: Array<{ season: Season12; distance: number }> = [];
+  
+  for (const [season, centroid] of Object.entries(SEASON_CENTROIDS) as Array<[Season12, { L: number; a: number; b: number }]>) {
+    const distance = calculateLabDistance(lab, centroid);
+    distances.push({ season, distance });
+  }
+  
+  // Convert distances to scores (inverse relationship: closer = higher score)
+  // Use inverse distance with a small epsilon to avoid division by zero
+  const epsilon = 0.1;
+  const scores = distances.map(({ season, distance }) => ({
+    season,
+    score: 1 / (distance + epsilon),
+  }));
+  
+  // Normalize scores to percentages (0-100%)
+  const totalScore = scores.reduce((sum, item) => sum + item.score, 0);
+  const breakdown = scores
+    .map(({ season, score }) => ({
+      season,
+      score: Math.round((score / totalScore) * 100),
+    }))
+    .sort((a, b) => b.score - a.score); // Sort descending
+  
+  const primarySeason = breakdown[0].season;
+  const primaryScore = breakdown[0].score;
+  const secondaryScore = breakdown[1]?.score ?? 0;
+  const scoreDifference = primaryScore - secondaryScore;
+  
+  // Determine if ambiguous (difference < 15%)
+  const isAmbiguous = scoreDifference < 15;
+  
+  // Secondary season only if close enough (< 15% difference)
+  const secondarySeason = isAmbiguous ? breakdown[1].season : null;
+  
+  // Confidence is based on how much the primary season dominates
+  // If ambiguous, confidence is lower
+  const confidence = isAmbiguous
+    ? Math.round((primaryScore + secondaryScore) / 2)
+    : primaryScore;
+  
+  return {
+    primarySeason,
+    secondarySeason,
+    confidence,
+    breakdown,
+    isAmbiguous,
+  };
+}
+
+/**
  * Professional 12-season classification based on CIE LAB color space.
  * 
  * Implements the 12 Seasonal Color Analysis Theory with:
@@ -393,6 +500,9 @@ export function getColorMetrics(color: ColorValues): ColorMetrics {
   const lchDecision = color.lch;
   const season12 = determineColorSeasonFromLab(labDecision, lchDecision);
   const seasonalTendency = season12.split('-')[0] as SeasonFamily;
+  
+  // Calculate detailed match breakdown using distance-based algorithm
+  const seasonMatch = calculateSeasonMatchBreakdown(labDecision);
 
   return {
     lightness: Math.round(color.lab.l),
@@ -400,6 +510,7 @@ export function getColorMetrics(color: ColorValues): ColorMetrics {
     temperature: getTemperatureCategoryFromLab(labDecision, lchDecision),
     seasonalTendency,
     season12,
+    seasonMatch,
   };
 }
 
