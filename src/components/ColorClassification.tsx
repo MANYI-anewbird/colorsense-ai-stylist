@@ -160,7 +160,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
       {/* Dual-Colored Progress Bar - Main visualization */}
       {/* Two colors fill 100%: Primary on left, Secondary on right */}
       <div className="relative w-full h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-inner">
-        {/* Primary segment - Left side */}
+        {/* Primary segment - Left side - Solid color (100% opacity) */}
         <div
           className={cn(
             'absolute left-0 top-0 h-full flex items-center justify-start pl-4 transition-all duration-500 z-10',
@@ -176,18 +176,17 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
         </div>
 
         {/* Secondary segment - Right side, immediately after primary */}
-        {/* Use gray color if secondary score is smaller than primary */}
+        {/* Use opacity distinction: Primary = solid, Secondary = faded (40% opacity) */}
         {secondarySeason && secondaryScore > 0 && (
           <div
             className={cn(
               'absolute top-0 h-full flex items-center justify-end pr-4 transition-all duration-500 z-10',
-              secondaryScore < primaryScore
-                ? 'bg-gradient-to-r from-gray-400 to-gray-500' // Gray for smaller probability
-                : getSeasonColorClasses(secondarySeason) // Season color for larger or equal probability
+              getSeasonColorClasses(secondarySeason)
             )}
             style={{ 
               left: `${primaryScore}%`,
-              width: `${secondaryScore}%` 
+              width: `${secondaryScore}%`,
+              opacity: 0.4 // 40% opacity for visual distinction
             }}
           >
             {secondaryScore >= 20 && (

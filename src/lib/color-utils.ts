@@ -223,19 +223,40 @@ export function labToLch(lab: LAB): LCH {
 
 function isWarmHue(h: number): boolean {
   // Tie-break when b* is near neutral: reds/yellows are warm; cyans/blues are cool.
+  // Bluish greens (145°-180°) should be considered cool, not warm
   return h < 135 || h >= 315;
 }
 
 export function getTemperatureCategoryFromLab(
   lab: { L: number; a: number; b: number },
-  _lch: { h: number },
+  lch: { h: number },
   _thresholds: SeasonThresholds = DEFAULT_SEASON_THRESHOLDS
 ): TemperatureCategory {
   // New b-axis logic: b > 5: Warm, b < -5: Cool
-  // For neutral range (-5 <= b <= 5), return directional lean
-  if (lab.b > 5) return 'warm';
-  if (lab.b < -5) return 'cool';
-  // Neutral with directional lean: b >= 0 -> neutral-warm, b < 0 -> neutral-cool
+  // For neutral range (-5 <= b <= 5), consider hue as tie-breaker
+  // Special case: Bluish greens (hue 145°-180°) should be cool even if b is slightly positive
+  
+  // Strong warm (b > 5)
+  if (lab.b > 5) {
+    // Exception: Bluish greens (145°-180°) are cool even with positive b
+    if (lch.h >= 145 && lch.h <= 180) {
+      return 'cool';
+    }
+    return 'warm';
+  }
+  
+  // Strong cool (b < -5)
+  if (lab.b < -5) {
+    return 'cool';
+  }
+  
+  // Neutral range (-5 <= b <= 5): Use hue as tie-breaker
+  // Bluish greens (145°-180°) are cool
+  if (lch.h >= 145 && lch.h <= 180) {
+    return lab.b < 0 ? 'neutral-cool' : 'neutral-cool';
+  }
+  
+  // For other hues, use b-axis lean
   return lab.b >= 0 ? 'neutral-warm' : 'neutral-cool';
 }
 
