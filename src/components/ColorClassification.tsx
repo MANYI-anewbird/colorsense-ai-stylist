@@ -12,18 +12,19 @@ interface ColorClassificationProps {
 
 /**
  * Map season to color classes for progress bar visualization
+ * Spring=green, Summer=yellow, Autumn=red, Winter=blue
  */
 const getSeasonColorClasses = (season: Season12): string => {
   const family = season.split('-')[0];
   switch (family) {
     case 'spring':
-      return 'bg-gradient-to-r from-green-400 to-emerald-500'; // Pastel green
+      return 'bg-gradient-to-r from-green-400 to-green-500'; // Green
     case 'summer':
-      return 'bg-gradient-to-r from-blue-300 to-cyan-400'; // Cool blue
+      return 'bg-gradient-to-r from-yellow-400 to-yellow-500'; // Yellow
     case 'autumn':
-      return 'bg-gradient-to-r from-orange-400 to-amber-500'; // Warm orange
+      return 'bg-gradient-to-r from-red-400 to-red-500'; // Red
     case 'winter':
-      return 'bg-gradient-to-r from-purple-400 to-indigo-500'; // Cool purple
+      return 'bg-gradient-to-r from-blue-400 to-blue-500'; // Blue
     default:
       return 'bg-gradient-to-r from-gray-400 to-gray-500';
   }
@@ -31,18 +32,19 @@ const getSeasonColorClasses = (season: Season12): string => {
 
 /**
  * Map season to color for small indicator dots
+ * Spring=green, Summer=yellow, Autumn=red, Winter=blue
  */
 const getSeasonDotColor = (season: Season12): string => {
   const family = season.split('-')[0];
   switch (family) {
     case 'spring':
-      return 'bg-green-400'; // Pastel green
+      return 'bg-green-400'; // Green
     case 'summer':
-      return 'bg-blue-300'; // Cool blue
+      return 'bg-yellow-400'; // Yellow
     case 'autumn':
-      return 'bg-orange-400'; // Warm orange
+      return 'bg-red-400'; // Red
     case 'winter':
-      return 'bg-purple-400'; // Cool purple
+      return 'bg-blue-400'; // Blue
     default:
       return 'bg-gray-400';
   }
@@ -72,10 +74,20 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
   const { primarySeason, secondarySeason, confidence } = seasonMatch;
   
   // Get scores for primary and secondary
-  const primaryScore = seasonMatch.breakdown.find(b => b.season === primarySeason)?.score ?? 0;
-  const secondaryScore = secondarySeason 
+  let primaryScore = seasonMatch.breakdown.find(b => b.season === primarySeason)?.score ?? 0;
+  let secondaryScore = secondarySeason 
     ? seasonMatch.breakdown.find(b => b.season === secondarySeason)?.score ?? 0
     : 0;
+  
+  // Normalize to ensure they sum to 100% for the progress bar
+  // If we have both seasons, normalize them to total 100%
+  if (secondarySeason && primaryScore > 0 && secondaryScore > 0) {
+    const total = primaryScore + secondaryScore;
+    if (total > 0) {
+      primaryScore = Math.round((primaryScore / total) * 100);
+      secondaryScore = 100 - primaryScore; // Ensure exact 100%
+    }
+  }
 
   const CONFIDENCE_THRESHOLD = 60;
 
@@ -146,8 +158,9 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
       </div>
 
       {/* Dual-Colored Progress Bar - Main visualization */}
+      {/* Two colors fill 100%: Primary on left, Secondary on right */}
       <div className="relative w-full h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-inner">
-        {/* Primary segment */}
+        {/* Primary segment - Left side */}
         <div
           className={cn(
             'absolute left-0 top-0 h-full flex items-center justify-start pl-4 transition-all duration-500 z-10',
@@ -155,23 +168,26 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
           )}
           style={{ width: `${primaryScore}%` }}
         >
-          {primaryScore >= 15 && (
+          {primaryScore >= 20 && (
             <span className="text-sm font-bold text-white drop-shadow-lg">
               {primaryScore}%
             </span>
           )}
         </div>
 
-        {/* Secondary segment */}
-        {secondarySeason && (
+        {/* Secondary segment - Right side, immediately after primary */}
+        {secondarySeason && secondaryScore > 0 && (
           <div
             className={cn(
-              'absolute right-0 top-0 h-full flex items-center justify-end pr-4 transition-all duration-500 z-10',
-              getSeasonColorClasses(secondarySeason).replace('to-r', 'to-l')
+              'absolute top-0 h-full flex items-center justify-end pr-4 transition-all duration-500 z-10',
+              getSeasonColorClasses(secondarySeason)
             )}
-            style={{ width: `${secondaryScore}%` }}
+            style={{ 
+              left: `${primaryScore}%`,
+              width: `${secondaryScore}%` 
+            }}
           >
-            {secondaryScore >= 15 && (
+            {secondaryScore >= 20 && (
               <span className="text-sm font-bold text-white drop-shadow-lg">
                 {secondaryScore}%
               </span>
@@ -179,9 +195,12 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
           </div>
         )}
 
-        {/* Center divider (if both segments are visible and meet) */}
-        {primaryScore > 0 && secondaryScore > 0 && Math.abs(primaryScore - secondaryScore) < 30 && (
-          <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/70 shadow-lg -translate-x-1/2 z-20" />
+        {/* Center divider - Show when both segments meet */}
+        {primaryScore > 0 && secondaryScore > 0 && (
+          <div 
+            className="absolute top-0 bottom-0 w-0.5 bg-white/80 shadow-lg z-20" 
+            style={{ left: `${primaryScore}%` }}
+          />
         )}
       </div>
 
