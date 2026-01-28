@@ -90,12 +90,26 @@ export interface ColorValues {
   lch: LCH;
 }
 
-export interface SeasonMatchBreakdown {
-  primarySeason: Season12; // The winner
-  secondarySeason: Season12 | null; // The runner-up (only if close, < 15% difference)
+export interface SeasonMatch {
+  season: Season12;
   confidence: number; // 0-100%
-  breakdown: Array<{ season: Season12; score: number }>; // Full list sorted by score
-  isAmbiguous: boolean; // True if difference between #1 and #2 < 15%
+  totalScore: number; // Lower is better
+}
+
+export interface SeasonMatchBreakdown {
+  primaryMatch: SeasonMatch; // The winner
+  secondaryMatch: SeasonMatch | null; // The runner-up (only if borderline)
+  isBorderline: boolean; // True if scoreGap <= 6 OR confidenceGap <= 15
+  gaps: {
+    scoreGap: number; // secondary.totalScore - primary.totalScore
+    confidenceGap: number; // primary.confidence - secondary.confidence
+  };
+  breakdown: Array<{ season: Season12; score: number }>; // Full list sorted by score (descending)
+  // Legacy fields for backward compatibility
+  primarySeason: Season12;
+  secondarySeason: Season12 | null;
+  confidence: number;
+  isAmbiguous: boolean;
 }
 
 export interface ColorMetrics {
@@ -582,35 +596,56 @@ export function calculateSeasonMatchBreakdown(
   const expScores = seasonScores.map(s => Math.exp(-(s.totalScore - minScore)));
   const sumExpScores = expScores.reduce((sum, exp) => sum + exp, 0);
   
-  const breakdown = seasonScores
+  // Create matches with confidence and totalScore
+  const matches: SeasonMatch[] = seasonScores
     .map((seasonScore, index) => ({
       season: seasonScore.season,
-      score: Math.round((expScores[index] / sumExpScores) * 100),
+      confidence: Math.round((expScores[index] / sumExpScores) * 100),
+      totalScore: seasonScore.totalScore,
     }))
-    .sort((a, b) => b.score - a.score); // Sort descending
+    .sort((a, b) => a.totalScore - b.totalScore); // Sort by totalScore ascending (lower is better)
   
-  const primarySeason = breakdown[0].season;
-  const primaryScore = breakdown[0].score;
-  const secondaryScore = breakdown[1]?.score ?? 0;
-  const scoreDifference = primaryScore - secondaryScore;
+  // Primary and secondary matches
+  const primaryMatch = matches[0];
+  const secondaryMatch = matches[1];
   
-  // Determine if ambiguous (difference < 15%)
-  const isAmbiguous = scoreDifference < 15;
+  // Calculate gaps
+  const scoreGap = secondaryMatch ? secondaryMatch.totalScore - primaryMatch.totalScore : Infinity;
+  const confidenceGap = secondaryMatch ? primaryMatch.confidence - secondaryMatch.confidence : Infinity;
   
-  // Secondary season only if close enough (< 15% difference)
-  const secondarySeason = isAmbiguous ? breakdown[1].season : null;
+  // Determine if borderline: (scoreGap <= 6) OR (confidenceGap <= 15)
+  const isBorderline = (scoreGap <= 6) || (confidenceGap <= 15);
   
-  // Confidence is based on how much the primary season dominates
-  // If ambiguous, confidence is lower
-  const confidence = isAmbiguous
-    ? Math.round((primaryScore + secondaryScore) / 2)
-    : primaryScore;
+  // Only return secondaryMatch when isBorderline is true
+  const finalSecondaryMatch = isBorderline && secondaryMatch ? secondaryMatch : null;
+  
+  // Create breakdown for display (sorted by confidence descending)
+  const breakdown = matches
+    .map(m => ({
+      season: m.season,
+      score: m.confidence,
+    }))
+    .sort((a, b) => b.score - a.score); // Sort descending by confidence
+  
+  // Legacy fields for backward compatibility
+  const primarySeason = primaryMatch.season;
+  const secondarySeason = finalSecondaryMatch?.season ?? null;
+  const confidence = primaryMatch.confidence;
+  const isAmbiguous = isBorderline; // Map isBorderline to isAmbiguous for compatibility
   
   return {
+    primaryMatch,
+    secondaryMatch: finalSecondaryMatch,
+    isBorderline,
+    gaps: {
+      scoreGap: finalSecondaryMatch ? scoreGap : 0,
+      confidenceGap: finalSecondaryMatch ? confidenceGap : 0,
+    },
+    breakdown,
+    // Legacy fields
     primarySeason,
     secondarySeason,
     confidence,
-    breakdown,
     isAmbiguous,
   };
 }

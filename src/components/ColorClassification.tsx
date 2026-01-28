@@ -71,17 +71,17 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
     );
   }
 
-  const { primarySeason, secondarySeason, confidence } = seasonMatch;
+  const { primaryMatch, secondaryMatch, isBorderline, confidence } = seasonMatch;
+  const primarySeason = primaryMatch.season;
+  const secondarySeason = secondaryMatch?.season ?? null;
   
   // Get scores for primary and secondary
-  let primaryScore = seasonMatch.breakdown.find(b => b.season === primarySeason)?.score ?? 0;
-  let secondaryScore = secondarySeason 
-    ? seasonMatch.breakdown.find(b => b.season === secondarySeason)?.score ?? 0
-    : 0;
+  let primaryScore = primaryMatch.confidence;
+  let secondaryScore = secondaryMatch?.confidence ?? 0;
   
   // Normalize to ensure they sum to 100% for the progress bar
   // If we have both seasons, normalize them to total 100%
-  if (secondarySeason && primaryScore > 0 && secondaryScore > 0) {
+  if (secondaryMatch && primaryScore > 0 && secondaryScore > 0) {
     const total = primaryScore + secondaryScore;
     if (total > 0) {
       primaryScore = Math.round((primaryScore / total) * 100);
@@ -101,7 +101,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
         </div>
         
         {/* High Confidence badge */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">
             {language === 'zh' ? '置信度' : 'Confidence'}
           </span>
@@ -115,7 +115,24 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
           )}>
             {language === 'zh' ? '高置信度' : 'High Confidence'} {confidence}%
           </span>
+          {isBorderline && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+              {language === 'zh' ? '边界' : 'Borderline'}
+            </span>
+          )}
         </div>
+        
+        {/* Secondary match (if exists) */}
+        {secondaryMatch && (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">
+              {language === 'zh' ? '次要匹配' : 'Secondary match'}:
+            </span>
+            <span className="font-medium text-foreground">
+              {getSeasonName(secondaryMatch.season, language)} ({secondaryMatch.confidence}%)
+            </span>
+          </div>
+        )}
       </div>
     );
   }
@@ -125,10 +142,17 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
   return (
     <div className="space-y-3">
       {/* Heading for ambiguous result */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">
-          {language === 'zh' ? '模糊结果' : 'Close Match'}
-        </h3>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground">
+            {language === 'zh' ? '模糊结果' : 'Close Match'}
+          </h3>
+          {isBorderline && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+              {language === 'zh' ? '边界' : 'Borderline'}
+            </span>
+          )}
+        </div>
         <span className="text-xs text-muted-foreground">
           {confidence}% {language === 'zh' ? '置信度' : 'confidence'}
         </span>
@@ -145,13 +169,13 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
             ({primaryScore}%)
           </span>
         </div>
-        {secondarySeason && (
+        {secondaryMatch && (
           <div className="flex items-center gap-2 pl-6">
             <span className="text-xs text-muted-foreground">
               {language === 'zh' ? '次要匹配' : 'Secondary match'}:
             </span>
             <span className="text-sm font-medium text-muted-foreground">
-              {getSeasonName(secondarySeason, language)} ({secondaryScore}%)
+              {getSeasonName(secondaryMatch.season, language)} ({secondaryMatch.confidence}%)
             </span>
           </div>
         )}
