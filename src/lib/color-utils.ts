@@ -117,6 +117,7 @@ export interface SeasonDebugInfo {
   penaltyTemperature: number;
   penaltyEarthy: number;
   penaltyDusty: number;
+  penaltyClarityMismatch: number;
   totalScore: number;
   confidence: number;
 }
@@ -131,6 +132,7 @@ export interface TopCandidate {
   penaltyTemperature: number;
   penaltyEarthy: number;
   penaltyDusty: number;
+  penaltyClarityMismatch: number;
   flags: FeatureFlags;
 }
 
@@ -157,6 +159,11 @@ export interface SeasonMatchBreakdown {
     isNeutral?: boolean; // Whether color is neutral (from LAB chroma)
     finalTemperatureLabel?: TemperatureCategory; // Final temperature label for UI (neutral-warm/neutral-cool/warm/cool)
     rawTemperature?: TemperatureCategory; // Original temperature calculation (for debug only)
+    chroma?: number; // Chroma value C = sqrt(a^2 + b^2)
+    isVerySoft?: boolean; // C < 15
+    isSoft?: boolean; // 15 <= C < 25
+    isClear?: boolean; // 25 <= C < 40
+    isVeryClear?: boolean; // C >= 40
   };
   // Legacy fields for backward compatibility
   primarySeason: Season12;
@@ -430,6 +437,7 @@ interface SeasonMetadata {
   isTrueSeason: boolean;
   isSpringFamily: boolean;
   isAutumnFamily: boolean;
+  clarityProfile: 'very-soft' | 'soft' | 'clear' | 'very-clear';
 }
 
 const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
@@ -445,6 +453,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: true,
     isAutumnFamily: false,
+    clarityProfile: 'clear',
   },
   'spring-true': {
     centroidLab: { L: 65, a: 15, b: 30 },
@@ -457,6 +466,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: true,
     isSpringFamily: true,
     isAutumnFamily: false,
+    clarityProfile: 'clear',
   },
   'spring-bright': {
     centroidLab: { L: 70, a: 20, b: 35 },
@@ -469,6 +479,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: true,
     isAutumnFamily: false,
+    clarityProfile: 'very-clear',
   },
   
   // Summer seasons - cool, light to medium, soft/muted
@@ -483,6 +494,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: false,
     isAutumnFamily: false,
+    clarityProfile: 'clear',
   },
   'summer-true': {
     centroidLab: { L: 60, a: -8, b: -12 },
@@ -495,6 +507,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: true,
     isSpringFamily: false,
     isAutumnFamily: false,
+    clarityProfile: 'clear',
   },
   'summer-soft': {
     centroidLab: { L: 55, a: -6, b: -10 },
@@ -507,6 +520,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: false,
     isAutumnFamily: false,
+    clarityProfile: 'soft',
   },
   
   // Autumn seasons - warm, medium to deep, soft/muted
@@ -521,6 +535,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: false,
     isAutumnFamily: true,
+    clarityProfile: 'soft',
   },
   'autumn-true': {
     centroidLab: { L: 65, a: 10, b: 30 },
@@ -533,6 +548,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: true,
     isSpringFamily: false,
     isAutumnFamily: true,
+    clarityProfile: 'soft',
   },
   'autumn-deep': {
     centroidLab: { L: 35, a: 10, b: 20 },
@@ -545,6 +561,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: false,
     isAutumnFamily: true,
+    clarityProfile: 'soft',
   },
   
   // Winter seasons - cool, medium to deep, clear/bright
@@ -559,6 +576,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: false,
     isAutumnFamily: false,
+    clarityProfile: 'very-clear',
   },
   'winter-true': {
     centroidLab: { L: 40, a: -12, b: -18 },
@@ -571,6 +589,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: true,
     isSpringFamily: false,
     isAutumnFamily: false,
+    clarityProfile: 'clear',
   },
   'winter-deep': {
     centroidLab: { L: 25, a: -8, b: -12 },
@@ -583,6 +602,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isTrueSeason: false,
     isSpringFamily: false,
     isAutumnFamily: false,
+    clarityProfile: 'clear',
   },
 };
 
@@ -689,6 +709,12 @@ export function calculateSeasonMatchBreakdown(
   const isDusty = C < 28 && L > 45 && L < 75;
   const isSmoky = C < 28 && L <= 45;
   
+  // Clarity vs Softness flags (independent semantic dimension)
+  const isVerySoft = C < 15;
+  const isSoft = C >= 15 && C < 25;
+  const isClearClarity = C >= 25 && C < 40;
+  const isVeryClear = C >= 40;
+  
   // Create feature flags snapshot
   const featureFlags: FeatureFlags = {
     veryMuted: isVeryMuted,
@@ -715,6 +741,7 @@ export function calculateSeasonMatchBreakdown(
     penaltyTemperature: number;
     penaltyEarthy: number;
     penaltyDusty: number;
+    penaltyClarityMismatch: number;
     totalScore: number;
   }> = [];
   
@@ -768,7 +795,19 @@ export function calculateSeasonMatchBreakdown(
       }
     }
     
-    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty;
+    // Penalty: Clarity vs Softness mismatch (mild weights, semantic tie-breaker)
+    let penaltyClarityMismatch = 0;
+    if (isSoft && (metadata.clarityProfile === 'clear' || metadata.clarityProfile === 'very-clear')) {
+      penaltyClarityMismatch += 10;
+    }
+    if (isClearClarity && metadata.clarityProfile === 'soft') {
+      penaltyClarityMismatch += 8;
+    }
+    if (isVerySoft && metadata.clarityProfile === 'very-clear') {
+      penaltyClarityMismatch += 15;
+    }
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch;
     
     seasonScores.push({
       season,
@@ -778,6 +817,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyTemperature,
       penaltyEarthy,
       penaltyDusty,
+      penaltyClarityMismatch,
       totalScore,
     });
   }
@@ -846,6 +886,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyTemperature: seasonScore.penaltyTemperature,
       penaltyEarthy: seasonScore.penaltyEarthy,
       penaltyDusty: seasonScore.penaltyDusty,
+      penaltyClarityMismatch: seasonScore.penaltyClarityMismatch,
       totalScore: seasonScore.totalScore,
       confidence: Math.round((expScores[index] / sumExpScores) * 100),
     }))
@@ -864,6 +905,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyTemperature: debugInfo.penaltyTemperature,
       penaltyEarthy: debugInfo.penaltyEarthy,
       penaltyDusty: debugInfo.penaltyDusty,
+      penaltyClarityMismatch: debugInfo.penaltyClarityMismatch,
       flags: featureFlags,
     }));
   
@@ -914,6 +956,11 @@ export function calculateSeasonMatchBreakdown(
       isNeutral,
       finalTemperatureLabel,
       rawTemperature,
+      chroma: C,
+      isVerySoft,
+      isSoft,
+      isClear: isClearClarity,
+      isVeryClear,
     },
     // Legacy fields
     primarySeason,
