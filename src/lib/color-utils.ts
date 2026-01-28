@@ -676,8 +676,612 @@ const SECONDARY_THRESHOLDS = {
 };
 
 /**
+ * Configuration constants for 2-stage color classification
+ * All magic numbers are centralized here for easy calibration
+ */
+export interface ClassificationConfig {
+  // Warmth calculation
+  wb: number; // Warmth bandwidth: controls sigmoid transition sharpness (b* axis)
+  
+  // Clarity calculation
+  C_ref: number; // Reference chroma for full clarity (K0 = 1)
+  
+  // Effective clarity (Keff) calculation
+  V_K0: number; // Lower value threshold for clarity ramp (ramp start)
+  V_K1: number; // Upper value threshold for clarity ramp (ramp end)
+  V_FLOOR: number; // Minimum Vscale value (prevents hard-zero, ensures soft attenuation)
+  // Vgate = ramp(V, V_K0, V_K1)
+  // Vscale = V_FLOOR + (1 - V_FLOOR) * Vgate  (soft attenuation, never zero)
+  // Keff = K0 * Vscale
+  // This ensures low-value (dark) colors have reduced effective clarity, but not hard-zero
+  
+  // pClear calculation (probability of clear vs soft)
+  K_mid: number; // Midpoint for pClear sigmoid
+  K_bw: number; // Bandwidth for pClear sigmoid
+  // pClear = sigmoid((Keff - K_mid) / K_bw)
+  
+  // Family clarity thresholds
+  springK0: number; // Lower clarity threshold for Spring family
+  springK1: number; // Upper clarity threshold for Spring family
+  autumnInvK0: number; // Lower inverse clarity threshold for Autumn family (1-Keff)
+  autumnInvK1: number; // Upper inverse clarity threshold for Autumn family (1-Keff)
+  
+  // Bright season chroma thresholds
+  C_bright0: number; // Lower threshold for Bright Spring/Winter
+  C_bright1: number; // Upper threshold for Bright Spring/Winter
+  
+  // Stage 1: Family value (V) thresholds
+  springV: { lo: number; hi: number }; // Spring value range
+  autumnV: { lo: number; hi: number }; // Autumn value range
+  summerV: { lo: number; hi: number }; // Summer value range
+  winterV: { lo: number; hi: number }; // Winter value range
+  
+  // Stage 2: Subseason thresholds (varies by family)
+  // Spring subseasons
+  springLightV: { lo: number; hi: number };
+  springLightW: { lo: number; hi: number };
+  springLightK: { lo: number; hi: number };
+  springTrueW: { lo: number; hi: number };
+  springTrueV: { lo: number; hi: number };
+  springTrueK: { lo: number; hi: number };
+  springBrightK: { lo: number; hi: number };
+  springBrightV: { lo: number; hi: number };
+  
+  // Autumn subseasons
+  autumnSoftK: { lo: number; hi: number };
+  autumnSoftV: { lo: number; hi: number };
+  autumnSoftW: { lo: number; hi: number };
+  autumnTrueW: { lo: number; hi: number };
+  autumnTrueV: { lo: number; hi: number };
+  autumnTrueK: { lo: number; hi: number };
+  autumnDeepV: { lo: number; hi: number };
+  autumnDeepW: { lo: number; hi: number };
+  autumnDeepK: { lo: number; hi: number };
+  
+  // Summer subseasons
+  summerLightV: { lo: number; hi: number };
+  summerLightW: { lo: number; hi: number };
+  summerLightK: { lo: number; hi: number };
+  summerTrueW: { lo: number; hi: number };
+  summerTrueV: { lo: number; hi: number };
+  summerTrueK: { lo: number; hi: number };
+  summerSoftK: { lo: number; hi: number };
+  summerSoftV: { lo: number; hi: number };
+  summerSoftW: { lo: number; hi: number };
+  
+  // Winter subseasons
+  winterBrightK: { lo: number; hi: number };
+  winterBrightW: { lo: number; hi: number };
+  winterTrueW: { lo: number; hi: number };
+  winterTrueV: { lo: number; hi: number };
+  winterTrueK: { lo: number; hi: number };
+  winterDeepV: { lo: number; hi: number };
+  winterDeepW: { lo: number; hi: number };
+  winterDeepK: { lo: number; hi: number };
+}
+
+/**
+ * Default configuration constants
+ */
+export const DEFAULT_CLASSIFICATION_CONFIG: ClassificationConfig = {
+  wb: 15,
+  C_ref: 50,
+  
+  // Effective clarity parameters
+  V_K0: 0.45, // Lower value threshold for clarity ramp
+  V_K1: 0.85, // Upper value threshold for clarity ramp
+  V_FLOOR: 0.35, // Minimum Vscale value (soft attenuation floor)
+  
+  // pClear calculation parameters
+  K_mid: 0.45, // Midpoint for pClear sigmoid
+  K_bw: 0.12, // Bandwidth for pClear sigmoid
+  
+  // Family clarity thresholds
+  springK0: 0.0, // Lower clarity threshold for Spring (ramp start)
+  springK1: 0.5, // Upper clarity threshold for Spring (ramp end)
+  autumnInvK0: 0.0, // Lower inverse clarity threshold for Autumn (ramp start)
+  autumnInvK1: 0.5, // Upper inverse clarity threshold for Autumn (ramp end)
+  
+  C_bright0: 45,
+  C_bright1: 60,
+  
+  // Stage 1 family value ranges
+  // Spring tightened to exclude mid/low value warm colors
+  springV: { lo: 0.62, hi: 0.92 },
+  autumnV: { lo: 0.35, hi: 0.70 },
+  summerV: { lo: 0.55, hi: 0.90 },
+  winterV: { lo: 0.30, hi: 0.70 },
+  
+  // Spring subseasons
+  springLightV: { lo: 0.70, hi: 0.90 },
+  springLightW: { lo: 0.55, hi: 0.75 },
+  springLightK: { lo: 0.35, hi: 0.85 },
+  springTrueW: { lo: 0.65, hi: 0.95 },
+  springTrueV: { lo: 0.50, hi: 0.80 },
+  springTrueK: { lo: 0.30, hi: 0.75 },
+  springBrightK: { lo: 0.65, hi: 0.90 },
+  springBrightV: { lo: 0.45, hi: 0.80 },
+  
+  // Autumn subseasons
+  autumnSoftK: { lo: 0.45, hi: 0.70 },
+  autumnSoftV: { lo: 0.45, hi: 0.75 },
+  autumnSoftW: { lo: 0.55, hi: 0.85 },
+  autumnTrueW: { lo: 0.65, hi: 0.95 },
+  autumnTrueV: { lo: 0.40, hi: 0.70 },
+  autumnTrueK: { lo: 0.25, hi: 0.60 },
+  autumnDeepV: { lo: 0.35, hi: 0.55 },
+  autumnDeepW: { lo: 0.60, hi: 0.95 },
+  autumnDeepK: { lo: 0.25, hi: 0.65 },
+  
+  // Summer subseasons
+  summerLightV: { lo: 0.70, hi: 0.92 },
+  summerLightW: { lo: 0.35, hi: 0.55 },
+  summerLightK: { lo: 0.45, hi: 0.70 },
+  summerTrueW: { lo: 0.20, hi: 0.45 },
+  summerTrueV: { lo: 0.55, hi: 0.85 },
+  summerTrueK: { lo: 0.40, hi: 0.70 },
+  summerSoftK: { lo: 0.35, hi: 0.60 },
+  summerSoftV: { lo: 0.45, hi: 0.80 },
+  summerSoftW: { lo: 0.25, hi: 0.55 },
+  
+  // Winter subseasons
+  winterBrightK: { lo: 0.65, hi: 0.90 },
+  winterBrightW: { lo: 0.35, hi: 0.55 },
+  winterTrueW: { lo: 0.10, hi: 0.40 },
+  winterTrueV: { lo: 0.35, hi: 0.70 },
+  winterTrueK: { lo: 0.45, hi: 0.85 },
+  winterDeepV: { lo: 0.30, hi: 0.50 },
+  winterDeepW: { lo: 0.10, hi: 0.40 },
+  winterDeepK: { lo: 0.45, hi: 0.85 },
+};
+
+/**
+ * Helper functions for continuous score calculations (0..1)
+ */
+function clamp01(x: number): number {
+  return Math.max(0, Math.min(1, x));
+}
+
+/**
+ * Ramp function: 0 at x0, 1 at x1, linear in between
+ */
+function ramp(x: number, x0: number, x1: number): number {
+  if (x <= x0) return 0;
+  if (x >= x1) return 1;
+  return (x - x0) / (x1 - x0);
+}
+
+/**
+ * Inverse ramp: 1 at x0, 0 at x1
+ */
+function invRamp(x: number, x0: number, x1: number): number {
+  return 1 - ramp(x, x0, x1);
+}
+
+/**
+ * Peak function: 1 in [lo, hi], smooth edges outside
+ * Uses PEAK_EDGE_WIDTH constant for smooth transitions
+ */
+const PEAK_EDGE_WIDTH = 0.1; // Width of smooth edge transition
+
+function peak(x: number, lo: number, hi: number): number {
+  if (x >= lo && x <= hi) return 1;
+  if (x < lo) {
+    // Smooth edge below: ramp from 0 to 1 over [lo-PEAK_EDGE_WIDTH, lo]
+    return ramp(x, lo - PEAK_EDGE_WIDTH, lo);
+  }
+  // Smooth edge above: ramp from 1 to 0 over [hi, hi+PEAK_EDGE_WIDTH]
+  return invRamp(x, hi, hi + PEAK_EDGE_WIDTH);
+}
+
+/**
+ * 2-Stage Color Classification from First Principles
+ * 
+ * Stage 1: Classify into 4-season families (spring/summer/autumn/winter)
+ * Stage 2: Within chosen family, classify into 3 subseasons (12 seasons total)
+ * 
+ * Uses only continuous scores (0..1), no boolean gates.
+ */
+interface ClassificationResult {
+  family: SeasonFamily;
+  familyProbs: Record<SeasonFamily, number>;
+  season12: Season12;
+  season12Probs: Record<Season12, number>;
+  top3: Array<{ season: Season12; probability: number }>;
+  
+  // Product-level output (for UI / Analytics)
+  isFallbackUsed: boolean;
+  fallbackRule?: string; // e.g. "SPRING_L>=78=>LIGHT" / "WINTER_pClear>=0.75=>BRIGHT"
+  reason: string; // Human-readable explanation for UI display
+  confidence: {
+    top1: number;
+    top2: number;
+    margin: number;
+    isBorderline: boolean;
+  };
+  
+  debug: {
+    L: number;
+    a: number;
+    b: number;
+    C: number;
+    W: number; // warmth
+    V: number; // value (lightness)
+    K0: number; // base clarity (from chroma)
+    Vgate: number; // value gate (ramp output)
+    Vscale: number; // value scale (soft attenuation with floor)
+    Keff: number; // effective clarity (K0 * Vscale)
+    K: number; // legacy alias for Keff (backward compatibility)
+    pClear: number; // probability of clear vs soft (from Keff)
+    familySumBeforeNorm: number; // sum of raw family scores before normalization
+    familyScores: Record<SeasonFamily, number>; // normalized family scores
+    subseasonScores: Record<Season12, number>;
+    isBorderline: boolean; // True if scoreGap <= 6 OR confidenceGap <= 15
+    fallback: {
+      used: boolean;
+      rule: string | null;
+    };
+  };
+}
+
+export function classifyColorLAB(
+  lab: { L: number; a: number; b: number },
+  config: ClassificationConfig = DEFAULT_CLASSIFICATION_CONFIG
+): ClassificationResult {
+  // Extract LAB components
+  const L = lab.L;
+  const a = lab.a;
+  const b = lab.b;
+  
+  // Compute derived features
+  const C = Math.sqrt(a * a + b * b); // Chroma
+  const V = L / 100; // Value (normalized lightness)
+  
+  // Warmth: sigmoid on b* axis
+  const W = clamp01(1 / (1 + Math.exp(-b / config.wb))); // Sigmoid: maps b* to [0,1]
+  
+  // Base clarity: normalized chroma
+  const K0 = clamp01(C / config.C_ref);
+  
+  // Value gate: ramp function for value-based attenuation
+  const Vgate = ramp(V, config.V_K0, config.V_K1);
+  
+  // Value scale: soft attenuation with floor (never zero)
+  // Vscale ranges from V_FLOOR (when V < V_K0) to 1.0 (when V >= V_K1)
+  const Vscale = config.V_FLOOR + (1 - config.V_FLOOR) * Vgate;
+  
+  // Effective clarity: combines chroma-based clarity with soft value attenuation
+  // Keff is reduced for low-value colors but never hard-zero
+  let Keff = K0 * Vscale;
+  
+  // Add Keff floor for vivid warm colors to prevent them from being treated as soft
+  // High chroma + high warmth should maintain minimum clarity
+  const C_norm = clamp01(C / 100);
+  const K_floor = 0.35 + 0.30 * C_norm * W;
+  Keff = Math.max(Keff, K_floor);
+  
+  // Compute pClear (probability of clear vs soft) from Keff
+  const pClear = clamp01(1 / (1 + Math.exp(-(Keff - config.K_mid) / config.K_bw)));
+  const pWarm = W; // pWarm is just W
+  
+  // Stage 1: Compute 4 family raw scores using pWarm and pClear
+  const springRaw = pWarm * pClear * (0.7 + 0.3 * V);
+  const autumnRaw = pWarm * (1 - pClear) * (0.8 + 0.2 * (1 - V));
+  const winterRaw = (1 - pWarm) * pClear * (0.7 + 0.3 * (1 - V));
+  const summerRaw = (1 - pWarm) * (1 - pClear) * (0.8 + 0.2 * V);
+  
+  // Normalize family scores
+  const EPS_FAMILY = 1e-10; // Small epsilon to avoid division by zero
+  const familySum = springRaw + autumnRaw + winterRaw + summerRaw;
+  const familyScores: Record<SeasonFamily, number> = {
+    spring: springRaw / Math.max(familySum, EPS_FAMILY),
+    autumn: autumnRaw / Math.max(familySum, EPS_FAMILY),
+    winter: winterRaw / Math.max(familySum, EPS_FAMILY),
+    summer: summerRaw / Math.max(familySum, EPS_FAMILY),
+  };
+  
+  // Use normalized family scores directly as probabilities (no softmax needed)
+  const familyProbs = familyScores;
+  
+  // Pick top family
+  const family = Object.entries(familyProbs).reduce((a, b) => a[1] > b[1] ? a : b)[0] as SeasonFamily;
+  
+  // Stage 2: Compute subseason scores within chosen family
+  const subseasonScores: Record<Season12, number> = {
+    'spring-light': 0,
+    'spring-true': 0,
+    'spring-bright': 0,
+    'summer-light': 0,
+    'summer-true': 0,
+    'summer-soft': 0,
+    'autumn-soft': 0,
+    'autumn-true': 0,
+    'autumn-deep': 0,
+    'winter-bright': 0,
+    'winter-true': 0,
+    'winter-deep': 0,
+  };
+  
+  // Spring subseasons (use Keff)
+  if (family === 'spring') {
+    subseasonScores['spring-light'] = ramp(V, config.springLightV.lo, config.springLightV.hi) * 
+                                      ramp(W, config.springLightW.lo, config.springLightW.hi) * 
+                                      peak(Keff, config.springLightK.lo, config.springLightK.hi);
+    subseasonScores['spring-true'] = peak(W, config.springTrueW.lo, config.springTrueW.hi) * 
+                                     peak(V, config.springTrueV.lo, config.springTrueV.hi) * 
+                                     peak(Keff, config.springTrueK.lo, config.springTrueK.hi);
+    subseasonScores['spring-bright'] = ramp(C, config.C_bright0, config.C_bright1) * 
+                                       ramp(Keff, config.springBrightK.lo, config.springBrightK.hi) * 
+                                       peak(V, config.springBrightV.lo, config.springBrightV.hi);
+  }
+  
+  // Autumn subseasons (use Keff)
+  if (family === 'autumn') {
+    subseasonScores['autumn-soft'] = invRamp(Keff, config.autumnSoftK.lo, config.autumnSoftK.hi) * 
+                                     peak(V, config.autumnSoftV.lo, config.autumnSoftV.hi) * 
+                                     peak(W, config.autumnSoftW.lo, config.autumnSoftW.hi);
+    subseasonScores['autumn-true'] = peak(W, config.autumnTrueW.lo, config.autumnTrueW.hi) * 
+                                    peak(V, config.autumnTrueV.lo, config.autumnTrueV.hi) * 
+                                    peak(Keff, config.autumnTrueK.lo, config.autumnTrueK.hi);
+    subseasonScores['autumn-deep'] = invRamp(V, config.autumnDeepV.lo, config.autumnDeepV.hi) * 
+                                    peak(W, config.autumnDeepW.lo, config.autumnDeepW.hi) * 
+                                    peak(Keff, config.autumnDeepK.lo, config.autumnDeepK.hi);
+  }
+  
+  // Summer subseasons (use Keff)
+  if (family === 'summer') {
+    subseasonScores['summer-light'] = ramp(V, config.summerLightV.lo, config.summerLightV.hi) * 
+                                      invRamp(W, config.summerLightW.lo, config.summerLightW.hi) * 
+                                      invRamp(Keff, config.summerLightK.lo, config.summerLightK.hi);
+    subseasonScores['summer-true'] = invRamp(W, config.summerTrueW.lo, config.summerTrueW.hi) * 
+                                     peak(V, config.summerTrueV.lo, config.summerTrueV.hi) * 
+                                     invRamp(Keff, config.summerTrueK.lo, config.summerTrueK.hi);
+    subseasonScores['summer-soft'] = invRamp(Keff, config.summerSoftK.lo, config.summerSoftK.hi) * 
+                                     peak(V, config.summerSoftV.lo, config.summerSoftV.hi) * 
+                                     invRamp(W, config.summerSoftW.lo, config.summerSoftW.hi);
+  }
+  
+  // Winter subseasons (use Keff)
+  if (family === 'winter') {
+    subseasonScores['winter-bright'] = ramp(C, config.C_bright0, config.C_bright1) * 
+                                       ramp(Keff, config.winterBrightK.lo, config.winterBrightK.hi) * 
+                                       invRamp(W, config.winterBrightW.lo, config.winterBrightW.hi);
+    subseasonScores['winter-true'] = invRamp(W, config.winterTrueW.lo, config.winterTrueW.hi) * 
+                                    peak(V, config.winterTrueV.lo, config.winterTrueV.hi) * 
+                                    peak(Keff, config.winterTrueK.lo, config.winterTrueK.hi);
+    subseasonScores['winter-deep'] = invRamp(V, config.winterDeepV.lo, config.winterDeepV.hi) * 
+                                    invRamp(W, config.winterDeepW.lo, config.winterDeepW.hi) * 
+                                    peak(Keff, config.winterDeepK.lo, config.winterDeepK.hi);
+  }
+  
+  // Normalize subseason scores within chosen family (softmax)
+  const familySubseasons: Season12[] = 
+    family === 'spring' ? ['spring-light', 'spring-true', 'spring-bright'] :
+    family === 'autumn' ? ['autumn-soft', 'autumn-true', 'autumn-deep'] :
+    family === 'summer' ? ['summer-light', 'summer-true', 'summer-soft'] :
+    ['winter-bright', 'winter-true', 'winter-deep'];
+  
+  const EPS_SUBSEASON = 1e-6;
+  const maxSubScore = Math.max(...familySubseasons.map(s => subseasonScores[s]));
+  
+  let season12: Season12;
+  let season12Probs: Record<Season12, number>;
+  let isBorderline = false;
+  let isFallbackUsed = false;
+  let fallbackRule: string | null = null;
+  let reason = '';
+  
+  if (maxSubScore <= EPS_SUBSEASON) {
+    // Fallback: all subseason scores are zero or too small
+    // Use fallback rules based on L and pClear
+    isFallbackUsed = true;
+    
+    if (family === 'spring') {
+      if (L >= 78) {
+        season12 = 'spring-light';
+        fallbackRule = 'SPRING_L>=78=>LIGHT';
+        reason = 'High lightness → Spring Light';
+      } else if (pClear >= 0.75) {
+        season12 = 'spring-bright';
+        fallbackRule = 'SPRING_pClear>=0.75=>BRIGHT';
+        reason = 'High clarity → Spring Bright';
+      } else {
+        season12 = 'spring-true';
+        fallbackRule = 'SPRING_DEFAULT=>TRUE';
+        reason = 'Moderate features → Spring True';
+      }
+    } else if (family === 'summer') {
+      if (L >= 78) {
+        season12 = 'summer-light';
+        fallbackRule = 'SUMMER_L>=78=>LIGHT';
+        reason = 'High lightness → Summer Light';
+      } else if (pClear <= 0.35) {
+        season12 = 'summer-soft';
+        fallbackRule = 'SUMMER_pClear<=0.35=>SOFT';
+        reason = 'Low clarity → Summer Soft';
+      } else {
+        season12 = 'summer-true';
+        fallbackRule = 'SUMMER_DEFAULT=>TRUE';
+        reason = 'Moderate features → Summer True';
+      }
+    } else if (family === 'autumn') {
+      if (L <= 45) {
+        season12 = 'autumn-deep';
+        fallbackRule = 'AUTUMN_L<=45=>DEEP';
+        reason = 'Low lightness → Autumn Deep';
+      } else if (pClear <= 0.35) {
+        season12 = 'autumn-soft';
+        fallbackRule = 'AUTUMN_pClear<=0.35=>SOFT';
+        reason = 'Low clarity → Autumn Soft';
+      } else {
+        season12 = 'autumn-true';
+        fallbackRule = 'AUTUMN_DEFAULT=>TRUE';
+        reason = 'Moderate features → Autumn True';
+      }
+    } else { // winter
+      if (L <= 45) {
+        season12 = 'winter-deep';
+        fallbackRule = 'WINTER_L<=45=>DEEP';
+        reason = 'Low lightness → Winter Deep';
+      } else if (pClear >= 0.75) {
+        season12 = 'winter-bright';
+        fallbackRule = 'WINTER_pClear>=0.75=>BRIGHT';
+        reason = 'High clarity → Winter Bright';
+      } else {
+        season12 = 'winter-true';
+        fallbackRule = 'WINTER_DEFAULT=>TRUE';
+        reason = 'Moderate features → Winter True';
+      }
+    }
+    
+    // Set probabilities with heuristic proportions for fallback
+    season12Probs = { ...subseasonScores };
+    familySubseasons.forEach(s => {
+      if (s === season12) {
+        season12Probs[s] = 0.6; // Primary gets 60%
+      } else {
+        // Distribute remaining 40% among other two
+        season12Probs[s] = 0.2;
+      }
+    });
+    // Normalize to sum to 1.0
+    const fallbackSum = Object.values(season12Probs).reduce((sum, p) => sum + p, 0);
+    familySubseasons.forEach(s => {
+      season12Probs[s] = season12Probs[s] / fallbackSum;
+    });
+    
+    // Check if borderline in fallback case (though unlikely with 60/20/20 distribution)
+    const sortedFallbackProbs = familySubseasons
+      .map(s => ({ season: s, prob: season12Probs[s] }))
+      .sort((a, b) => b.prob - a.prob);
+    if (sortedFallbackProbs.length >= 2) {
+      isBorderline = (sortedFallbackProbs[0].prob - sortedFallbackProbs[1].prob) < 0.06;
+    }
+  } else {
+    // Normal case: use softmax on subseason scores
+    const subseasonLogits = familySubseasons.map(s => subseasonScores[s]);
+    const maxSubseasonLogit = Math.max(...subseasonLogits);
+    const expSubseasonScores = subseasonLogits.map(s => Math.exp(s - maxSubseasonLogit));
+    const sumExpSubseason = expSubseasonScores.reduce((sum, e) => sum + e, 0);
+    
+    season12Probs = { ...subseasonScores };
+    familySubseasons.forEach((season, idx) => {
+      season12Probs[season] = expSubseasonScores[idx] / sumExpSubseason;
+    });
+    
+    // Pick top season12
+    season12 = familySubseasons.reduce((a, b) => 
+      season12Probs[a] > season12Probs[b] ? a : b
+    ) as Season12;
+    
+    // Check if borderline (top1 - top2 < 0.06)
+    const sortedProbs = familySubseasons
+      .map(s => ({ season: s, prob: season12Probs[s] }))
+      .sort((a, b) => b.prob - a.prob);
+    if (sortedProbs.length >= 2) {
+      isBorderline = (sortedProbs[0].prob - sortedProbs[1].prob) < 0.06;
+    }
+    
+    // Non-fallback reason
+    reason = 'Closest match by color features';
+  }
+  
+  const allSeasonProbs: Record<Season12, number> = {
+    'spring-light': familyProbs.spring * (family === 'spring' ? season12Probs['spring-light'] : 0),
+    'spring-true': familyProbs.spring * (family === 'spring' ? season12Probs['spring-true'] : 0),
+    'spring-bright': familyProbs.spring * (family === 'spring' ? season12Probs['spring-bright'] : 0),
+    'summer-light': familyProbs.summer * (family === 'summer' ? season12Probs['summer-light'] : 0),
+    'summer-true': familyProbs.summer * (family === 'summer' ? season12Probs['summer-true'] : 0),
+    'summer-soft': familyProbs.summer * (family === 'summer' ? season12Probs['summer-soft'] : 0),
+    'autumn-soft': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-soft'] : 0),
+    'autumn-true': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-true'] : 0),
+    'autumn-deep': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-deep'] : 0),
+    'winter-bright': familyProbs.winter * (family === 'winter' ? season12Probs['winter-bright'] : 0),
+    'winter-true': familyProbs.winter * (family === 'winter' ? season12Probs['winter-true'] : 0),
+    'winter-deep': familyProbs.winter * (family === 'winter' ? season12Probs['winter-deep'] : 0),
+  };
+  
+  const allSeasons: Season12[] = [
+    'spring-light', 'spring-true', 'spring-bright',
+    'summer-light', 'summer-true', 'summer-soft',
+    'autumn-soft', 'autumn-true', 'autumn-deep',
+    'winter-bright', 'winter-true', 'winter-deep',
+  ];
+  
+  const top3 = allSeasons
+    .map(season => ({ season, probability: allSeasonProbs[season] }))
+    .sort((a, b) => b.probability - a.probability)
+    .slice(0, 3);
+  
+  // Calculate confidence metrics from top3
+  const top1Prob = top3[0]?.probability ?? 0;
+  const top2Prob = top3[1]?.probability ?? 0;
+  const margin = top1Prob - top2Prob;
+  
+  const confidence = {
+    top1: top1Prob,
+    top2: top2Prob,
+    margin,
+    isBorderline,
+  };
+  
+  // Debug output
+  const debug = {
+    L,
+    a,
+    b,
+    C,
+    W,
+    V,
+    K0, // Base clarity (from chroma)
+    Vgate, // Value gate (ramp output)
+    Vscale, // Value scale (soft attenuation with floor)
+    Keff, // Effective clarity (K0 * Vscale)
+    K: Keff, // Legacy field for backward compatibility
+    pClear, // Probability of clear vs soft
+    familySumBeforeNorm: familySum, // Sum of raw family scores before normalization
+    familyScores, // Normalized family scores
+    subseasonScores: { ...subseasonScores },
+    isBorderline, // Flag indicating if top1 and top2 are very close
+    fallback: {
+      used: isFallbackUsed,
+      rule: fallbackRule,
+    },
+  };
+  
+  // DEBUG flag logging
+  if (typeof window !== 'undefined' && (window as any).DEBUG_COLOR_CLASSIFICATION) {
+    console.group(`COLOR_CLASSIFICATION_2STAGE ${lab.L.toFixed(1)},${lab.a.toFixed(1)},${lab.b.toFixed(1)}`);
+    console.log('Features:', { L, a, b, C: C.toFixed(2), W: W.toFixed(3), V: V.toFixed(3), K0: K0.toFixed(3), Vgate: Vgate.toFixed(3), Vscale: Vscale.toFixed(3), Keff: Keff.toFixed(3), pClear: pClear.toFixed(3) });
+    console.log('Family scores:', familyScores);
+    console.log('Family probabilities:', familyProbs);
+    console.log('Chosen family:', family);
+    console.log('Subseason scores (within family):', familySubseasons.reduce((acc, s) => ({ ...acc, [s]: subseasonScores[s] }), {}));
+    console.log('Subseason probabilities (within family):', familySubseasons.reduce((acc, s) => ({ ...acc, [s]: season12Probs[s] }), {}));
+    console.log('Final top3:', top3);
+    console.log('Fallback used:', isFallbackUsed, fallbackRule ? `(${fallbackRule})` : '');
+    console.log('Reason:', reason);
+    console.groupEnd();
+  }
+  
+  return {
+    family,
+    familyProbs,
+    season12,
+    season12Probs: allSeasonProbs,
+    top3,
+    isFallbackUsed,
+    fallbackRule: fallbackRule ?? undefined,
+    reason,
+    confidence,
+    debug,
+  };
+}
+
+/**
  * Calculate warm/cool mismatch (0..1)
  * Returns 0 if match, 1 if complete mismatch
+ * @deprecated - kept for backward compatibility, not used in new 2-stage system
  */
 function calculateWarmCoolMismatch(
   inputLab: { L: number; a: number; b: number },
@@ -702,10 +1306,139 @@ function calculateWarmCoolMismatch(
 }
 
 /**
- * Calculate season match breakdown using hierarchical penalty scoring system.
- * Returns probabilities/percentages for all 12 seasons based on DeltaE76 + penalties.
+ * Calculate season match breakdown using 2-stage classification system.
+ * Wraps the new classifyColorLAB function for backward compatibility.
+ * @deprecated The old penalty-based system is replaced by 2-stage classification.
  */
 export function calculateSeasonMatchBreakdown(
+  lab: { L: number; a: number; b: number },
+  hsl?: { s: number } // Optional HSL saturation (not used in new system, kept for compatibility)
+): SeasonMatchBreakdown {
+  // Use new 2-stage classification
+  const result = classifyColorLAB(lab);
+  
+  // Convert to old format for backward compatibility
+  const allSeasons: Season12[] = [
+    'spring-light', 'spring-true', 'spring-bright',
+    'summer-light', 'summer-true', 'summer-soft',
+    'autumn-soft', 'autumn-true', 'autumn-deep',
+    'winter-bright', 'winter-true', 'winter-deep',
+  ];
+  
+  // Create matches array (sorted by probability descending)
+  const matches: SeasonMatch[] = allSeasons
+    .map(season => ({
+      season,
+      confidence: Math.round(result.season12Probs[season] * 100),
+      totalScore: 1 - result.season12Probs[season], // Convert probability to "distance" (lower is better)
+    }))
+    .sort((a, b) => b.confidence - a.confidence); // Sort by confidence descending
+  
+  const primaryMatch = matches[0];
+  const secondaryMatch = matches[1]?.confidence >= SECONDARY_THRESHOLDS.MIN_CONFIDENCE &&
+                         primaryMatch.confidence < SECONDARY_THRESHOLDS.SHOW_PRIMARY_MAX
+    ? matches[1]
+    : null;
+  
+  const scoreGap = secondaryMatch ? secondaryMatch.totalScore - primaryMatch.totalScore : Infinity;
+  const confidenceGap = secondaryMatch ? primaryMatch.confidence - secondaryMatch.confidence : Infinity;
+  
+  const isBorderline = 
+    primaryMatch.confidence < 85 &&
+    scoreGap <= 4 &&
+    confidenceGap <= 10;
+  
+  // Create breakdown
+  const breakdown = matches.map(m => ({
+    season: m.season,
+    score: m.confidence,
+  }));
+  
+  // Create debug info
+  const seasonDebugInfo: SeasonDebugInfo[] = allSeasons.map(season => ({
+    season,
+    baseScore: 0, // Not used in new system
+    effectiveBaseScore: 0,
+    penaltyMuted: 0,
+    penaltyLightDeep: 0,
+    penaltyTemperature: 0,
+    penaltyEarthy: 0,
+    penaltyDusty: 0,
+    penaltyClarityMismatch: 0,
+    penaltyMutedGate: 0,
+    penaltyMutedness: 0,
+    penaltySpringBrightness: 0,
+    totalScore: 1 - result.season12Probs[season],
+    confidence: Math.round(result.season12Probs[season] * 100),
+  }));
+  
+  const topCandidates: TopCandidate[] = result.top3.map((item, idx) => ({
+    season: item.season,
+    confidence: Math.round(item.probability * 100),
+    totalScore: 1 - item.probability,
+    baseScore: 0,
+    penaltyMuted: 0,
+    penaltyLightDeep: 0,
+    penaltyTemperature: 0,
+    penaltyEarthy: 0,
+    penaltyDusty: 0,
+    penaltyClarityMismatch: 0,
+    penaltyMutedGate: 0,
+    penaltyMutedness: 0,
+    penaltySpringBrightness: 0,
+    flags: {
+      veryMuted: false,
+      muted: false,
+      clear: false,
+      light: false,
+      deep: false,
+      isEarthyBrownish: false,
+      isVividYellow: false,
+      isGreyed: false,
+      isDusty: false,
+      isSmoky: false,
+    },
+  }));
+  
+  // Derive temperature from season
+  const baseTemperature = result.family === 'spring' || result.family === 'autumn' ? 'warm' : 'cool';
+  const isNeutral = result.debug.C <= 18;
+  const finalTemperatureLabel: TemperatureCategory = isNeutral
+    ? (baseTemperature === 'warm' ? 'neutral-warm' : 'neutral-cool')
+    : baseTemperature;
+  
+  return {
+    primaryMatch,
+    secondaryMatch: isBorderline ? secondaryMatch : null,
+    isBorderline,
+    gaps: {
+      scoreGap,
+      confidenceGap,
+    },
+    breakdown,
+    debugInfo: {
+      isEarthyBrownish: false, // Not used in new system
+      isVividYellow: false, // Not used in new system
+      seasonScores: seasonDebugInfo,
+      topCandidates,
+      baseTemperature,
+      isNeutral,
+      finalTemperatureLabel,
+      chroma: result.debug.C,
+    },
+    // Legacy fields for backward compatibility
+    primarySeason: primaryMatch.season,
+    secondarySeason: secondaryMatch?.season ?? null,
+    confidence: primaryMatch.confidence,
+    isAmbiguous: isBorderline,
+  };
+}
+
+/**
+ * OLD IMPLEMENTATION - Replaced by 2-stage classification above
+ * Kept for reference but disabled.
+ */
+function calculateSeasonMatchBreakdown_OLD(
   lab: { L: number; a: number; b: number },
   hsl?: { s: number } // Optional HSL saturation for vividness calculation
 ): SeasonMatchBreakdown {
