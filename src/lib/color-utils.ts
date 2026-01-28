@@ -706,7 +706,8 @@ function calculateWarmCoolMismatch(
  * Returns probabilities/percentages for all 12 seasons based on DeltaE76 + penalties.
  */
 export function calculateSeasonMatchBreakdown(
-  lab: { L: number; a: number; b: number }
+  lab: { L: number; a: number; b: number },
+  hsl?: { s: number } // Optional HSL saturation for vividness calculation
 ): SeasonMatchBreakdown {
   // Compute Chroma and Lightness
   const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
@@ -907,6 +908,62 @@ export function calculateSeasonMatchBreakdown(
     });
   }
   
+  // Apply vividness adjustment for Spring internal distinction (spring-true vs spring-bright)
+  // This is a targeted tie-breaker for high-vividness Spring colors
+  if (hsl) {
+    const VIVID_HIGH = 0.45;
+    const VIVID_LOW = 0.30;
+    const BONUS = 2.0;
+    
+    // Compute vividness metric (C is already computed above)
+    const vivid = (C / 100) * (hsl.s / 100);
+    
+    // Find spring-true and spring-bright scores
+    const springTrueIndex = seasonScores.findIndex(s => s.season === 'spring-true');
+    const springBrightIndex = seasonScores.findIndex(s => s.season === 'spring-bright');
+    
+    if (springTrueIndex !== -1 && springBrightIndex !== -1) {
+      const springTrueScore = seasonScores[springTrueIndex];
+      const springBrightScore = seasonScores[springBrightIndex];
+      
+      // Calculate adjustment using linear interpolation
+      let adjustment = 0;
+      if (vivid >= VIVID_HIGH) {
+        // High vividness: favor spring-bright
+        adjustment = BONUS;
+      } else if (vivid <= VIVID_LOW) {
+        // Low vividness: favor spring-true
+        adjustment = -BONUS;
+      } else {
+        // Linear interpolation between thresholds
+        const t = (vivid - VIVID_LOW) / (VIVID_HIGH - VIVID_LOW);
+        adjustment = BONUS * (2 * t - 1); // Maps [VIVID_LOW, VIVID_HIGH] to [-BONUS, BONUS]
+      }
+      
+      // Apply adjustment: positive adjustment favors bright (reduces bright score, increases true score)
+      // Negative adjustment favors true (reduces true score, increases bright score)
+      seasonScores[springTrueIndex].totalScore += adjustment;
+      seasonScores[springBrightIndex].totalScore -= adjustment;
+      
+      // Debug logging (behind flag) - will log after softmax with final probabilities
+      // Store adjustment info for later logging
+      (seasonScores as any).__vividnessDebug = {
+        chroma: C,
+        sat: hsl.s,
+        vivid,
+        preAdjust: {
+          'spring-true': springTrueScore.totalScore,
+          'spring-bright': springBrightScore.totalScore,
+        },
+        adjustment,
+        postAdjust: {
+          'spring-true': seasonScores[springTrueIndex].totalScore,
+          'spring-bright': seasonScores[springBrightIndex].totalScore,
+        },
+      };
+    }
+  }
+  
   // Convert to confidence using temperature-controlled, numerically stable softmax
   // Lower score = better match, so we use negative scores
   const TAU = 6; // Temperature parameter for softmax
@@ -926,6 +983,32 @@ export function calculateSeasonMatchBreakdown(
       totalScore: seasonScore.totalScore,
     }))
     .sort((a, b) => a.totalScore - b.totalScore); // Sort by totalScore ascending (lower is better)
+  
+  // Debug logging for vividness adjustment (behind flag)
+  if (typeof window !== 'undefined' && (window as any).DEBUG_SPRING_VIVIDNESS && (seasonScores as any).__vividnessDebug) {
+    const debugInfo = (seasonScores as any).__vividnessDebug;
+    const springTrueMatch = matches.find(m => m.season === 'spring-true');
+    const springBrightMatch = matches.find(m => m.season === 'spring-bright');
+    const top3 = matches.slice(0, 3);
+    
+    console.log('SPRING_VIVIDNESS_ADJUSTMENT:', {
+      lab: { L: lab.L, a: lab.a, b: lab.b },
+      chroma: debugInfo.chroma,
+      sat: debugInfo.sat,
+      vivid: debugInfo.vivid,
+      preAdjust: debugInfo.preAdjust,
+      adjustment: debugInfo.adjustment,
+      postAdjust: debugInfo.postAdjust,
+      finalProbabilities: {
+        'spring-true': springTrueMatch ? springTrueMatch.confidence : 0,
+        'spring-bright': springBrightMatch ? springBrightMatch.confidence : 0,
+      },
+      topCandidates: top3.map(m => ({ season: m.season, confidence: m.confidence, totalScore: m.totalScore })),
+    });
+    
+    // Clean up debug info
+    delete (seasonScores as any).__vividnessDebug;
+  }
   
   // Primary and secondary matches
   const primaryMatch = matches[0];
@@ -1176,7 +1259,8 @@ export function getColorMetrics(color: ColorValues): ColorMetrics {
   const seasonalTendency = season12.split('-')[0] as SeasonFamily;
   
   // Calculate detailed match breakdown using distance-based algorithm
-  const seasonMatch = calculateSeasonMatchBreakdown(labDecision);
+  // Pass HSL saturation for vividness calculation
+  const seasonMatch = calculateSeasonMatchBreakdown(labDecision, { s: color.hsl.s });
 
   // Derive temperature from primary season and color neutrality (ensures UI consistency: no Winter + Warm conflicts)
   // Use finalTemperatureLabel from seasonMatch if available, otherwise calculate from season12
