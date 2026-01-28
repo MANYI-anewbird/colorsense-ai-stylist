@@ -119,6 +119,7 @@ export interface SeasonDebugInfo {
   penaltyDusty: number;
   penaltyClarityMismatch: number;
   penaltyMutedGate: number;
+  penaltyMutedness: number;
   totalScore: number;
   confidence: number;
 }
@@ -135,6 +136,7 @@ export interface TopCandidate {
   penaltyDusty: number;
   penaltyClarityMismatch: number;
   penaltyMutedGate: number;
+  penaltyMutedness: number;
   flags: FeatureFlags;
 }
 
@@ -696,6 +698,10 @@ export function calculateSeasonMatchBreakdown(
   // Extremely muted gate: chroma < 10 (very greyed colors)
   const isExtremelyMuted = C < 10;
   
+  // Mutedness gate: chroma < 30 (muted/dusty colors)
+  // This helps fix misclassification of muted colors as Light/Bright instead of Soft
+  const isMutedColor = C < 30;
+  
   // Earthy/Brownish feature detection (warm brown/tan/caramel tones)
   const isEarthyBrownish =
     lab.b > 22 &&
@@ -748,6 +754,7 @@ export function calculateSeasonMatchBreakdown(
     penaltyDusty: number;
     penaltyClarityMismatch: number;
     penaltyMutedGate: number;
+    penaltyMutedness: number;
     totalScore: number;
   }> = [];
   
@@ -822,7 +829,25 @@ export function calculateSeasonMatchBreakdown(
       }
     }
     
-    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch + penaltyMutedGate;
+    // Penalty/Bonus: Mutedness gate for Light/Bright vs Soft seasons
+    // Muted colors (chroma < 30) should prefer Soft seasons over Light/Bright
+    let penaltyMutedness = 0;
+    if (isMutedColor) {
+      // Penalty for Light seasons (light-spring, light-summer)
+      if (season.includes('light')) {
+        penaltyMutedness += 25; // Penalty for Light seasons
+      }
+      // Penalty for Bright seasons (bright-spring, bright-winter)
+      if (season.includes('bright')) {
+        penaltyMutedness += 25; // Penalty for Bright seasons
+      }
+      // Bonus (negative penalty) for Soft seasons (soft-summer, soft-autumn)
+      if (season.includes('soft')) {
+        penaltyMutedness -= 20; // Bonus for Soft seasons (reduces totalScore)
+      }
+    }
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch + penaltyMutedGate + penaltyMutedness;
     
     seasonScores.push({
       season,
@@ -834,6 +859,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyDusty,
       penaltyClarityMismatch,
       penaltyMutedGate,
+      penaltyMutedness,
       totalScore,
     });
   }
@@ -904,6 +930,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyDusty: seasonScore.penaltyDusty,
       penaltyClarityMismatch: seasonScore.penaltyClarityMismatch,
       penaltyMutedGate: seasonScore.penaltyMutedGate,
+      penaltyMutedness: seasonScore.penaltyMutedness,
       totalScore: seasonScore.totalScore,
       confidence: Math.round((expScores[index] / sumExpScores) * 100),
     }))
@@ -924,6 +951,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyDusty: debugInfo.penaltyDusty,
       penaltyClarityMismatch: debugInfo.penaltyClarityMismatch,
       penaltyMutedGate: debugInfo.penaltyMutedGate,
+      penaltyMutedness: debugInfo.penaltyMutedness,
       flags: featureFlags,
     }));
   
