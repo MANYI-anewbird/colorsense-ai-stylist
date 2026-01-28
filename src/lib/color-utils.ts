@@ -142,6 +142,7 @@ export interface SeasonDebugInfo {
   penaltyClarityMismatch: number;
   penaltyMutedGate: number;
   penaltyMutedness: number;
+  penaltySpringBrightness: number;
   totalScore: number;
   confidence: number;
 }
@@ -159,6 +160,7 @@ export interface TopCandidate {
   penaltyClarityMismatch: number;
   penaltyMutedGate: number;
   penaltyMutedness: number;
+  penaltySpringBrightness: number;
   flags: FeatureFlags;
 }
 
@@ -777,6 +779,7 @@ export function calculateSeasonMatchBreakdown(
     penaltyClarityMismatch: number;
     penaltyMutedGate: number;
     penaltyMutedness: number;
+    penaltySpringBrightness: number;
     totalScore: number;
   }> = [];
   
@@ -869,7 +872,24 @@ export function calculateSeasonMatchBreakdown(
       }
     }
     
-    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch + penaltyMutedGate + penaltyMutedness;
+    // Penalty/Bonus: Spring internal distinction (Bright Spring vs True Spring)
+    // Bright Spring requires extreme clarity (candy-like, fluorescent), while True Spring is warm, high-chroma but "juicy/not piercing"
+    let penaltySpringBrightness = 0;
+    const isHighChroma = C >= 35; // High chroma threshold
+    const isNotExtremelyClear = L < 70 || isSmoky || isDusty || isGreyed; // Not extremely clear conditions
+    
+    if (isHighChroma && isNotExtremelyClear) {
+      // High chroma but not extremely clear (thick/juicy colors like #D68A58)
+      if (season === 'spring-bright') {
+        penaltySpringBrightness += 10; // Penalty for Bright Spring (should be very clear/fluorescent)
+      }
+      if (season === 'spring-true' && lab.b > 0) {
+        // Warm, high-chroma, non-extremely-clear colors prefer True Spring
+        penaltySpringBrightness -= 6; // Bonus for True Spring (reduces totalScore)
+      }
+    }
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch + penaltyMutedGate + penaltyMutedness + penaltySpringBrightness;
     
     seasonScores.push({
       season,
@@ -882,6 +902,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyClarityMismatch,
       penaltyMutedGate,
       penaltyMutedness,
+      penaltySpringBrightness,
       totalScore,
     });
   }
@@ -953,6 +974,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyClarityMismatch: seasonScore.penaltyClarityMismatch,
       penaltyMutedGate: seasonScore.penaltyMutedGate,
       penaltyMutedness: seasonScore.penaltyMutedness,
+      penaltySpringBrightness: seasonScore.penaltySpringBrightness,
       totalScore: seasonScore.totalScore,
       confidence: Math.round((expScores[index] / sumExpScores) * 100),
     }))
@@ -974,6 +996,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyClarityMismatch: debugInfo.penaltyClarityMismatch,
       penaltyMutedGate: debugInfo.penaltyMutedGate,
       penaltyMutedness: debugInfo.penaltyMutedness,
+      penaltySpringBrightness: debugInfo.penaltySpringBrightness,
       flags: featureFlags,
     }));
   
