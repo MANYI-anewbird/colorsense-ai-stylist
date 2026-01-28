@@ -124,7 +124,30 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
     );
   }
 
-  const { primaryMatch, secondaryMatch, isBorderline, confidence } = seasonMatch;
+  const { primaryMatch, secondaryMatch, isBorderline, confidence, breakdown, debugInfo } = seasonMatch;
+  
+  // UI-side debug logging: print the exact 12-element array used by UI
+  useEffect(() => {
+    if (hex && breakdown && debugInfo?.seasonScores) {
+      const full12Array = debugInfo.seasonScores
+        .sort((a, b) => a.totalScore - b.totalScore) // Sort by totalScore ascending (lower is better)
+        .map(s => ({
+          season: s.season,
+          confidence: s.confidence,
+          totalScore: s.totalScore,
+        }));
+      
+      const top3 = full12Array.slice(0, 3);
+      
+      console.log('UI_SEASON_ARRAY:', {
+        hex,
+        full12Array,
+        top3,
+        primaryMatch: primaryMatch ? { season: primaryMatch.season, confidence: primaryMatch.confidence } : null,
+        secondaryMatch: secondaryMatch ? { season: secondaryMatch.season, confidence: secondaryMatch.confidence } : null,
+      });
+    }
+  }, [hex, breakdown, debugInfo, primaryMatch, secondaryMatch]);
   
   // Guard against undefined primaryMatch
   if (!primaryMatch) {

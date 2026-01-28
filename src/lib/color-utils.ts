@@ -792,9 +792,26 @@ export function calculateSeasonMatchBreakdown(
     autumnEarthScore = autumnEarthL * autumnEarthChroma;
     
     // Compute penalty factors (multiplicative, applied to distance)
-    const K = 0.2; // Small multiplicative factor (0.15-0.3 range)
-    springPenaltyFactor = 1 + K * autumnEarthScore; // Spring penalized when earthy
-    autumnPenaltyFactor = 1 + K * springClearScore; // Autumn penalized when clear
+    // Lower distance = better match, so:
+    // - When earthy: Spring gets penalty (distance * factor > 1), Autumn gets bonus (distance * factor < 1)
+    // - When clear: Autumn gets penalty (distance * factor > 1), Spring gets bonus (distance * factor < 1)
+    const K = 0.3; // Multiplicative factor (0.15-0.3 range, using 0.3 for stronger effect)
+    
+    // Base factors: start at 1.0 (no adjustment)
+    springPenaltyFactor = 1.0;
+    autumnPenaltyFactor = 1.0;
+    
+    // Apply earthy adjustments
+    if (autumnEarthScore > 0) {
+      springPenaltyFactor = 1 + K * autumnEarthScore; // Spring penalized when earthy (distance increased)
+      autumnPenaltyFactor = Math.max(0.7, 1 - K * autumnEarthScore); // Autumn rewarded when earthy (distance decreased, min 0.7)
+    }
+    
+    // Apply clear adjustments (can override earthy for Spring if very clear)
+    if (springClearScore > 0) {
+      springPenaltyFactor = Math.max(0.7, springPenaltyFactor - K * springClearScore); // Spring rewarded when clear (distance decreased)
+      autumnPenaltyFactor = Math.max(1.0, autumnPenaltyFactor + K * springClearScore * 0.5); // Autumn slightly penalized when clear
+    }
   }
   
   // Calculate scores for all seasons
@@ -952,7 +969,7 @@ export function calculateSeasonMatchBreakdown(
   
   // Apply vividness adjustment for Spring internal distinction (spring-true vs spring-bright)
   // This is a targeted tie-breaker for high-vividness Spring colors
-  if (hsl) {
+  if (hsl && lab.b > 0) { // Only for warm colors
     const VIVID_HIGH = 0.45;
     const VIVID_LOW = 0.30;
     const VIVID_EXTREME = 0.5; // Extreme vividness threshold
@@ -960,6 +977,12 @@ export function calculateSeasonMatchBreakdown(
     
     // Compute vividness metric (C is already computed above)
     const vivid = (C / 100) * (hsl.s / 100);
+    
+    // Additional clarity/vividness feature for Bright Spring
+    // Very high chroma (>= 55) OR high saturation (>= 85) with medium L (35-75)
+    const isVeryHighChroma = C >= 55;
+    const isHighSatMediumL = hsl.s >= 85 && L >= 35 && L <= 75;
+    const isExtremelyVivid = isVeryHighChroma || isHighSatMediumL;
     
     // Find spring-true and spring-bright scores
     const springTrueIndex = seasonScores.findIndex(s => s.season === 'spring-true');
@@ -971,16 +994,16 @@ export function calculateSeasonMatchBreakdown(
       
       // Calculate adjustment using linear interpolation
       let adjustment = 0;
-      if (vivid >= VIVID_EXTREME) {
+      if (vivid >= VIVID_EXTREME || isExtremelyVivid) {
         // Extreme vividness: enforce spring-bright must beat spring-true
         // Calculate minimum adjustment needed to ensure spring-bright wins
         const scoreGap = springTrueScore.totalScore - springBrightScore.totalScore;
         adjustment = Math.max(BONUS, scoreGap + 1); // Ensure spring-bright wins by at least 1
-      } else if (vivid >= VIVID_HIGH) {
+      } else if (vivid >= VIVID_HIGH || isVeryHighChroma) {
         // High vividness: favor spring-bright
         adjustment = BONUS;
-      } else if (vivid <= VIVID_LOW) {
-        // Low vividness: favor spring-true
+      } else if (vivid <= VIVID_LOW && C < 55) {
+        // Low vividness and not very high chroma: favor spring-true
         adjustment = -BONUS;
       } else {
         // Linear interpolation between thresholds
@@ -1381,6 +1404,54 @@ export function getColorMetrics(color: ColorValues): ColorMetrics {
   };
 }
 
+/**
+ * Dev-only test function for Spring vs Autumn boundary validation
+ * Tests three acceptance criteria colors and prints results
+ */
+export function testSpringAutumnBoundary(): void {
+  if (typeof window === 'undefined') return; // Only run in browser
+  
+  const testCases = [
+    { hex: '#B37256', name: 'Warm earthy brown (should be Autumn)' },
+    { hex: '#FF0801', name: 'Very high chroma warm red (should be Bright Spring)' },
+    { hex: '#FEA176', name: 'Light warm peach (should be Spring)' },
+  ];
+  
+  console.group('SPRING_AUTUMN_BOUNDARY_TEST');
+  
+  for (const testCase of testCases) {
+    const rgb = {
+      r: parseInt(testCase.hex.slice(1, 3), 16),
+      g: parseInt(testCase.hex.slice(3, 5), 16),
+      b: parseInt(testCase.hex.slice(5, 7), 16),
+    };
+    
+    const color = getColorValues(rgb.r, rgb.g, rgb.b);
+    const metrics = getColorMetrics(color);
+    
+    const top1 = metrics.seasonMatch?.primaryMatch;
+    const top2 = metrics.seasonMatch?.secondaryMatch;
+    const top3 = metrics.seasonMatch?.debugInfo?.seasonScores
+      .sort((a, b) => a.totalScore - b.totalScore)
+      .slice(0, 3);
+    
+    console.log(testCase.name, {
+      hex: testCase.hex,
+      lab: { L: color.lab.l, a: color.lab.a, b: color.lab.b },
+      top1: top1 ? { season: top1.season, confidence: top1.confidence } : null,
+      top2: top2 ? { season: top2.season, confidence: top2.confidence } : null,
+      top3: top3?.map(s => ({ season: s.season, confidence: s.confidence, totalScore: s.totalScore })),
+    });
+  }
+  
+  console.groupEnd();
+}
+
+// Expose test function globally for easy access
+if (typeof window !== 'undefined') {
+  (window as any).testSpringAutumnBoundary = testSpringAutumnBoundary;
+}
+
 // Analyze image quality and confidence
 export function analyzeConfidence(
   avgLightness: number,
@@ -1488,4 +1559,54 @@ export function analyzeColor(
     confidence,
     confidenceNote: note,
   };
+}
+
+/**
+ * Dev-only test function for Spring vs Autumn boundary validation
+ * Tests three acceptance criteria colors and prints results
+ * Call from browser console: window.testSpringAutumnBoundary()
+ */
+export function testSpringAutumnBoundary(): void {
+  if (typeof window === 'undefined') return; // Only run in browser
+  
+  const testCases = [
+    { hex: '#B37256', name: 'Warm earthy brown (should be Autumn)' },
+    { hex: '#FF0801', name: 'Very high chroma warm red (should be Bright Spring)' },
+    { hex: '#FEA176', name: 'Light warm peach (should be Spring)' },
+  ];
+  
+  console.group('SPRING_AUTUMN_BOUNDARY_TEST');
+  
+  for (const testCase of testCases) {
+    const rgb = {
+      r: parseInt(testCase.hex.slice(1, 3), 16),
+      g: parseInt(testCase.hex.slice(3, 5), 16),
+      b: parseInt(testCase.hex.slice(5, 7), 16),
+    };
+    
+    const color = getColorValues(rgb.r, rgb.g, rgb.b);
+    const metrics = getColorMetrics(color);
+    
+    const top1 = metrics.seasonMatch?.primaryMatch;
+    const top2 = metrics.seasonMatch?.secondaryMatch;
+    const top3 = metrics.seasonMatch?.debugInfo?.seasonScores
+      .sort((a, b) => a.totalScore - b.totalScore)
+      .slice(0, 3);
+    
+    console.log(testCase.name, {
+      hex: testCase.hex,
+      lab: { L: color.lab.l, a: color.lab.a, b: color.lab.b },
+      chroma: Math.sqrt(color.lab.a * color.lab.a + color.lab.b * color.lab.b),
+      top1: top1 ? { season: top1.season, confidence: top1.confidence } : null,
+      top2: top2 ? { season: top2.season, confidence: top2.confidence } : null,
+      top3: top3?.map(s => ({ season: s.season, confidence: s.confidence, totalScore: s.totalScore })),
+    });
+  }
+  
+  console.groupEnd();
+}
+
+// Expose test function globally for easy access
+if (typeof window !== 'undefined') {
+  (window as any).testSpringAutumnBoundary = testSpringAutumnBoundary;
 }
