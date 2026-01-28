@@ -728,11 +728,12 @@ export function calculateSeasonMatchBreakdown(
   const isMutedColor = C < 30;
   
   // Earthy/Brownish feature detection (warm brown/tan/caramel tones)
+  // Relaxed condition: allow higher a* values for earthy browns (e.g., #B37256 has a=22.6)
   const isEarthyBrownish =
-    lab.b > 22 &&
-    lab.a < 14 &&
+    lab.b > 20 && // Warm (positive b*)
+    lab.a < 25 && // Allow higher a* for reddish-browns (was < 14, too strict)
     L > 45 && L < 78 &&
-    C > 20; // avoid greys
+    C > 18 && C < 45; // Medium chroma range for earthy colors (not too grey, not too vivid)
   
   // Vivid Yellow feature detection (protect true Spring yellows)
   const isVividYellow =
@@ -795,7 +796,8 @@ export function calculateSeasonMatchBreakdown(
     // Lower distance = better match, so:
     // - When earthy: Spring gets penalty (distance * factor > 1), Autumn gets bonus (distance * factor < 1)
     // - When clear: Autumn gets penalty (distance * factor > 1), Spring gets bonus (distance * factor < 1)
-    const K = 0.3; // Multiplicative factor (0.15-0.3 range, using 0.3 for stronger effect)
+    // Increased K to 0.4 for stronger effect on earthy colors (was 0.3)
+    const K = 0.4; // Multiplicative factor (increased from 0.3 for stronger Spring/Autumn boundary)
     
     // Base factors: start at 1.0 (no adjustment)
     springPenaltyFactor = 1.0;
@@ -804,7 +806,13 @@ export function calculateSeasonMatchBreakdown(
     // Apply earthy adjustments
     if (autumnEarthScore > 0) {
       springPenaltyFactor = 1 + K * autumnEarthScore; // Spring penalized when earthy (distance increased)
-      autumnPenaltyFactor = Math.max(0.7, 1 - K * autumnEarthScore); // Autumn rewarded when earthy (distance decreased, min 0.7)
+      autumnPenaltyFactor = Math.max(0.6, 1 - K * autumnEarthScore); // Autumn rewarded when earthy (distance decreased, min 0.6 for stronger effect)
+    }
+    
+    // Additional boost for explicitly earthy brownish colors
+    if (isEarthyBrownish) {
+      springPenaltyFactor = Math.max(springPenaltyFactor, 1.5); // Minimum 50% penalty for Spring
+      autumnPenaltyFactor = Math.max(0.5, autumnPenaltyFactor * 0.9); // Additional 10% bonus for Autumn
     }
     
     // Apply clear adjustments (can override earthy for Spring if very clear)
