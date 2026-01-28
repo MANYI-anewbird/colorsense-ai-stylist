@@ -166,13 +166,25 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
   let primaryScore = primaryMatch.confidence;
   let secondaryScore = secondaryMatch?.confidence ?? 0;
   
-  // Normalize to ensure they sum to 100% for the progress bar
-  // If we have both seasons, normalize them to total 100%
-  if (secondaryMatch && primaryScore > 0 && secondaryScore > 0) {
-    const total = primaryScore + secondaryScore;
-    if (total > 0) {
-      primaryScore = Math.round((primaryScore / total) * 100);
-      secondaryScore = 100 - primaryScore; // Ensure exact 100%
+  // For low confidence cases (< 60%), use relative confidence within top3
+  // This makes percentages more meaningful: "37% of top3" vs "22% of all 12 seasons"
+  // Users understand "37% chance it's one of these top options" better than "22% chance it's correct"
+  const confidenceDisplay = seasonMatch.confidenceDisplay;
+  if (confidenceDisplay?.useRelative && confidenceDisplay.top1Relative) {
+    // Use relative probabilities within top3 for display
+    primaryScore = Math.round(confidenceDisplay.top1Relative * 100);
+    if (secondaryMatch && confidenceDisplay.top2Relative) {
+      secondaryScore = Math.round(confidenceDisplay.top2Relative * 100);
+    }
+  } else {
+    // Normalize to ensure they sum to 100% for the progress bar
+    // If we have both seasons, normalize them to total 100%
+    if (secondaryMatch && primaryScore > 0 && secondaryScore > 0) {
+      const total = primaryScore + secondaryScore;
+      if (total > 0) {
+        primaryScore = Math.round((primaryScore / total) * 100);
+        secondaryScore = 100 - primaryScore; // Ensure exact 100%
+      }
     }
   }
 
@@ -240,9 +252,18 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
             </span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">
-          {formatConfidence(confidence)} {language === 'zh' ? '置信度' : 'confidence'}
-        </span>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-xs text-muted-foreground">
+            {formatConfidence(confidence)} {language === 'zh' ? '置信度' : 'confidence'}
+          </span>
+          {seasonMatch.confidenceDisplay?.useRelative && seasonMatch.confidenceDisplay.top3Cumulative > 0 && (
+            <span className="text-[10px] text-muted-foreground/70">
+              {language === 'zh' 
+                ? `前3选项累积${Math.round(seasonMatch.confidenceDisplay.top3Cumulative * 100)}%`
+                : `Top 3: ${Math.round(seasonMatch.confidenceDisplay.top3Cumulative * 100)}%`}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Primary Season - Emphasized as the winner */}

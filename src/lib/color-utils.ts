@@ -173,6 +173,13 @@ export interface SeasonMatchBreakdown {
     confidenceGap: number; // primary.confidence - secondary.confidence
   };
   breakdown: Array<{ season: Season12; score: number }>; // Full list sorted by score (descending)
+  // Confidence display helpers for better UX
+  confidenceDisplay?: {
+    top3Cumulative: number; // Cumulative probability of top3 (e.g., 0.60 = 60% of probability is in top3)
+    top1Relative: number;   // Relative probability within top3 (e.g., 0.37 = 37% of top3 probability)
+    top2Relative: number;    // Relative probability within top3 for second place
+    useRelative: boolean;    // Whether to use relative confidence for display
+  };
   debugInfo: {
     isEarthyBrownish: boolean;
     isVividYellow: boolean;
@@ -898,6 +905,9 @@ interface ClassificationResult {
     top2: number;
     margin: number;
     isBorderline: boolean;
+    top3Cumulative: number; // Cumulative probability of top3 seasons
+    top1Relative: number;   // Relative probability within top3 (for UX display)
+    top2Relative: number;  // Relative probability within top3 for second place
   };
   
   debug: {
@@ -1216,13 +1226,27 @@ export function classifyColorLAB(
   // Calculate confidence metrics from top3
   const top1Prob = top3[0]?.probability ?? 0;
   const top2Prob = top3[1]?.probability ?? 0;
+  const top3Prob = top3[2]?.probability ?? 0;
   const margin = top1Prob - top2Prob;
+  
+  // Calculate cumulative probability of top3 (how much probability is in top3)
+  const top3Cumulative = top1Prob + top2Prob + top3Prob;
+  
+  // Calculate relative confidence (normalized within top3) for low confidence cases
+  // This makes low confidence percentages more meaningful to users
+  const top3Sum = top3Cumulative > 0 ? top3Cumulative : 1; // Avoid division by zero
+  const top1Relative = top1Prob / top3Sum;
+  const top2Relative = top2Prob / top3Sum;
   
   const confidence = {
     top1: top1Prob,
     top2: top2Prob,
     margin,
     isBorderline,
+    // New fields for better UX
+    top3Cumulative, // Cumulative probability of top3 (e.g., 0.60 = 60% of probability is in top3)
+    top1Relative,   // Relative probability within top3 (e.g., 0.37 = 37% of top3 probability)
+    top2Relative,   // Relative probability within top3 for second place
   };
   
   // Debug output
@@ -1334,6 +1358,13 @@ export function calculateSeasonMatchBreakdown(
     }))
     .sort((a, b) => b.confidence - a.confidence); // Sort by confidence descending
   
+  // Extract confidence display helpers from result
+  const top1GlobalProb = result.confidence.top1;
+  const top3Cumulative = result.confidence.top3Cumulative;
+  const top1Relative = result.confidence.top1Relative;
+  const top2Relative = result.confidence.top2Relative;
+  const useRelativeConfidence = top1GlobalProb < 0.60; // Use relative when global confidence < 60%
+  
   const primaryMatch = matches[0];
   
   // Determine if secondary match should be shown
@@ -1432,6 +1463,12 @@ export function calculateSeasonMatchBreakdown(
       confidenceGap,
     },
     breakdown,
+    confidenceDisplay: {
+      top3Cumulative,
+      top1Relative,
+      top2Relative,
+      useRelative: useRelativeConfidence,
+    },
     debugInfo: {
       isEarthyBrownish: false, // Not used in new system
       isVividYellow: false, // Not used in new system
