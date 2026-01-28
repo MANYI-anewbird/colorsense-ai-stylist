@@ -88,6 +88,17 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
   }
 
   const { primaryMatch, secondaryMatch, isBorderline, confidence } = seasonMatch;
+  
+  // Guard against undefined primaryMatch
+  if (!primaryMatch) {
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
+        <SeasonBadge season={season12} size="md" />
+      </div>
+    );
+  }
+  
   const primarySeason = primaryMatch.season;
   const secondarySeason = secondaryMatch?.season ?? null;
   
