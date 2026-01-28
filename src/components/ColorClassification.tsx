@@ -245,10 +245,10 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
         )}
       </div>
 
-      {/* Dual-Colored Progress Bar - Main visualization */}
-      {/* Two colors fill 100%: Primary on left, Secondary on right */}
+      {/* Progress Bar - Main visualization */}
+      {/* Primary season highlighted, remaining part in gray */}
       <div className="relative w-full h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-inner">
-        {/* Primary segment - Left side - Solid color (100% opacity) */}
+        {/* Primary segment - Left side - Highlighted with season color */}
         <div
           className={cn(
             'absolute left-0 top-0 h-full flex items-center justify-start pl-4 transition-all duration-500 z-10',
@@ -263,33 +263,14 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
           )}
         </div>
 
-        {/* Secondary segment - Right side, immediately after primary */}
-        {/* Use opacity distinction: Primary = solid, Secondary = faded (40% opacity) */}
-        {secondarySeason && secondaryScore > 0 && (
+        {/* Remaining segment - Right side - Gray background, no percentage text */}
+        {primaryScore < 100 && (
           <div
-            className={cn(
-              'absolute top-0 h-full flex items-center justify-end pr-4 transition-all duration-500 z-10',
-              getSeasonColorClasses(secondarySeason)
-            )}
+            className="absolute top-0 h-full bg-gray-300 dark:bg-gray-600 transition-all duration-500 z-10"
             style={{ 
               left: `${primaryScore}%`,
-              width: `${secondaryScore}%`,
-              opacity: 0.4 // 40% opacity for visual distinction
+              width: `${100 - primaryScore}%`,
             }}
-          >
-            {secondaryScore >= 20 && (
-              <span className="text-sm font-bold text-white drop-shadow-lg">
-                {secondaryScore}%
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Center divider - Show when both segments meet */}
-        {primaryScore > 0 && secondaryScore > 0 && (
-          <div 
-            className="absolute top-0 bottom-0 w-0.5 bg-white/80 shadow-lg z-20" 
-            style={{ left: `${primaryScore}%` }}
           />
         )}
       </div>
