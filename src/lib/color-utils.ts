@@ -1335,18 +1335,34 @@ export function calculateSeasonMatchBreakdown(
     .sort((a, b) => b.confidence - a.confidence); // Sort by confidence descending
   
   const primaryMatch = matches[0];
-  const secondaryMatch = matches[1]?.confidence >= SECONDARY_THRESHOLDS.MIN_CONFIDENCE &&
-                         primaryMatch.confidence < SECONDARY_THRESHOLDS.SHOW_PRIMARY_MAX
+  
+  // Determine if secondary match should be shown
+  // Show secondary when:
+  // 1. Low confidence (< 60%): always show if top2 >= 15% (uncertainty case)
+  // 2. Borderline: top1 and top2 are very close (within thresholds)
+  const candidateSecondary = matches[1]?.confidence >= SECONDARY_THRESHOLDS.MIN_CONFIDENCE &&
+                              primaryMatch.confidence < SECONDARY_THRESHOLDS.SHOW_PRIMARY_MAX
     ? matches[1]
     : null;
   
-  const scoreGap = secondaryMatch ? secondaryMatch.totalScore - primaryMatch.totalScore : Infinity;
-  const confidenceGap = secondaryMatch ? primaryMatch.confidence - secondaryMatch.confidence : Infinity;
+  const scoreGap = candidateSecondary ? candidateSecondary.totalScore - primaryMatch.totalScore : Infinity;
+  const confidenceGap = candidateSecondary ? primaryMatch.confidence - candidateSecondary.confidence : Infinity;
   
+  // Borderline: top1 and top2 are very close
   const isBorderline = 
     primaryMatch.confidence < 85 &&
     scoreGap <= 4 &&
     confidenceGap <= 10;
+  
+  // Show secondary if:
+  // - Low confidence (< 60%): show secondary to indicate uncertainty
+  // - Borderline: top1 and top2 are very close
+  const shouldShowSecondary = candidateSecondary && (
+    primaryMatch.confidence < 60 || // Low confidence: always show secondary
+    isBorderline // Borderline: show secondary
+  );
+  
+  const secondaryMatch = shouldShowSecondary ? candidateSecondary : null;
   
   // Create breakdown
   const breakdown = matches.map(m => ({
@@ -1409,7 +1425,7 @@ export function calculateSeasonMatchBreakdown(
   
   return {
     primaryMatch,
-    secondaryMatch: isBorderline ? secondaryMatch : null,
+    secondaryMatch,
     isBorderline,
     gaps: {
       scoreGap,
