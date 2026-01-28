@@ -118,6 +118,7 @@ export interface SeasonDebugInfo {
   penaltyEarthy: number;
   penaltyDusty: number;
   penaltyClarityMismatch: number;
+  penaltyMutedGate: number;
   totalScore: number;
   confidence: number;
 }
@@ -133,6 +134,7 @@ export interface TopCandidate {
   penaltyEarthy: number;
   penaltyDusty: number;
   penaltyClarityMismatch: number;
+  penaltyMutedGate: number;
   flags: FeatureFlags;
 }
 
@@ -691,6 +693,9 @@ export function calculateSeasonMatchBreakdown(
   const isLight = L > FEATURE_THRESHOLDS.light;
   const isDeep = L < FEATURE_THRESHOLDS.deep;
   
+  // Extremely muted gate: chroma < 10 (very greyed colors)
+  const isExtremelyMuted = C < 10;
+  
   // Earthy/Brownish feature detection (warm brown/tan/caramel tones)
   const isEarthyBrownish =
     lab.b > 22 &&
@@ -742,6 +747,7 @@ export function calculateSeasonMatchBreakdown(
     penaltyEarthy: number;
     penaltyDusty: number;
     penaltyClarityMismatch: number;
+    penaltyMutedGate: number;
     totalScore: number;
   }> = [];
   
@@ -807,7 +813,16 @@ export function calculateSeasonMatchBreakdown(
       penaltyClarityMismatch += 15;
     }
     
-    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch;
+    // Penalty: Muted gate for Winter/Spring (very low chroma colors cannot be Winter/Spring)
+    // Winter and Spring require clarity and saturation, so extremely muted colors (chroma < 10) get strong penalty
+    let penaltyMutedGate = 0;
+    if (isExtremelyMuted) {
+      if (season.startsWith('winter') || season.startsWith('spring')) {
+        penaltyMutedGate += 40; // Strong penalty: +30~50 range, using 40 as middle value
+      }
+    }
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty + penaltyClarityMismatch + penaltyMutedGate;
     
     seasonScores.push({
       season,
@@ -818,6 +833,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyEarthy,
       penaltyDusty,
       penaltyClarityMismatch,
+      penaltyMutedGate,
       totalScore,
     });
   }
@@ -887,6 +903,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyEarthy: seasonScore.penaltyEarthy,
       penaltyDusty: seasonScore.penaltyDusty,
       penaltyClarityMismatch: seasonScore.penaltyClarityMismatch,
+      penaltyMutedGate: seasonScore.penaltyMutedGate,
       totalScore: seasonScore.totalScore,
       confidence: Math.round((expScores[index] / sumExpScores) * 100),
     }))
@@ -906,6 +923,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyEarthy: debugInfo.penaltyEarthy,
       penaltyDusty: debugInfo.penaltyDusty,
       penaltyClarityMismatch: debugInfo.penaltyClarityMismatch,
+      penaltyMutedGate: debugInfo.penaltyMutedGate,
       flags: featureFlags,
     }));
   
