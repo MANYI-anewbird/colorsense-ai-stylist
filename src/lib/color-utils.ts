@@ -96,6 +96,17 @@ export interface SeasonMatch {
   totalScore: number; // Lower is better
 }
 
+export interface SeasonDebugInfo {
+  season: Season12;
+  baseScore: number;
+  penaltyMuted: number;
+  penaltyLightDeep: number;
+  penaltyTemperature: number;
+  penaltyEarthy: number;
+  totalScore: number;
+  confidence: number;
+}
+
 export interface SeasonMatchBreakdown {
   primaryMatch: SeasonMatch; // The winner
   secondaryMatch: SeasonMatch | null; // The runner-up (only if borderline)
@@ -105,6 +116,11 @@ export interface SeasonMatchBreakdown {
     confidenceGap: number; // primary.confidence - secondary.confidence
   };
   breakdown: Array<{ season: Season12; score: number }>; // Full list sorted by score (descending)
+  debugInfo: {
+    isEarthyBrownish: boolean;
+    isVividYellow: boolean;
+    seasonScores: SeasonDebugInfo[]; // Detailed scores for all seasons
+  };
   // Legacy fields for backward compatibility
   primarySeason: Season12;
   secondarySeason: Season12 | null;
@@ -336,6 +352,8 @@ interface SeasonMetadata {
   isCoolSeason: boolean;
   isWarmSeason: boolean;
   isTrueSeason: boolean;
+  isSpringFamily: boolean;
+  isAutumnFamily: boolean;
 }
 
 const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
@@ -349,6 +367,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: false,
     isWarmSeason: true,
     isTrueSeason: false,
+    isSpringFamily: true,
+    isAutumnFamily: false,
   },
   'spring-true': {
     centroidLab: { L: 65, a: 15, b: 30 },
@@ -359,6 +379,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: false,
     isWarmSeason: true,
     isTrueSeason: true,
+    isSpringFamily: true,
+    isAutumnFamily: false,
   },
   'spring-bright': {
     centroidLab: { L: 70, a: 20, b: 35 },
@@ -369,6 +391,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: false,
     isWarmSeason: true,
     isTrueSeason: false,
+    isSpringFamily: true,
+    isAutumnFamily: false,
   },
   
   // Summer seasons - cool, light to medium, soft/muted
@@ -381,6 +405,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: true,
     isWarmSeason: false,
     isTrueSeason: false,
+    isSpringFamily: false,
+    isAutumnFamily: false,
   },
   'summer-true': {
     centroidLab: { L: 60, a: -8, b: -12 },
@@ -391,6 +417,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: true,
     isWarmSeason: false,
     isTrueSeason: true,
+    isSpringFamily: false,
+    isAutumnFamily: false,
   },
   'summer-soft': {
     centroidLab: { L: 55, a: -6, b: -10 },
@@ -401,6 +429,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: true,
     isWarmSeason: false,
     isTrueSeason: false,
+    isSpringFamily: false,
+    isAutumnFamily: false,
   },
   
   // Autumn seasons - warm, medium to deep, soft/muted
@@ -413,6 +443,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: false,
     isWarmSeason: true,
     isTrueSeason: false,
+    isSpringFamily: false,
+    isAutumnFamily: true,
   },
   'autumn-true': {
     centroidLab: { L: 45, a: 12, b: 18 },
@@ -423,6 +455,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: false,
     isWarmSeason: true,
     isTrueSeason: true,
+    isSpringFamily: false,
+    isAutumnFamily: true,
   },
   'autumn-deep': {
     centroidLab: { L: 30, a: 8, b: 12 },
@@ -433,6 +467,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: false,
     isWarmSeason: true,
     isTrueSeason: false,
+    isSpringFamily: false,
+    isAutumnFamily: true,
   },
   
   // Winter seasons - cool, medium to deep, clear/bright
@@ -445,6 +481,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: true,
     isWarmSeason: false,
     isTrueSeason: false,
+    isSpringFamily: false,
+    isAutumnFamily: false,
   },
   'winter-true': {
     centroidLab: { L: 40, a: -12, b: -18 },
@@ -455,6 +493,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: true,
     isWarmSeason: false,
     isTrueSeason: true,
+    isSpringFamily: false,
+    isAutumnFamily: false,
   },
   'winter-deep': {
     centroidLab: { L: 25, a: -8, b: -12 },
@@ -465,6 +505,8 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isCoolSeason: true,
     isWarmSeason: false,
     isTrueSeason: false,
+    isSpringFamily: false,
+    isAutumnFamily: false,
   },
 };
 
@@ -536,6 +578,19 @@ export function calculateSeasonMatchBreakdown(
   const isLight = L > FEATURE_THRESHOLDS.light;
   const isDeep = L < FEATURE_THRESHOLDS.deep;
   
+  // Earthy/Brownish feature detection (warm brown/tan/caramel tones)
+  const isEarthyBrownish =
+    lab.b > 22 &&
+    lab.a < 14 &&
+    L > 45 && L < 78 &&
+    C > 20; // avoid greys
+  
+  // Vivid Yellow feature detection (protect true Spring yellows)
+  const isVividYellow =
+    lab.b > 28 &&
+    lab.a >= 14 &&
+    L >= 75;
+  
   // Adaptive temperature reliability
   const temperatureReliability = C < 20 ? 0.2 : (C >= 35 ? 1.0 : 0.6);
   
@@ -546,6 +601,7 @@ export function calculateSeasonMatchBreakdown(
     penaltyMuted: number;
     penaltyLightDeep: number;
     penaltyTemperature: number;
+    penaltyEarthy: number;
     totalScore: number;
   }> = [];
   
@@ -577,7 +633,13 @@ export function calculateSeasonMatchBreakdown(
     const warmCoolMismatch = calculateWarmCoolMismatch(lab, metadata);
     const penaltyTemperature = warmCoolMismatch * 30 * temperatureReliability;
     
-    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature;
+    // Penalty: Earthy/Brownish colors should prefer Autumn over Spring
+    let penaltyEarthy = 0;
+    if (isEarthyBrownish && !isVividYellow && metadata.isSpringFamily) {
+      penaltyEarthy += 22;
+    }
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy;
     
     seasonScores.push({
       season,
@@ -585,6 +647,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyMuted,
       penaltyLightDeep,
       penaltyTemperature,
+      penaltyEarthy,
       totalScore,
     });
   }
@@ -627,6 +690,20 @@ export function calculateSeasonMatchBreakdown(
     }))
     .sort((a, b) => b.score - a.score); // Sort descending by confidence
   
+  // Create detailed debug info for all seasons
+  const seasonDebugInfo: SeasonDebugInfo[] = seasonScores
+    .map((seasonScore, index) => ({
+      season: seasonScore.season,
+      baseScore: seasonScore.baseScore,
+      penaltyMuted: seasonScore.penaltyMuted,
+      penaltyLightDeep: seasonScore.penaltyLightDeep,
+      penaltyTemperature: seasonScore.penaltyTemperature,
+      penaltyEarthy: seasonScore.penaltyEarthy,
+      totalScore: seasonScore.totalScore,
+      confidence: Math.round((expScores[index] / sumExpScores) * 100),
+    }))
+    .sort((a, b) => a.totalScore - b.totalScore); // Sort by totalScore ascending
+  
   // Legacy fields for backward compatibility
   const primarySeason = primaryMatch.season;
   const secondarySeason = finalSecondaryMatch?.season ?? null;
@@ -642,6 +719,11 @@ export function calculateSeasonMatchBreakdown(
       confidenceGap: finalSecondaryMatch ? confidenceGap : 0,
     },
     breakdown,
+    debugInfo: {
+      isEarthyBrownish,
+      isVividYellow,
+      seasonScores: seasonDebugInfo,
+    },
     // Legacy fields
     primarySeason,
     secondarySeason,

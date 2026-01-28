@@ -58,6 +58,22 @@ const getSeasonName = (season: Season12, language: 'en' | 'zh'): string => {
   return language === 'zh' ? (info?.nameZh ?? season) : (info?.nameEn ?? season);
 };
 
+/**
+ * Format confidence for display
+ * - Do NOT display "100%"
+ * - If confidence >= 95, display ">95%"
+ * - Else display rounded percentage
+ */
+const formatConfidence = (confidence: number): string => {
+  if (confidence >= 100) {
+    return '>95%';
+  }
+  if (confidence >= 95) {
+    return '>95%';
+  }
+  return `${Math.round(confidence)}%`;
+};
+
 export function ColorClassification({ seasonMatch, season12 }: ColorClassificationProps) {
   const { t, language } = useLanguage();
   
@@ -113,7 +129,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
               : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
           )}>
-            {language === 'zh' ? '高置信度' : 'High Confidence'} {confidence}%
+            {language === 'zh' ? '高置信度' : 'High Confidence'} {formatConfidence(confidence)}
           </span>
           {isBorderline && (
             <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
@@ -129,7 +145,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
               {language === 'zh' ? '次要匹配' : 'Secondary match'}:
             </span>
             <span className="font-medium text-foreground">
-              {getSeasonName(secondaryMatch.season, language)} ({secondaryMatch.confidence}%)
+              {getSeasonName(secondaryMatch.season, language)} ({formatConfidence(secondaryMatch.confidence)})
             </span>
           </div>
         )}
@@ -154,7 +170,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
           )}
         </div>
         <span className="text-xs text-muted-foreground">
-          {confidence}% {language === 'zh' ? '置信度' : 'confidence'}
+          {formatConfidence(confidence)} {language === 'zh' ? '置信度' : 'confidence'}
         </span>
       </div>
 
@@ -175,7 +191,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
               {language === 'zh' ? '次要匹配' : 'Secondary match'}:
             </span>
             <span className="text-sm font-medium text-muted-foreground">
-              {getSeasonName(secondaryMatch.season, language)} ({secondaryMatch.confidence}%)
+              {getSeasonName(secondaryMatch.season, language)} ({formatConfidence(secondaryMatch.confidence)})
             </span>
           </div>
         )}
