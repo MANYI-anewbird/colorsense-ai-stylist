@@ -153,7 +153,9 @@ export interface SeasonMatchBreakdown {
       'autumn-true': { L: number; a: number; b: number };
       'autumn-deep': { L: number; a: number; b: number };
     };
-    derivedTemperature?: TemperatureCategory; // Temperature derived from primary season
+    baseTemperature?: 'warm' | 'cool'; // Base temperature from primary season
+    isNeutral?: boolean; // Whether color is neutral (from LAB chroma)
+    finalTemperatureLabel?: TemperatureCategory; // Final temperature label for UI (neutral-warm/neutral-cool/warm/cool)
     rawTemperature?: TemperatureCategory; // Original temperature calculation (for debug only)
   };
   // Legacy fields for backward compatibility
@@ -293,16 +295,42 @@ function isWarmHue(h: number): boolean {
 }
 
 /**
- * Derive temperature from season classification.
+ * Get base temperature from season classification.
  * Winter/Summer => Cool; Spring/Autumn => Warm
  * This ensures UI consistency (no Winter + Warm conflicts).
- * Returns only 'warm' or 'cool' (no neutral variants) since seasons are unambiguous.
  */
-export function getTemperatureFromSeason(season: Season12): TemperatureCategory {
+export function getBaseTemperatureFromSeason(season: Season12): 'warm' | 'cool' {
   if (season.startsWith('winter') || season.startsWith('summer')) {
     return 'cool';
   }
   return 'warm'; // spring/autumn
+}
+
+/**
+ * Check if color is neutral based on LAB values.
+ * Uses chroma threshold: C = sqrt(a^2 + b^2) <= 18
+ */
+export function isNeutralColor(lab: { a: number; b: number }): boolean {
+  const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+  return C <= 18;
+}
+
+/**
+ * Derive final temperature label from season and color neutrality.
+ * Combines base temperature (from season) with neutral flag (from color).
+ * Returns: 'warm' | 'cool' | 'neutral-warm' | 'neutral-cool'
+ */
+export function getTemperatureLabelFromSeasonAndColor(
+  season: Season12,
+  lab: { a: number; b: number }
+): TemperatureCategory {
+  const baseTemperature = getBaseTemperatureFromSeason(season);
+  const isNeutral = isNeutralColor(lab);
+  
+  if (isNeutral) {
+    return baseTemperature === 'warm' ? 'neutral-warm' : 'neutral-cool';
+  }
+  return baseTemperature;
 }
 
 export function getTemperatureCategoryFromLab(
@@ -845,8 +873,13 @@ export function calculateSeasonMatchBreakdown(
   const confidence = primaryMatch.confidence;
   const isAmbiguous = isBorderline; // Map isBorderline to isAmbiguous for compatibility
   
-  // Derive temperature from primary season (for UI consistency)
-  const derivedTemperature = getTemperatureFromSeason(primaryMatch.season);
+  // Derive temperature from primary season and color neutrality
+  const baseTemperature = getBaseTemperatureFromSeason(primaryMatch.season);
+  const isNeutral = isNeutralColor({ a: lab.a, b: lab.b });
+  const finalTemperatureLabel = getTemperatureLabelFromSeasonAndColor(
+    primaryMatch.season,
+    { a: lab.a, b: lab.b }
+  );
   
   // Calculate raw temperature for debug (using LAB-based calculation)
   // Convert lab format {L, a, b} to LAB format {l, a, b} for labToLch
@@ -877,7 +910,9 @@ export function calculateSeasonMatchBreakdown(
         'autumn-true': SEASON_METADATA['autumn-true'].centroidLab,
         'autumn-deep': SEASON_METADATA['autumn-deep'].centroidLab,
       },
-      derivedTemperature,
+      baseTemperature,
+      isNeutral,
+      finalTemperatureLabel,
       rawTemperature,
     },
     // Legacy fields
@@ -1005,15 +1040,18 @@ export function getColorMetrics(color: ColorValues): ColorMetrics {
   // Calculate detailed match breakdown using distance-based algorithm
   const seasonMatch = calculateSeasonMatchBreakdown(labDecision);
 
-  // Derive temperature from primary season (ensures UI consistency: no Winter + Warm conflicts)
-  // Use derived temperature from seasonMatch if available, otherwise fallback to season12
-  const derivedTemperature = seasonMatch?.debugInfo?.derivedTemperature 
-    ?? getTemperatureFromSeason(seasonMatch?.primaryMatch?.season ?? season12);
+  // Derive temperature from primary season and color neutrality (ensures UI consistency: no Winter + Warm conflicts)
+  // Use finalTemperatureLabel from seasonMatch if available, otherwise calculate from season12
+  const finalTemperature = seasonMatch?.debugInfo?.finalTemperatureLabel 
+    ?? getTemperatureLabelFromSeasonAndColor(
+        seasonMatch?.primaryMatch?.season ?? season12,
+        { a: color.lab.a, b: color.lab.b }
+      );
 
   return {
     lightness: Math.round(color.lab.l),
     saturation: color.hsl.s,
-    temperature: derivedTemperature, // Derived from season, not independent calculation
+    temperature: finalTemperature, // Derived from season + color neutrality, ensures no conflicts
     seasonalTendency,
     season12,
     seasonMatch,
