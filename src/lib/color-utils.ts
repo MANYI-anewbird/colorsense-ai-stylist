@@ -32,17 +32,39 @@ export type SeasonFamily = 'spring' | 'summer' | 'autumn' | 'winter';
 // 12-season ids aligned with existing SkinTone types (minus null)
 export type Season12 =
   | 'spring-light'
-  | 'spring-true' // Warm Spring
-  | 'spring-bright' // Clear Spring
+  | 'spring-true'
+  | 'spring-bright'
   | 'summer-light'
-  | 'summer-true' // Cool Summer
+  | 'summer-true'
   | 'summer-soft'
   | 'autumn-soft'
-  | 'autumn-true' // Warm Autumn
+  | 'autumn-true'
   | 'autumn-deep'
-  | 'winter-bright' // Clear Winter
-  | 'winter-true' // Cool Winter
+  | 'winter-bright'
+  | 'winter-true'
   | 'winter-deep';
+
+/**
+ * Get standard display name for a 12-season type.
+ * Uses professional terminology: True/Bright/Soft/Light/Deep
+ */
+export function getSeasonDisplayName(season: Season12): string {
+  const displayNames: Record<Season12, string> = {
+    'spring-light': 'Light Spring',
+    'spring-true': 'True Spring',
+    'spring-bright': 'Bright Spring',
+    'summer-light': 'Light Summer',
+    'summer-true': 'True Summer',
+    'summer-soft': 'Soft Summer',
+    'autumn-soft': 'Soft Autumn',
+    'autumn-true': 'True Autumn',
+    'autumn-deep': 'Deep Autumn',
+    'winter-bright': 'Bright Winter',
+    'winter-true': 'True Winter',
+    'winter-deep': 'Deep Winter',
+  };
+  return displayNames[season] ?? season;
+}
 
 export interface SeasonThresholds {
   temperature: {
@@ -1041,7 +1063,7 @@ export function determineColorSeasonFromLab(
     if (L < 30) {
       return 'winter-deep'; // Deep Winter (Dark Cool Neutral)
     }
-    return 'winter-true'; // Cool Winter (Standard Grey)
+    return 'winter-true'; // True Winter (Standard Grey)
   }
   
   // Step 2: Determine Temperature (b-axis)

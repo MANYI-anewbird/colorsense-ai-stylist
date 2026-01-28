@@ -40,7 +40,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
   },
   {
     id: 'spring-true',
-    nameEn: 'Warm Spring',
+    nameEn: 'True Spring',
     nameZh: '暖春型',
     color: '#C8B090', // warm tan/beige from image 2
     season: 'spring',
@@ -48,7 +48,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
   },
   {
     id: 'spring-bright',
-    nameEn: 'Clear Spring',
+    nameEn: 'Bright Spring',
     nameZh: '净春型',
     color: '#D4B870', // golden yellow from image 3
     season: 'spring',
@@ -65,7 +65,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
   },
   {
     id: 'summer-true',
-    nameEn: 'Cool Summer',
+    nameEn: 'True Summer',
     nameZh: '冷夏型',
     color: '#99A4B8', // 图四
     season: 'summer',
@@ -90,7 +90,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
   },
   {
     id: 'autumn-true',
-    nameEn: 'Warm Autumn',
+    nameEn: 'True Autumn',
     nameZh: '暖秋型',
     color: '#8D6960', // 图二
     season: 'autumn',
@@ -107,7 +107,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
   // Winter types
   {
     id: 'winter-bright',
-    nameEn: 'Clear Winter',
+    nameEn: 'Bright Winter',
     nameZh: '净冬型',
     color: '#98A1E0', // 图一
     season: 'winter',
@@ -115,7 +115,7 @@ export const SKIN_TONES: SkinToneInfo[] = [
   },
   {
     id: 'winter-true',
-    nameEn: 'Cool Winter',
+    nameEn: 'True Winter',
     nameZh: '冷冬型',
     color: '#7381A1', // 图二
     season: 'winter',
