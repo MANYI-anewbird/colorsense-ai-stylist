@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { SeasonBadge } from '@/components/SeasonBadge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SKIN_TONES } from '@/contexts/SkinToneContext';
-import type { SeasonMatchBreakdown, Season12 } from '@/lib/color-utils';
+import type { SeasonMatchBreakdown, Season12, LAB } from '@/lib/color-utils';
 
 interface ColorClassificationProps {
   seasonMatch?: SeasonMatchBreakdown;
   season12: Season12; // Fallback to main season
+  hex?: string; // Optional hex for debug logging
+  inputLab?: LAB; // Optional LAB values for debug logging
 }
 
 /**
@@ -74,8 +76,43 @@ const formatConfidence = (confidence: number): string => {
   return `${Math.round(confidence)}%`;
 };
 
-export function ColorClassification({ seasonMatch, season12 }: ColorClassificationProps) {
+export function ColorClassification({ seasonMatch, season12, hex, inputLab }: ColorClassificationProps) {
   const { t, language } = useLanguage();
+  
+  // Track last logged values to prevent duplicate logs
+  const lastLoggedRef = useRef<{ hex?: string; breakdownId?: string }>({});
+  
+  // Log debug info only once per analysis using useEffect
+  useEffect(() => {
+    if (!seasonMatch?.debugInfo?.topCandidates) return;
+    
+    // Create a unique identifier for this breakdown
+    const breakdownId = JSON.stringify({
+      primary: seasonMatch.primaryMatch?.season,
+      confidence: seasonMatch.primaryMatch?.confidence,
+      secondary: seasonMatch.secondaryMatch?.season,
+    });
+    
+    // Only log if this is a new analysis (different hex or different breakdown)
+    if (hex && (lastLoggedRef.current.hex !== hex || lastLoggedRef.current.breakdownId !== breakdownId)) {
+      console.groupCollapsed(`COLOR_DEBUG ${hex}`);
+      console.log({
+        hex,
+        inputLab: inputLab ? { L: inputLab.l, a: inputLab.a, b: inputLab.b } : undefined,
+        topCandidates: seasonMatch.debugInfo.topCandidates,
+      });
+      
+      // Optional: Log Autumn centroids only if DEBUG flag is set
+      if (typeof window !== 'undefined' && (window as any).DEBUG_COLOR_ANALYSIS && seasonMatch.debugInfo.autumnCentroids) {
+        console.log('AUTUMN CENTROIDS:', seasonMatch.debugInfo.autumnCentroids);
+      }
+      
+      console.groupEnd();
+      
+      // Update ref to track what we've logged
+      lastLoggedRef.current = { hex, breakdownId };
+    }
+  }, [hex, inputLab, seasonMatch]);
   
   // If no match breakdown, show simple season badge
   if (!seasonMatch) {
@@ -87,15 +124,7 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
     );
   }
 
-  const { primaryMatch, secondaryMatch, isBorderline, confidence, debugInfo } = seasonMatch;
-  
-  // Log top candidates for calibration (development/debugging)
-  if (debugInfo?.topCandidates) {
-    console.log('TOP CANDIDATES:', debugInfo.topCandidates);
-    if (debugInfo.autumnCentroids) {
-      console.log('AUTUMN CENTROIDS:', debugInfo.autumnCentroids);
-    }
-  }
+  const { primaryMatch, secondaryMatch, isBorderline, confidence } = seasonMatch;
   
   // Guard against undefined primaryMatch
   if (!primaryMatch) {

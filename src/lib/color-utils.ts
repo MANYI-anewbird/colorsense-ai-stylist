@@ -739,12 +739,16 @@ export function calculateSeasonMatchBreakdown(
     });
   }
   
-  // Convert to confidence using softmax (lower score = better match)
-  // Use negative scores for softmax (we want lower totalScore = higher probability)
-  // To avoid numerical overflow, subtract the minimum (best) score
+  // Convert to confidence using temperature-controlled, numerically stable softmax
+  // Lower score = better match, so we use negative scores
+  const TAU = 6; // Temperature parameter for softmax
   const minScore = Math.min(...seasonScores.map(s => s.totalScore));
-  const expScores = seasonScores.map(s => Math.exp(-(s.totalScore - minScore)));
-  const sumExpScores = expScores.reduce((sum, exp) => sum + exp, 0);
+  const logits = seasonScores.map(s => -((s.totalScore - minScore) / TAU));
+  
+  // Numerically stable softmax: subtract max logit before exp
+  const maxLogit = Math.max(...logits);
+  const expScores = logits.map(l => Math.exp(l - maxLogit));
+  const sumExpScores = expScores.reduce((sum, e) => sum + e, 0);
   
   // Create matches with confidence and totalScore
   const matches: SeasonMatch[] = seasonScores

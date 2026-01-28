@@ -93,7 +93,9 @@ export default function ResultPage() {
             <div className="flex flex-col gap-1">
               <ColorClassification 
                 seasonMatch={metrics.seasonMatch} 
-                season12={metrics.season12} 
+                season12={metrics.season12}
+                hex={color.hex}
+                inputLab={color.lab}
               />
             </div>
           </div>
