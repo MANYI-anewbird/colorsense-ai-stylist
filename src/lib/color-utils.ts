@@ -544,6 +544,14 @@ const BORDERLINE_THRESHOLDS = {
 };
 
 /**
+ * Secondary match display thresholds
+ */
+const SECONDARY_THRESHOLDS = {
+  SHOW_PRIMARY_MAX: 70, // Show secondary if primary confidence < 70%
+  MIN_CONFIDENCE: 15,   // Only show if secondary confidence >= 15%
+};
+
+/**
  * Calculate warm/cool mismatch (0..1)
  * Returns 0 if match, 1 if complete mismatch
  */
@@ -687,13 +695,21 @@ export function calculateSeasonMatchBreakdown(
   
   // Determine if borderline: Use AND instead of OR, with stricter thresholds
   // Hard rule: if primary confidence >= 85, never borderline
+  // Borderline controls ONLY the "Borderline" label (very close top-2)
   const isBorderline = 
     primaryMatch.confidence < BORDERLINE_THRESHOLDS.HIGH_CONFIDENCE &&
     (scoreGap <= BORDERLINE_THRESHOLDS.SCORE_GAP) && 
     (confidenceGap <= BORDERLINE_THRESHOLDS.CONF_GAP);
   
-  // Only return secondaryMatch when isBorderline is true
-  const finalSecondaryMatch = isBorderline && secondaryMatch ? secondaryMatch : null;
+  // Determine if secondary match should be shown
+  // Secondary match display depends on LOW confidence (uncertainty), not just borderline
+  const shouldShowSecondary = 
+    secondaryMatch &&
+    (primaryMatch.confidence < SECONDARY_THRESHOLDS.SHOW_PRIMARY_MAX) &&
+    (secondaryMatch.confidence >= SECONDARY_THRESHOLDS.MIN_CONFIDENCE);
+  
+  // Return secondaryMatch when shouldShowSecondary is true (independent of isBorderline)
+  const finalSecondaryMatch = shouldShowSecondary ? secondaryMatch : null;
   
   // Create breakdown for display (sorted by confidence descending)
   const breakdown = matches
