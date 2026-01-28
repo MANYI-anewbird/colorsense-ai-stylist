@@ -87,7 +87,12 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
     );
   }
 
-  const { primaryMatch, secondaryMatch, isBorderline, confidence } = seasonMatch;
+  const { primaryMatch, secondaryMatch, isBorderline, confidence, debugInfo } = seasonMatch;
+  
+  // Log top candidates for calibration (development/debugging)
+  if (debugInfo?.topCandidates) {
+    console.log('TOP CANDIDATES:', debugInfo.topCandidates);
+  }
   
   // Guard against undefined primaryMatch
   if (!primaryMatch) {

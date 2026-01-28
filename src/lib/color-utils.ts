@@ -96,6 +96,19 @@ export interface SeasonMatch {
   totalScore: number; // Lower is better
 }
 
+export interface FeatureFlags {
+  veryMuted: boolean;
+  muted: boolean;
+  clear: boolean;
+  light: boolean;
+  deep: boolean;
+  isEarthyBrownish: boolean;
+  isVividYellow: boolean;
+  isGreyed: boolean;
+  isDusty: boolean;
+  isSmoky: boolean;
+}
+
 export interface SeasonDebugInfo {
   season: Season12;
   baseScore: number;
@@ -103,8 +116,22 @@ export interface SeasonDebugInfo {
   penaltyLightDeep: number;
   penaltyTemperature: number;
   penaltyEarthy: number;
+  penaltyDusty: number;
   totalScore: number;
   confidence: number;
+}
+
+export interface TopCandidate {
+  season: Season12;
+  confidence: number;
+  totalScore: number;
+  baseScore: number;
+  penaltyMuted: number;
+  penaltyLightDeep: number;
+  penaltyTemperature: number;
+  penaltyEarthy: number;
+  penaltyDusty: number;
+  flags: FeatureFlags;
 }
 
 export interface SeasonMatchBreakdown {
@@ -120,6 +147,7 @@ export interface SeasonMatchBreakdown {
     isEarthyBrownish: boolean;
     isVividYellow: boolean;
     seasonScores: SeasonDebugInfo[]; // Detailed scores for all seasons
+    topCandidates: TopCandidate[]; // Top 3 candidates with full breakdown
   };
   // Legacy fields for backward compatibility
   primarySeason: Season12;
@@ -608,6 +636,25 @@ export function calculateSeasonMatchBreakdown(
     lab.a >= 14 &&
     L >= 75;
   
+  // New semantic features for fine-grained accuracy
+  const isGreyed = C < 28;
+  const isDusty = C < 28 && L > 45 && L < 75;
+  const isSmoky = C < 28 && L <= 45;
+  
+  // Create feature flags snapshot
+  const featureFlags: FeatureFlags = {
+    veryMuted: isVeryMuted,
+    muted: isMuted,
+    clear: isClear,
+    light: isLight,
+    deep: isDeep,
+    isEarthyBrownish,
+    isVividYellow,
+    isGreyed,
+    isDusty,
+    isSmoky,
+  };
+  
   // Adaptive temperature reliability
   const temperatureReliability = C < 20 ? 0.2 : (C >= 35 ? 1.0 : 0.6);
   
@@ -619,6 +666,7 @@ export function calculateSeasonMatchBreakdown(
     penaltyLightDeep: number;
     penaltyTemperature: number;
     penaltyEarthy: number;
+    penaltyDusty: number;
     totalScore: number;
   }> = [];
   
@@ -656,7 +704,23 @@ export function calculateSeasonMatchBreakdown(
       penaltyEarthy += 22;
     }
     
-    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy;
+    // Penalty: Dusty/Greyed colors (polish-level, small weights)
+    let penaltyDusty = 0;
+    if (isDusty || isGreyed) {
+      if (metadata.isBrightSeason) {
+        penaltyDusty += 12; // Dusty colors should not match Bright seasons
+      }
+      if (metadata.isLightSeason && isSmoky) {
+        penaltyDusty += 15; // Smoky rejects light seasons
+      }
+    }
+    if (isSmoky) {
+      if (metadata.isDeepSeason) {
+        penaltyDusty -= 4; // Smoky slightly prefers deep seasons (negative penalty = preference)
+      }
+    }
+    
+    const totalScore = baseScore + penaltyMuted + penaltyLightDeep + penaltyTemperature + penaltyEarthy + penaltyDusty;
     
     seasonScores.push({
       season,
@@ -665,6 +729,7 @@ export function calculateSeasonMatchBreakdown(
       penaltyLightDeep,
       penaltyTemperature,
       penaltyEarthy,
+      penaltyDusty,
       totalScore,
     });
   }
@@ -728,10 +793,27 @@ export function calculateSeasonMatchBreakdown(
       penaltyLightDeep: seasonScore.penaltyLightDeep,
       penaltyTemperature: seasonScore.penaltyTemperature,
       penaltyEarthy: seasonScore.penaltyEarthy,
+      penaltyDusty: seasonScore.penaltyDusty,
       totalScore: seasonScore.totalScore,
       confidence: Math.round((expScores[index] / sumExpScores) * 100),
     }))
     .sort((a, b) => a.totalScore - b.totalScore); // Sort by totalScore ascending
+  
+  // Create top 3 candidates with full breakdown for calibration
+  const topCandidates: TopCandidate[] = seasonDebugInfo
+    .slice(0, 3) // Top 3
+    .map(debugInfo => ({
+      season: debugInfo.season,
+      confidence: debugInfo.confidence,
+      totalScore: debugInfo.totalScore,
+      baseScore: debugInfo.baseScore,
+      penaltyMuted: debugInfo.penaltyMuted,
+      penaltyLightDeep: debugInfo.penaltyLightDeep,
+      penaltyTemperature: debugInfo.penaltyTemperature,
+      penaltyEarthy: debugInfo.penaltyEarthy,
+      penaltyDusty: debugInfo.penaltyDusty,
+      flags: featureFlags,
+    }));
   
   // Legacy fields for backward compatibility
   const primarySeason = primaryMatch.season;
@@ -752,6 +834,7 @@ export function calculateSeasonMatchBreakdown(
       isEarthyBrownish,
       isVividYellow,
       seasonScores: seasonDebugInfo,
+      topCandidates,
     },
     // Legacy fields
     primarySeason,
