@@ -913,7 +913,8 @@ export function calculateSeasonMatchBreakdown(
   if (hsl) {
     const VIVID_HIGH = 0.45;
     const VIVID_LOW = 0.30;
-    const BONUS = 2.0;
+    const VIVID_EXTREME = 0.5; // Extreme vividness threshold
+    const BONUS = 8.0; // Increased from 2.0 to ensure ranking change
     
     // Compute vividness metric (C is already computed above)
     const vivid = (C / 100) * (hsl.s / 100);
@@ -923,12 +924,17 @@ export function calculateSeasonMatchBreakdown(
     const springBrightIndex = seasonScores.findIndex(s => s.season === 'spring-bright');
     
     if (springTrueIndex !== -1 && springBrightIndex !== -1) {
-      const springTrueScore = seasonScores[springTrueIndex];
-      const springBrightScore = seasonScores[springBrightIndex];
+      const springTrueScore = { ...seasonScores[springTrueIndex] }; // Copy for debug
+      const springBrightScore = { ...seasonScores[springBrightIndex] }; // Copy for debug
       
       // Calculate adjustment using linear interpolation
       let adjustment = 0;
-      if (vivid >= VIVID_HIGH) {
+      if (vivid >= VIVID_EXTREME) {
+        // Extreme vividness: enforce spring-bright must beat spring-true
+        // Calculate minimum adjustment needed to ensure spring-bright wins
+        const scoreGap = springTrueScore.totalScore - springBrightScore.totalScore;
+        adjustment = Math.max(BONUS, scoreGap + 1); // Ensure spring-bright wins by at least 1
+      } else if (vivid >= VIVID_HIGH) {
         // High vividness: favor spring-bright
         adjustment = BONUS;
       } else if (vivid <= VIVID_LOW) {
@@ -945,9 +951,8 @@ export function calculateSeasonMatchBreakdown(
       seasonScores[springTrueIndex].totalScore += adjustment;
       seasonScores[springBrightIndex].totalScore -= adjustment;
       
-      // Debug logging (behind flag) - will log after softmax with final probabilities
-      // Store adjustment info for later logging
-      (seasonScores as any).__vividnessDebug = {
+      // Debug logging - always log for vividness adjustments (can be filtered by flag if needed)
+      const debugInfo = {
         chroma: C,
         sat: hsl.s,
         vivid,
@@ -961,6 +966,14 @@ export function calculateSeasonMatchBreakdown(
           'spring-bright': seasonScores[springBrightIndex].totalScore,
         },
       };
+      
+      // Always log for debugging (can be filtered by flag)
+      if (typeof window !== 'undefined' && (window as any).DEBUG_SPRING_VIVIDNESS) {
+        console.log('SPRING_VIVIDNESS_ADJUSTMENT (pre-softmax):', debugInfo);
+      }
+      
+      // Store for post-softmax logging
+      (seasonScores as any).__vividnessDebug = debugInfo;
     }
   }
   
