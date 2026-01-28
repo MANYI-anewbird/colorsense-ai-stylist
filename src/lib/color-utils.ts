@@ -977,6 +977,85 @@ export function calculateSeasonMatchBreakdown(
     }
   }
   
+  // Global Spring vs Autumn boundary adjustment
+  // This fixes systematic misclassification of warm, medium-lightness, earthy colors
+  // Warm + bright + clear → Spring family
+  // Warm + medium + earthy/muted → Autumn family
+  const isWarm = lab.b > 0; // Warm color (positive b*)
+  if (isWarm) {
+    // Compute springClearScore: high when L >= 65 and chroma >= 35
+    const springClearL = Math.max(0, Math.min(1, (L - 60) / (70 - 60))); // Ramp from 60 to 70
+    const springClearChroma = Math.max(0, Math.min(1, (C - 30) / (40 - 30))); // Ramp from 30 to 40
+    const springClearScore = springClearL * springClearChroma;
+    
+    // Compute autumnEarthScore: high when 45 <= L <= 65 and 18 <= chroma <= 38
+    const autumnEarthL = Math.max(0, Math.min(1, 
+      L >= 45 && L <= 65 ? 1 : (L < 45 ? (L - 40) / (45 - 40) : (70 - L) / (70 - 65))
+    )); // Peak at 45-65, ramp down outside
+    const autumnEarthChroma = Math.max(0, Math.min(1,
+      C >= 18 && C <= 38 ? 1 : (C < 18 ? (C - 13) / (18 - 13) : (43 - C) / (43 - 38))
+    )); // Peak at 18-38, ramp down outside
+    const autumnEarthScore = autumnEarthL * autumnEarthChroma;
+    
+    // Save top3 before adjustment for debug logging
+    let top3Before: Array<{ season: Season12; totalScore: number }> = [];
+    if (typeof window !== 'undefined' && (window as any).DEBUG_SPRING_AUTUMN_BOUNDARY) {
+      top3Before = [...seasonScores]
+        .sort((a, b) => a.totalScore - b.totalScore)
+        .slice(0, 3)
+        .map(s => ({ season: s.season, totalScore: s.totalScore }));
+    }
+    
+    // Apply adjustments with smooth magnitude
+    const SPRING_AUTUMN_BONUS_MAX = 8.0; // Maximum bonus/penalty
+    const autumnBonus = autumnEarthScore * SPRING_AUTUMN_BONUS_MAX;
+    const springBonus = springClearScore * SPRING_AUTUMN_BONUS_MAX;
+    
+    // Apply to all season scores
+    for (let i = 0; i < seasonScores.length; i++) {
+      const season = seasonScores[i].season;
+      
+      if (season.startsWith('autumn-')) {
+        // Bonus for Autumn when earthy (reduces totalScore)
+        seasonScores[i].totalScore -= autumnBonus;
+      } else if (season.startsWith('spring-')) {
+        // Penalty for Spring when earthy (increases totalScore)
+        seasonScores[i].totalScore += autumnBonus;
+      }
+      
+      if (season.startsWith('spring-')) {
+        // Bonus for Spring when clear (reduces totalScore)
+        seasonScores[i].totalScore -= springBonus;
+      } else if (season.startsWith('autumn-')) {
+        // Small penalty for Autumn when clear (increases totalScore)
+        seasonScores[i].totalScore += springBonus * 0.5; // Smaller penalty for Autumn
+      }
+    }
+    
+    // Debug logging (behind flag)
+    if (typeof window !== 'undefined' && (window as any).DEBUG_SPRING_AUTUMN_BOUNDARY) {
+      const top3After = [...seasonScores]
+        .sort((a, b) => a.totalScore - b.totalScore)
+        .slice(0, 3)
+        .map(s => ({ season: s.season, totalScore: s.totalScore }));
+      
+      console.log('SPRING_AUTUMN_BOUNDARY_ADJUSTMENT:', {
+        lab: { L: lab.L, a: lab.a, b: lab.b },
+        chroma: C,
+        springClearScore,
+        autumnEarthScore,
+        adjustments: {
+          autumnBonus: -autumnBonus, // Negative because it reduces score
+          springPenaltyFromEarth: autumnBonus,
+          springBonus: -springBonus, // Negative because it reduces score
+          autumnPenaltyFromClear: springBonus * 0.5,
+        },
+        top3Before,
+        top3After,
+      });
+    }
+  }
+  
   // Convert to confidence using temperature-controlled, numerically stable softmax
   // Lower score = better match, so we use negative scores
   const TAU = 6; // Temperature parameter for softmax
