@@ -535,6 +535,15 @@ const FEATURE_THRESHOLDS = {
 };
 
 /**
+ * Borderline detection thresholds
+ */
+const BORDERLINE_THRESHOLDS = {
+  SCORE_GAP: 4, // Maximum score gap for borderline
+  CONF_GAP: 10, // Maximum confidence gap for borderline
+  HIGH_CONFIDENCE: 85, // Above this, never borderline
+};
+
+/**
  * Calculate warm/cool mismatch (0..1)
  * Returns 0 if match, 1 if complete mismatch
  */
@@ -676,8 +685,12 @@ export function calculateSeasonMatchBreakdown(
   const scoreGap = secondaryMatch ? secondaryMatch.totalScore - primaryMatch.totalScore : Infinity;
   const confidenceGap = secondaryMatch ? primaryMatch.confidence - secondaryMatch.confidence : Infinity;
   
-  // Determine if borderline: (scoreGap <= 6) OR (confidenceGap <= 15)
-  const isBorderline = (scoreGap <= 6) || (confidenceGap <= 15);
+  // Determine if borderline: Use AND instead of OR, with stricter thresholds
+  // Hard rule: if primary confidence >= 85, never borderline
+  const isBorderline = 
+    primaryMatch.confidence < BORDERLINE_THRESHOLDS.HIGH_CONFIDENCE &&
+    (scoreGap <= BORDERLINE_THRESHOLDS.SCORE_GAP) && 
+    (confidenceGap <= BORDERLINE_THRESHOLDS.CONF_GAP);
   
   // Only return secondaryMatch when isBorderline is true
   const finalSecondaryMatch = isBorderline && secondaryMatch ? secondaryMatch : null;
