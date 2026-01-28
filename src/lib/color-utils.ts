@@ -148,6 +148,11 @@ export interface SeasonMatchBreakdown {
     isVividYellow: boolean;
     seasonScores: SeasonDebugInfo[]; // Detailed scores for all seasons
     topCandidates: TopCandidate[]; // Top 3 candidates with full breakdown
+    autumnCentroids?: {
+      'autumn-soft': { L: number; a: number; b: number };
+      'autumn-true': { L: number; a: number; b: number };
+      'autumn-deep': { L: number; a: number; b: number };
+    };
   };
   // Legacy fields for backward compatibility
   primarySeason: Season12;
@@ -463,7 +468,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
   
   // Autumn seasons - warm, medium to deep, soft/muted
   'autumn-soft': {
-    centroidLab: { L: 50, a: 10, b: 15 },
+    centroidLab: { L: 55, a: 6, b: 18 },
     isSoftSeason: true,
     isBrightSeason: false,
     isLightSeason: false,
@@ -475,7 +480,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isAutumnFamily: true,
   },
   'autumn-true': {
-    centroidLab: { L: 45, a: 12, b: 18 },
+    centroidLab: { L: 65, a: 10, b: 30 },
     isSoftSeason: false,
     isBrightSeason: false,
     isLightSeason: false,
@@ -487,7 +492,7 @@ const SEASON_METADATA: Record<Season12, SeasonMetadata> = {
     isAutumnFamily: true,
   },
   'autumn-deep': {
-    centroidLab: { L: 30, a: 8, b: 12 },
+    centroidLab: { L: 35, a: 10, b: 20 },
     isSoftSeason: false,
     isBrightSeason: false,
     isLightSeason: false,
@@ -835,6 +840,11 @@ export function calculateSeasonMatchBreakdown(
       isVividYellow,
       seasonScores: seasonDebugInfo,
       topCandidates,
+      autumnCentroids: {
+        'autumn-soft': SEASON_METADATA['autumn-soft'].centroidLab,
+        'autumn-true': SEASON_METADATA['autumn-true'].centroidLab,
+        'autumn-deep': SEASON_METADATA['autumn-deep'].centroidLab,
+      },
     },
     // Legacy fields
     primarySeason,

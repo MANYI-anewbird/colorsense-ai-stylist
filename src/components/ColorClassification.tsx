@@ -92,6 +92,9 @@ export function ColorClassification({ seasonMatch, season12 }: ColorClassificati
   // Log top candidates for calibration (development/debugging)
   if (debugInfo?.topCandidates) {
     console.log('TOP CANDIDATES:', debugInfo.topCandidates);
+    if (debugInfo.autumnCentroids) {
+      console.log('AUTUMN CENTROIDS:', debugInfo.autumnCentroids);
+    }
   }
   
   // Guard against undefined primaryMatch
