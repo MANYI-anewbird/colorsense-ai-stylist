@@ -153,6 +153,8 @@ export interface SeasonMatchBreakdown {
       'autumn-true': { L: number; a: number; b: number };
       'autumn-deep': { L: number; a: number; b: number };
     };
+    derivedTemperature?: TemperatureCategory; // Temperature derived from primary season
+    rawTemperature?: TemperatureCategory; // Original temperature calculation (for debug only)
   };
   // Legacy fields for backward compatibility
   primarySeason: Season12;
@@ -288,6 +290,19 @@ function isWarmHue(h: number): boolean {
   // Tie-break when b* is near neutral: reds/yellows are warm; cyans/blues are cool.
   // Bluish greens (145°-180°) should be considered cool, not warm
   return h < 135 || h >= 315;
+}
+
+/**
+ * Derive temperature from season classification.
+ * Winter/Summer => Cool; Spring/Autumn => Warm
+ * This ensures UI consistency (no Winter + Warm conflicts).
+ * Returns only 'warm' or 'cool' (no neutral variants) since seasons are unambiguous.
+ */
+export function getTemperatureFromSeason(season: Season12): TemperatureCategory {
+  if (season.startsWith('winter') || season.startsWith('summer')) {
+    return 'cool';
+  }
+  return 'warm'; // spring/autumn
 }
 
 export function getTemperatureCategoryFromLab(
@@ -830,6 +845,19 @@ export function calculateSeasonMatchBreakdown(
   const confidence = primaryMatch.confidence;
   const isAmbiguous = isBorderline; // Map isBorderline to isAmbiguous for compatibility
   
+  // Derive temperature from primary season (for UI consistency)
+  const derivedTemperature = getTemperatureFromSeason(primaryMatch.season);
+  
+  // Calculate raw temperature for debug (using LAB-based calculation)
+  // Convert lab format {L, a, b} to LAB format {l, a, b} for labToLch
+  const labForLch: LAB = { l: lab.L, a: lab.a, b: lab.b };
+  const lchForTemp = labToLch(labForLch);
+  // getTemperatureCategoryFromLab expects {L, a, b} format
+  const rawTemperature = getTemperatureCategoryFromLab(
+    { L: lab.L, a: lab.a, b: lab.b },
+    lchForTemp
+  );
+  
   return {
     primaryMatch,
     secondaryMatch: finalSecondaryMatch,
@@ -849,6 +877,8 @@ export function calculateSeasonMatchBreakdown(
         'autumn-true': SEASON_METADATA['autumn-true'].centroidLab,
         'autumn-deep': SEASON_METADATA['autumn-deep'].centroidLab,
       },
+      derivedTemperature,
+      rawTemperature,
     },
     // Legacy fields
     primarySeason,
@@ -975,10 +1005,15 @@ export function getColorMetrics(color: ColorValues): ColorMetrics {
   // Calculate detailed match breakdown using distance-based algorithm
   const seasonMatch = calculateSeasonMatchBreakdown(labDecision);
 
+  // Derive temperature from primary season (ensures UI consistency: no Winter + Warm conflicts)
+  // Use derived temperature from seasonMatch if available, otherwise fallback to season12
+  const derivedTemperature = seasonMatch?.debugInfo?.derivedTemperature 
+    ?? getTemperatureFromSeason(seasonMatch?.primaryMatch?.season ?? season12);
+
   return {
     lightness: Math.round(color.lab.l),
     saturation: color.hsl.s,
-    temperature: getTemperatureCategoryFromLab(labDecision, lchDecision),
+    temperature: derivedTemperature, // Derived from season, not independent calculation
     seasonalTendency,
     season12,
     seasonMatch,
