@@ -46,6 +46,39 @@ const temperatureDescriptions: Record<string, string> = {
   'neutral-cool': 'neutral undertones with a slight cool lean toward blue or purple',
 };
 
+/** Valid 12-season ids (canonical). */
+const SEASON12_IDS = [
+  'spring-light', 'spring-true', 'spring-bright',
+  'summer-light', 'summer-true', 'summer-soft',
+  'autumn-soft', 'autumn-true', 'autumn-deep',
+  'winter-bright', 'winter-true', 'winter-deep',
+] as const;
+
+/** Display name (e.g. "Soft Summer") -> id (e.g. "summer-soft"). */
+const DISPLAY_TO_ID: Record<string, string> = {
+  'Light Spring': 'spring-light', 'True Spring': 'spring-true', 'Bright Spring': 'spring-bright',
+  'Light Summer': 'summer-light', 'True Summer': 'summer-true', 'Soft Summer': 'summer-soft',
+  'Soft Autumn': 'autumn-soft', 'True Autumn': 'autumn-true', 'Deep Autumn': 'autumn-deep',
+  'Bright Winter': 'winter-bright', 'True Winter': 'winter-true', 'Deep Winter': 'winter-deep',
+};
+
+function normalizeToSeason12(raw: string | undefined, labL?: number): string {
+  if (!raw || typeof raw !== 'string') return 'winter-deep';
+  const trimmed = raw.trim();
+  if (SEASON12_IDS.includes(trimmed as any)) return trimmed;
+  const fromDisplay = DISPLAY_TO_ID[trimmed]
+    ?? (() => { const k = Object.keys(DISPLAY_TO_ID).find((key) => key.toLowerCase() === trimmed.toLowerCase()); return k ? DISPLAY_TO_ID[k] : undefined; })();
+  if (fromDisplay) return fromDisplay;
+  // 4-season only: map to best subseason using L
+  const L = labL ?? 50;
+  const lower = trimmed.toLowerCase();
+  if (lower === 'spring') return L >= 78 ? 'spring-light' : L >= 65 ? 'spring-true' : 'spring-bright';
+  if (lower === 'summer') return L >= 78 ? 'summer-light' : L >= 55 ? 'summer-true' : 'summer-soft';
+  if (lower === 'autumn') return L <= 45 ? 'autumn-deep' : L >= 65 ? 'autumn-true' : 'autumn-soft';
+  if (lower === 'winter') return L <= 45 ? 'winter-deep' : L >= 65 ? 'winter-bright' : 'winter-true';
+  return 'winter-deep';
+}
+
 serve(async (req) => {
   // Log function invocation immediately with more details
   const requestId = crypto.randomUUID();
@@ -327,9 +360,12 @@ ${userConcern ? `\nUser note: ${userConcern}` : ''}`;
     try {
       const cleaned = rawContent.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
       const obj = JSON.parse(cleaned);
-      const primary = (obj.primarySeason12 ?? obj.primarySeason) as string | undefined;
-      if (obj && typeof primary === "string") {
-        const similar = Array.isArray(obj.similarSeasons) ? obj.similarSeasons.slice(0, 2) : [];
+      const primaryRaw = (obj.primarySeason12 ?? obj.primarySeason) as string | undefined;
+      if (obj && typeof primaryRaw === "string") {
+        const labL = color?.lab?.l;
+        const primary = normalizeToSeason12(primaryRaw, labL);
+        const similarRaw = Array.isArray(obj.similarSeasons) ? obj.similarSeasons.slice(0, 2) : [];
+        const similar = similarRaw.map((s: string) => normalizeToSeason12(s, labL));
         const whyArr = Array.isArray(obj.why) ? obj.why : [];
         const shortExplanation =
           whyArr.length > 0

@@ -44,6 +44,24 @@ export type Season12 =
   | 'winter-true'
   | 'winter-deep';
 
+/** All 12 seasons in canonical order; use for validation and iteration */
+export const ALL_SEASON12: Season12[] = [
+  'spring-light', 'spring-true', 'spring-bright',
+  'summer-light', 'summer-true', 'summer-soft',
+  'autumn-soft', 'autumn-true', 'autumn-deep',
+  'winter-bright', 'winter-true', 'winter-deep',
+];
+
+/**
+ * Ensure value is a valid Season12; return fallback if not (e.g. after AI or bad data).
+ */
+export function assertSeason12(value: unknown, fallback: Season12 = 'winter-deep'): Season12 {
+  if (typeof value === 'string' && (ALL_SEASON12 as readonly string[]).includes(value)) {
+    return value as Season12;
+  }
+  return fallback;
+}
+
 /**
  * Get standard display name for a 12-season type.
  * Uses professional terminology: True/Bright/Soft/Light/Deep
@@ -931,6 +949,12 @@ interface ClassificationResult {
       used: boolean;
       rule: string | null;
     };
+    extremeGate: {
+      triggered: boolean;
+      type: 'veryDark' | 'veryLight' | null;
+      forcedFamily?: SeasonFamily;
+      allowedSeasons12?: Season12[];
+    };
   };
 }
 
@@ -955,13 +979,14 @@ export function classifyColorLAB(
   
   // Value gate: ramp function for value-based attenuation
   const Vgate = ramp(V, config.V_K0, config.V_K1);
-  
-  // Value scale: soft attenuation with floor (never zero)
-  // Vscale ranges from V_FLOOR (when V < V_K0) to 1.0 (when V >= V_K1)
-  const Vscale = config.V_FLOOR + (1 - config.V_FLOOR) * Vgate;
+  // For extreme dark/light: do NOT reduce pClear by L (low lightness ≠ muted; dark can be clear).
+  const isExtremeValue = L <= 15 || L >= 85;
+  const Vscale = isExtremeValue
+    ? 1
+    : config.V_FLOOR + (1 - config.V_FLOOR) * Vgate;
   
   // Effective clarity: combines chroma-based clarity with soft value attenuation
-  // Keff is reduced for low-value colors but never hard-zero
+  // Keff is reduced for low-value colors but never hard-zero (except we skip attenuation for extreme L)
   let Keff = K0 * Vscale;
   
   // Add Keff floor for vivid warm colors to prevent them from being treated as soft
@@ -994,7 +1019,35 @@ export function classifyColorLAB(
   const familyProbs = familyScores;
   
   // Pick top family
-  const family = Object.entries(familyProbs).reduce((a, b) => a[1] > b[1] ? a : b)[0] as SeasonFamily;
+  let family = Object.entries(familyProbs).reduce((a, b) => a[1] > b[1] ? a : b)[0] as SeasonFamily;
+
+  // Extreme value guardrails: prevent very dark/light from being classified as soft/light wrong family
+  const veryDark = L <= 15;
+  const veryLight = L >= 85;
+  type ExtremeGateType = 'veryDark' | 'veryLight' | null;
+  let extremeGate: { triggered: boolean; type: ExtremeGateType; forcedFamily?: SeasonFamily; allowedSeasons12?: Season12[] } = {
+    triggered: false,
+    type: null,
+  };
+  if (veryDark) {
+    const cool = b < 0;
+    extremeGate = {
+      triggered: true,
+      type: 'veryDark',
+      forcedFamily: cool ? 'winter' : 'autumn',
+      allowedSeasons12: cool ? ['winter-deep', 'winter-true'] : ['autumn-deep', 'autumn-true'],
+    };
+    family = extremeGate.forcedFamily;
+  } else if (veryLight) {
+    const warm = b > 0;
+    extremeGate = {
+      triggered: true,
+      type: 'veryLight',
+      forcedFamily: warm ? 'spring' : 'summer',
+      allowedSeasons12: warm ? ['spring-light', 'spring-true'] : ['summer-light', 'summer-true'],
+    };
+    family = extremeGate.forcedFamily;
+  }
   
   // Stage 2: Compute subseason scores within chosen family
   const subseasonScores: Record<Season12, number> = {
@@ -1011,77 +1064,103 @@ export function classifyColorLAB(
     'winter-true': 0,
     'winter-deep': 0,
   };
-  
-  // Spring subseasons (use Keff)
-  if (family === 'spring') {
-    subseasonScores['spring-light'] = ramp(V, config.springLightV.lo, config.springLightV.hi) * 
-                                      ramp(W, config.springLightW.lo, config.springLightW.hi) * 
-                                      peak(Keff, config.springLightK.lo, config.springLightK.hi);
-    subseasonScores['spring-true'] = peak(W, config.springTrueW.lo, config.springTrueW.hi) * 
-                                     peak(V, config.springTrueV.lo, config.springTrueV.hi) * 
-                                     peak(Keff, config.springTrueK.lo, config.springTrueK.hi);
-    subseasonScores['spring-bright'] = ramp(C, config.C_bright0, config.C_bright1) * 
-                                       ramp(Keff, config.springBrightK.lo, config.springBrightK.hi) * 
-                                       peak(V, config.springBrightV.lo, config.springBrightV.hi);
-  }
-  
-  // Autumn subseasons (use Keff)
-  if (family === 'autumn') {
-    subseasonScores['autumn-soft'] = invRamp(Keff, config.autumnSoftK.lo, config.autumnSoftK.hi) * 
-                                     peak(V, config.autumnSoftV.lo, config.autumnSoftV.hi) * 
-                                     peak(W, config.autumnSoftW.lo, config.autumnSoftW.hi);
-    subseasonScores['autumn-true'] = peak(W, config.autumnTrueW.lo, config.autumnTrueW.hi) * 
-                                    peak(V, config.autumnTrueV.lo, config.autumnTrueV.hi) * 
-                                    peak(Keff, config.autumnTrueK.lo, config.autumnTrueK.hi);
-    subseasonScores['autumn-deep'] = invRamp(V, config.autumnDeepV.lo, config.autumnDeepV.hi) * 
-                                    peak(W, config.autumnDeepW.lo, config.autumnDeepW.hi) * 
-                                    peak(Keff, config.autumnDeepK.lo, config.autumnDeepK.hi);
-  }
-  
-  // Summer subseasons (use Keff)
-  if (family === 'summer') {
-    subseasonScores['summer-light'] = ramp(V, config.summerLightV.lo, config.summerLightV.hi) * 
-                                      invRamp(W, config.summerLightW.lo, config.summerLightW.hi) * 
-                                      invRamp(Keff, config.summerLightK.lo, config.summerLightK.hi);
-    subseasonScores['summer-true'] = invRamp(W, config.summerTrueW.lo, config.summerTrueW.hi) * 
-                                     peak(V, config.summerTrueV.lo, config.summerTrueV.hi) * 
-                                     invRamp(Keff, config.summerTrueK.lo, config.summerTrueK.hi);
-    subseasonScores['summer-soft'] = invRamp(Keff, config.summerSoftK.lo, config.summerSoftK.hi) * 
-                                     peak(V, config.summerSoftV.lo, config.summerSoftV.hi) * 
-                                     invRamp(W, config.summerSoftW.lo, config.summerSoftW.hi);
-  }
-  
-  // Winter subseasons (use Keff)
-  if (family === 'winter') {
-    subseasonScores['winter-bright'] = ramp(C, config.C_bright0, config.C_bright1) * 
-                                       ramp(Keff, config.winterBrightK.lo, config.winterBrightK.hi) * 
-                                       invRamp(W, config.winterBrightW.lo, config.winterBrightW.hi);
-    subseasonScores['winter-true'] = invRamp(W, config.winterTrueW.lo, config.winterTrueW.hi) * 
-                                    peak(V, config.winterTrueV.lo, config.winterTrueV.hi) * 
-                                    peak(Keff, config.winterTrueK.lo, config.winterTrueK.hi);
-    subseasonScores['winter-deep'] = invRamp(V, config.winterDeepV.lo, config.winterDeepV.hi) * 
-                                    invRamp(W, config.winterDeepW.lo, config.winterDeepW.hi) * 
-                                    peak(Keff, config.winterDeepK.lo, config.winterDeepK.hi);
-  }
-  
-  // Normalize subseason scores within chosen family (softmax)
-  const familySubseasons: Season12[] = 
-    family === 'spring' ? ['spring-light', 'spring-true', 'spring-bright'] :
-    family === 'autumn' ? ['autumn-soft', 'autumn-true', 'autumn-deep'] :
-    family === 'summer' ? ['summer-light', 'summer-true', 'summer-soft'] :
-    ['winter-bright', 'winter-true', 'winter-deep'];
-  
-  const EPS_SUBSEASON = 1e-6;
-  const maxSubScore = Math.max(...familySubseasons.map(s => subseasonScores[s]));
-  
+
+  let familySubseasons: Season12[];
   let season12: Season12;
   let season12Probs: Record<Season12, number>;
   let isBorderline = false;
   let isFallbackUsed = false;
   let fallbackRule: string | null = null;
   let reason = '';
+
+  if (extremeGate.triggered && extremeGate.allowedSeasons12) {
+    // Deterministic assignment for extreme dark/light: only allowed seasons get probability
+    const allowed = extremeGate.allowedSeasons12;
+    const n = allowed.length;
+    const probs = n === 2 ? [0.65, 0.35] : [0.6, 0.25, 0.15];
+    // Pick primary: veryDark -> clearer (pClear high) -> True, else Deep; veryLight -> lighter first
+    let primary: Season12;
+    if (extremeGate.type === 'veryDark') {
+      primary = pClear >= 0.5 ? (family === 'winter' ? 'winter-true' : 'autumn-true') : (family === 'winter' ? 'winter-deep' : 'autumn-deep');
+    } else {
+      primary = L >= 85 ? (family === 'spring' ? 'spring-light' : 'summer-light') : (family === 'spring' ? 'spring-true' : 'summer-true');
+    }
+    if (!allowed.includes(primary)) primary = allowed[0];
+    const orderedAllowed: Season12[] = [primary, ...allowed.filter(s => s !== primary)];
+    familySubseasons = orderedAllowed;
+    for (let i = 0; i < orderedAllowed.length; i++) {
+      subseasonScores[orderedAllowed[i]] = probs[i];
+    }
+    season12 = primary;
+    season12Probs = { ...subseasonScores };
+  } else {
+    familySubseasons =
+      family === 'spring' ? ['spring-light', 'spring-true', 'spring-bright'] :
+      family === 'autumn' ? ['autumn-soft', 'autumn-true', 'autumn-deep'] :
+      family === 'summer' ? ['summer-light', 'summer-true', 'summer-soft'] :
+      ['winter-bright', 'winter-true', 'winter-deep'];
+  }
   
-  if (maxSubScore <= EPS_SUBSEASON) {
+  if (!extremeGate.triggered) {
+    familySubseasons =
+      family === 'spring' ? ['spring-light', 'spring-true', 'spring-bright'] :
+      family === 'autumn' ? ['autumn-soft', 'autumn-true', 'autumn-deep'] :
+      family === 'summer' ? ['summer-light', 'summer-true', 'summer-soft'] :
+      ['winter-bright', 'winter-true', 'winter-deep'];
+    // Spring subseasons (use Keff)
+    if (family === 'spring') {
+      subseasonScores['spring-light'] = ramp(V, config.springLightV.lo, config.springLightV.hi) * 
+                                        ramp(W, config.springLightW.lo, config.springLightW.hi) * 
+                                        peak(Keff, config.springLightK.lo, config.springLightK.hi);
+      subseasonScores['spring-true'] = peak(W, config.springTrueW.lo, config.springTrueW.hi) * 
+                                       peak(V, config.springTrueV.lo, config.springTrueV.hi) * 
+                                       peak(Keff, config.springTrueK.lo, config.springTrueK.hi);
+      subseasonScores['spring-bright'] = ramp(C, config.C_bright0, config.C_bright1) * 
+                                         ramp(Keff, config.springBrightK.lo, config.springBrightK.hi) * 
+                                         peak(V, config.springBrightV.lo, config.springBrightV.hi);
+    }
+    if (family === 'autumn') {
+      subseasonScores['autumn-soft'] = invRamp(Keff, config.autumnSoftK.lo, config.autumnSoftK.hi) * 
+                                       peak(V, config.autumnSoftV.lo, config.autumnSoftV.hi) * 
+                                       peak(W, config.autumnSoftW.lo, config.autumnSoftW.hi);
+      subseasonScores['autumn-true'] = peak(W, config.autumnTrueW.lo, config.autumnTrueW.hi) * 
+                                      peak(V, config.autumnTrueV.lo, config.autumnTrueV.hi) * 
+                                      peak(Keff, config.autumnTrueK.lo, config.autumnTrueK.hi);
+      subseasonScores['autumn-deep'] = invRamp(V, config.autumnDeepV.lo, config.autumnDeepV.hi) * 
+                                      peak(W, config.autumnDeepW.lo, config.autumnDeepW.hi) * 
+                                      peak(Keff, config.autumnDeepK.lo, config.autumnDeepK.hi);
+    }
+    if (family === 'summer') {
+      subseasonScores['summer-light'] = ramp(V, config.summerLightV.lo, config.summerLightV.hi) * 
+                                        invRamp(W, config.summerLightW.lo, config.summerLightW.hi) * 
+                                        invRamp(Keff, config.summerLightK.lo, config.summerLightK.hi);
+      subseasonScores['summer-true'] = invRamp(W, config.summerTrueW.lo, config.summerTrueW.hi) * 
+                                       peak(V, config.summerTrueV.lo, config.summerTrueV.hi) * 
+                                       invRamp(Keff, config.summerTrueK.lo, config.summerTrueK.hi);
+      subseasonScores['summer-soft'] = invRamp(Keff, config.summerSoftK.lo, config.summerSoftK.hi) * 
+                                       peak(V, config.summerSoftV.lo, config.summerSoftV.hi) * 
+                                       invRamp(W, config.summerSoftW.lo, config.summerSoftW.hi);
+    }
+    if (family === 'winter') {
+      subseasonScores['winter-bright'] = ramp(C, config.C_bright0, config.C_bright1) * 
+                                         ramp(Keff, config.winterBrightK.lo, config.winterBrightK.hi) * 
+                                         invRamp(W, config.winterBrightW.lo, config.winterBrightW.hi);
+      subseasonScores['winter-true'] = invRamp(W, config.winterTrueW.lo, config.winterTrueW.hi) * 
+                                      peak(V, config.winterTrueV.lo, config.winterTrueV.hi) * 
+                                      peak(Keff, config.winterTrueK.lo, config.winterTrueK.hi);
+      subseasonScores['winter-deep'] = invRamp(V, config.winterDeepV.lo, config.winterDeepV.hi) * 
+                                      invRamp(W, config.winterDeepW.lo, config.winterDeepW.hi) * 
+                                      peak(Keff, config.winterDeepK.lo, config.winterDeepK.hi);
+    }
+  }
+
+  const EPS_SUBSEASON = 1e-6;
+  const maxSubScore = Math.max(...familySubseasons.map(s => subseasonScores[s]));
+
+  if (extremeGate.triggered) {
+    reason = 'Extreme value guardrail';
+    // season12, season12Probs already set above; allSeasonProbs/top3/confidence built below (shared)
+  } else if (maxSubScore <= EPS_SUBSEASON) {
     // Fallback: all subseason scores are zero or too small
     // Use fallback rules based on L and pClear
     isFallbackUsed = true;
@@ -1196,20 +1275,22 @@ export function classifyColorLAB(
     reason = 'Closest match by color features';
   }
   
-  const allSeasonProbs: Record<Season12, number> = {
-    'spring-light': familyProbs.spring * (family === 'spring' ? season12Probs['spring-light'] : 0),
-    'spring-true': familyProbs.spring * (family === 'spring' ? season12Probs['spring-true'] : 0),
-    'spring-bright': familyProbs.spring * (family === 'spring' ? season12Probs['spring-bright'] : 0),
-    'summer-light': familyProbs.summer * (family === 'summer' ? season12Probs['summer-light'] : 0),
-    'summer-true': familyProbs.summer * (family === 'summer' ? season12Probs['summer-true'] : 0),
-    'summer-soft': familyProbs.summer * (family === 'summer' ? season12Probs['summer-soft'] : 0),
-    'autumn-soft': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-soft'] : 0),
-    'autumn-true': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-true'] : 0),
-    'autumn-deep': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-deep'] : 0),
-    'winter-bright': familyProbs.winter * (family === 'winter' ? season12Probs['winter-bright'] : 0),
-    'winter-true': familyProbs.winter * (family === 'winter' ? season12Probs['winter-true'] : 0),
-    'winter-deep': familyProbs.winter * (family === 'winter' ? season12Probs['winter-deep'] : 0),
-  };
+  const allSeasonProbs: Record<Season12, number> = extremeGate.triggered
+    ? { ...season12Probs }
+    : {
+        'spring-light': familyProbs.spring * (family === 'spring' ? season12Probs['spring-light'] : 0),
+        'spring-true': familyProbs.spring * (family === 'spring' ? season12Probs['spring-true'] : 0),
+        'spring-bright': familyProbs.spring * (family === 'spring' ? season12Probs['spring-bright'] : 0),
+        'summer-light': familyProbs.summer * (family === 'summer' ? season12Probs['summer-light'] : 0),
+        'summer-true': familyProbs.summer * (family === 'summer' ? season12Probs['summer-true'] : 0),
+        'summer-soft': familyProbs.summer * (family === 'summer' ? season12Probs['summer-soft'] : 0),
+        'autumn-soft': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-soft'] : 0),
+        'autumn-true': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-true'] : 0),
+        'autumn-deep': familyProbs.autumn * (family === 'autumn' ? season12Probs['autumn-deep'] : 0),
+        'winter-bright': familyProbs.winter * (family === 'winter' ? season12Probs['winter-bright'] : 0),
+        'winter-true': familyProbs.winter * (family === 'winter' ? season12Probs['winter-true'] : 0),
+        'winter-deep': familyProbs.winter * (family === 'winter' ? season12Probs['winter-deep'] : 0),
+      };
   
   const allSeasons: Season12[] = [
     'spring-light', 'spring-true', 'spring-bright',
@@ -1271,6 +1352,12 @@ export function classifyColorLAB(
       used: isFallbackUsed,
       rule: fallbackRule,
     },
+    extremeGate: {
+      triggered: extremeGate.triggered,
+      type: extremeGate.type,
+      forcedFamily: extremeGate.forcedFamily,
+      allowedSeasons12: extremeGate.allowedSeasons12,
+    },
   };
   
   // DEBUG flag logging
@@ -1288,10 +1375,11 @@ export function classifyColorLAB(
     console.groupEnd();
   }
   
+  const finalSeason12 = assertSeason12(season12, familySubseasons[0] ?? 'winter-deep');
   return {
     family,
     familyProbs,
-    season12,
+    season12: finalSeason12,
     season12Probs: allSeasonProbs,
     top3,
     isFallbackUsed,

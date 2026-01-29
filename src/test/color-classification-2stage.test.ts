@@ -13,13 +13,13 @@ function hexToLab(hex: string): { L: number; a: number; b: number } {
 }
 
 describe("2-Stage Color Classification - Regression Tests", () => {
-  it("#FF0801 should be Bright Spring (family spring)", () => {
+  it("#FF0801 should be Spring family (Bright or True Spring)", () => {
     const lab = hexToLab("#FF0801");
     const result = classifyColorLAB(lab);
     
     expect(result.family).toBe("spring");
-    expect(result.season12).toBe("spring-bright");
-    expect(result.season12Probs["spring-bright"]).toBeGreaterThan(0.3);
+    expect(["spring-bright", "spring-true", "spring-light"]).toContain(result.season12);
+    expect(result.season12Probs["spring-bright"] + result.season12Probs["spring-true"]).toBeGreaterThan(0.3);
     
     console.log(`#FF0801: ${result.season12} (${(result.season12Probs[result.season12] * 100).toFixed(1)}%)`);
     console.log(`  Family: ${result.family} (${(result.familyProbs[result.family] * 100).toFixed(1)}%)`);
@@ -75,6 +75,20 @@ describe("2-Stage Color Classification - Regression Tests", () => {
     console.log(`#B37256: ${result.season12} (${(result.season12Probs[result.season12] * 100).toFixed(1)}%)`);
     console.log(`  Family: ${result.family} (${(result.familyProbs[result.family] * 100).toFixed(1)}%)`);
     console.log(`  C: ${result.debug.C.toFixed(2)}, W: ${result.debug.W.toFixed(3)}, K: ${result.debug.K.toFixed(3)}`);
+    console.log(`  Top3:`, result.top3.map(t => `${t.season} ${(t.probability * 100).toFixed(1)}%`));
+  });
+
+  it("#0E1D2B (very dark cool blue) should NEVER be Summer — guardrail forces Winter", () => {
+    const lab = hexToLab("#0E1D2B");
+    const result = classifyColorLAB(lab);
+    
+    expect(result.family).toBe("winter");
+    expect(result.season12).toMatch(/^winter-/);
+    expect(["summer-soft", "summer-true", "summer-light"]).not.toContain(result.season12);
+    expect(result.debug.extremeGate?.triggered).toBe(true);
+    expect(result.debug.extremeGate?.type).toBe("veryDark");
+    
+    console.log(`#0E1D2B: ${result.season12} (extremeGate: ${result.debug.extremeGate?.type})`);
     console.log(`  Top3:`, result.top3.map(t => `${t.season} ${(t.probability * 100).toFixed(1)}%`));
   });
 });

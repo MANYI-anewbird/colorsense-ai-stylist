@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import type { ColorAnalysis } from '@/lib/color-utils';
+import { getSeasonDisplayName } from '@/lib/color-utils';
 
 /** Generate a PNG data URL of a pure solid color swatch for AI vision (no UI: no border, shadow, or labels). */
 function colorSwatchToDataUrl(hex: string, size = 128): string {
@@ -335,7 +336,7 @@ export default function ResultPage() {
                         {language === 'zh' ? '主色季' : 'Primary season'}
                       </p>
                       <p className="text-lg font-semibold text-foreground">
-                        {aiAnalysis.primarySeason}
+                        {getSeasonDisplayName(aiAnalysis.primarySeason as any)}
                       </p>
                     </div>
                     {/* Similar — compact row */}
@@ -347,7 +348,7 @@ export default function ResultPage() {
                         <div className="flex flex-wrap gap-2">
                           {aiAnalysis.similarSeasons.map((s) => (
                             <Badge key={s} variant="secondary" className="text-xs font-normal rounded-md px-2.5 py-1 bg-muted text-muted-foreground border-0">
-                              {s}
+                              {getSeasonDisplayName(s as any)}
                             </Badge>
                           ))}
                         </div>
