@@ -4,9 +4,10 @@ import { Loader2, Wand2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorPicker } from '@/components/ColorPicker';
 import { ColorButton } from '@/components/ui/color-button';
-import { analyzeColor, type ColorAnalysis } from '@/lib/color-utils';
+import { analyzeColor, extractAverageColor, rgbToHex, type ColorAnalysis } from '@/lib/color-utils';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PickerPage() {
   const location = useLocation();
@@ -58,19 +59,38 @@ export default function PickerPage() {
       const ctx = canvasRef.current.getContext('2d');
       if (!ctx) throw new Error('Could not get canvas context');
 
-      // Get image data for analysis
       const imgData = ctx.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
-      
-      // Analyze color locally (no AI call here - AI is only called when user clicks "This looks wrong")
-      const radius = 20; // Sampling radius in pixels
+      const radius = 20;
+
+      // Get hex at picker position to check cache before running full analysis
+      const { rgb } = extractAverageColor(imgData, position.x, position.y, radius);
+      const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+      try {
+        const { data: cacheData } = await supabase.functions.invoke('color-analysis-cache', {
+          body: { color: { hex } },
+          headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '' },
+        });
+        if (cacheData?.fromCache && cacheData?.analysis) {
+          navigate('/result', { state: { analysis: cacheData.analysis as ColorAnalysis } });
+          return;
+        }
+      } catch (_) {
+        // Cache unavailable; run analysis below
+      }
+
       const localAnalysis: ColorAnalysis = analyzeColor(imgData, position.x, position.y, radius);
 
-      // Navigate to result with local analysis only
-      navigate('/result', {
-        state: {
-          analysis: localAnalysis,
-        },
-      });
+      try {
+        await supabase.functions.invoke('color-analysis-cache', {
+          body: { analysis: localAnalysis },
+          headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '' },
+        });
+      } catch (_) {
+        // Save failed; still show result
+      }
+
+      navigate('/result', { state: { analysis: localAnalysis } });
     } catch (error) {
       console.error('Analysis error:', error);
       toast.error(t.analyzeFailed);
