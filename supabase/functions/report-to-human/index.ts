@@ -58,11 +58,41 @@ serve(async (req) => {
       );
     }
 
-    const newCount = (row?.report_to_human_count ?? 0) + 1;
-    await supabase
-      .from("color_ai_cache")
-      .update({ report_to_human_count: newCount })
-      .eq("color_hex", cacheKey);
+    let newCount: number;
+    if (!row) {
+      // No cache row (e.g. analyze-wrong upsert failed, or edge case). Insert a "report-only" row
+      // so we never lose a "still wrong" click; ai_result is NOT NULL so use a placeholder.
+      const placeholderResult = {
+        primarySeason: "Pending",
+        similarSeasons: [] as string[],
+        shortExplanation: "Flagged for human review; no AI result cached yet.",
+      };
+      const { error: insertErr } = await supabase.from("color_ai_cache").insert({
+        color_hex: cacheKey,
+        ai_result: placeholderResult,
+        report_to_human_count: 1,
+      });
+      if (insertErr) {
+        return new Response(
+          JSON.stringify({ error: insertErr.message }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      newCount = 1;
+    } else {
+      newCount = (row.report_to_human_count ?? 0) + 1;
+      const { error: updateErr } = await supabase
+        .from("color_ai_cache")
+        .update({ report_to_human_count: newCount })
+        .eq("color_hex", cacheKey);
+
+      if (updateErr) {
+        return new Response(
+          JSON.stringify({ error: updateErr.message }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     return new Response(
       JSON.stringify({ ok: true, reportToHumanCount: newCount }),

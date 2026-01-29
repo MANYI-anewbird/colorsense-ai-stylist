@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.analyze-wrong]
 verify_jwt = false
+
+[functions.report-to-human]
+verify_jwt = false
+
+[functions.color-analysis-cache]
+verify_jwt = false

@@ -1,5 +1,10 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { ZoomIn, ZoomOut } from 'lucide-react';
 import { rgbToHex } from '@/lib/color-utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const ZOOM_LEVELS = [1, 1.5, 2, 2.5, 3] as const;
+const DRAG_THRESHOLD = 8;
 
 interface ColorPickerProps {
   imageSrc: string;
@@ -7,15 +12,21 @@ interface ColorPickerProps {
   pickerSize?: number;
 }
 
-export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: ColorPickerProps) {
+export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 32 }: ColorPickerProps) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 50, y: 50 }); // percentage
   const [currentColor, setCurrentColor] = useState('#888888');
   const [zoomImageData, setZoomImageData] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragMode, setDragMode] = useState<'none' | 'pan' | 'picker'>('none');
+  const pointerStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const zoom = ZOOM_LEVELS[zoomIndex];
 
   // Load and draw image
   useEffect(() => {
@@ -37,6 +48,11 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
     img.src = imageSrc;
   }, [imageSrc]);
 
+  // Reset pan when zoom changes
+  useEffect(() => {
+    setPan({ x: 0, y: 0 });
+  }, [zoomIndex]);
+
   // Update color and zoom preview when position changes
   useEffect(() => {
     if (!imageLoaded || !canvasRef.current) return;
@@ -45,13 +61,18 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const x = (position.x / 100) * canvas.width;
-    const y = (position.y / 100) * canvas.height;
+    // Clamp to valid pixel range so getImageData never goes out of bounds
+    const px = Math.max(0, Math.min(canvas.width - 1, Math.floor((position.x / 100) * canvas.width)));
+    const py = Math.max(0, Math.min(canvas.height - 1, Math.floor((position.y / 100) * canvas.height)));
 
-    // Get pixel color at position
     try {
-      const pixelData = ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
-      setCurrentColor(rgbToHex(pixelData[0], pixelData[1], pixelData[2]));
+      const pixelData = ctx.getImageData(px, py, 1, 1).data;
+      const r = pixelData[0];
+      const g = pixelData[1];
+      const b = pixelData[2];
+      if (Number.isFinite(r) && Number.isFinite(g) && Number.isFinite(b)) {
+        setCurrentColor(rgbToHex(r, g, b));
+      }
 
       // Create zoom preview
       const zoomRadius = 40;
@@ -61,64 +82,126 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
       zoomCanvas.height = zoomSize;
       const zoomCtx = zoomCanvas.getContext('2d');
       if (zoomCtx) {
-        zoomCtx.drawImage(
-          canvas,
-          x - zoomRadius / 4,
-          y - zoomRadius / 4,
-          zoomRadius / 2,
-          zoomRadius / 2,
-          0,
-          0,
-          zoomSize,
-          zoomSize
-        );
+        const sx = Math.max(0, px - zoomRadius / 4);
+        const sy = Math.max(0, py - zoomRadius / 4);
+        const sw = Math.min(zoomRadius / 2, canvas.width - sx);
+        const sh = Math.min(zoomRadius / 2, canvas.height - sy);
+        zoomCtx.drawImage(canvas, sx, sy, sw, sh, 0, 0, zoomSize, zoomSize);
         setZoomImageData(zoomCanvas.toDataURL());
       }
     } catch {
       // Handle cross-origin issues silently
     }
 
-    // Notify parent
-    onPositionChange(x, y);
+    onPositionChange(px, py);
   }, [position, imageLoaded, onPositionChange]);
 
-  const handleMove = useCallback(
-    (clientX: number, clientY: number) => {
-      if (!containerRef.current) return;
-
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-      const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
-
-      setPosition({ x, y });
-    },
-    []
-  );
+  // Convert container coords to image percentage (accounts for zoom and pan)
+  const containerToPosition = useCallback((clientX: number, clientY: number) => {
+    if (!containerRef.current) return null;
+    const rect = containerRef.current.getBoundingClientRect();
+    if (!rect.width || !rect.height || !Number.isFinite(zoom) || zoom <= 0) return null;
+    const cx = clientX - rect.left;
+    const cy = clientY - rect.top;
+    const percX = ((cx - pan.x) / zoom / rect.width) * 100;
+    const percY = ((cy - pan.y) / zoom / rect.height) * 100;
+    const x = Math.max(0, Math.min(100, percX));
+    const y = Math.max(0, Math.min(100, percY));
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return { x, y };
+  }, [zoom, pan.x, pan.y]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       setIsDragging(true);
+      setDragMode('none');
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
-      handleMove(e.clientX, e.clientY);
+      pointerStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        panX: pan.x,
+        panY: pan.y,
+      };
     },
-    [handleMove]
+    [pan.x, pan.y]
   );
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
-      if (isDragging) {
-        handleMove(e.clientX, e.clientY);
+      if (!isDragging || !containerRef.current) return;
+
+      const { x: startX, y: startY, panX: startPanX, panY: startPanY } = pointerStartRef.current;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const distance = Math.hypot(dx, dy);
+
+      if (dragMode === 'none' && distance > DRAG_THRESHOLD) {
+        setDragMode(zoom > 1 ? 'pan' : 'picker');
+      }
+
+      if (dragMode === 'pan') {
+        const rect = containerRef.current.getBoundingClientRect();
+        const maxX = Math.max(0, rect.width * (1 - zoom));
+        const maxY = Math.max(0, rect.height * (1 - zoom));
+        setPan({
+          x: Math.max(-maxX, Math.min(0, startPanX + dx)),
+          y: Math.max(-maxY, Math.min(0, startPanY + dy)),
+        });
+      } else if (dragMode === 'picker') {
+        const next = containerToPosition(e.clientX, e.clientY);
+        if (next) setPosition(next);
       }
     },
-    [isDragging, handleMove]
+    [isDragging, dragMode, zoom, containerToPosition]
   );
 
-  const handlePointerUp = useCallback(() => {
-    setIsDragging(false);
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (isDragging && dragMode === 'none') {
+        const next = containerToPosition(e.clientX, e.clientY);
+        if (next) setPosition(next);
+      }
+      setIsDragging(false);
+      setDragMode('none');
+    },
+    [isDragging, dragMode, containerToPosition]
+  );
+
+  const handleZoomIn = useCallback(() => {
+    setZoomIndex((i) => Math.min(i + 1, ZOOM_LEVELS.length - 1));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomIndex((i) => Math.max(i - 1, 0));
   }, []);
 
   return (
     <div className="relative w-full">
+      {/* Zoom controls */}
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <button
+          type="button"
+          onClick={handleZoomOut}
+          disabled={zoomIndex === 0}
+          className="p-2 rounded-full border border-border bg-background shadow-sm hover:bg-muted disabled:opacity-40 disabled:pointer-events-none"
+          aria-label="Zoom out"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </button>
+        <span className="text-sm text-muted-foreground min-w-[3rem] text-center">
+          {zoom * 100}%
+        </span>
+        <button
+          type="button"
+          onClick={handleZoomIn}
+          disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+          className="p-2 rounded-full border border-border bg-background shadow-sm hover:bg-muted disabled:opacity-40 disabled:pointer-events-none"
+          aria-label="Zoom in"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </button>
+      </div>
+
       {/* Main image container */}
       <div
         ref={containerRef}
@@ -128,45 +211,50 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        <img
-          src={imageSrc}
-          alt="Selected clothing"
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-        
-        {/* Hidden canvas for color extraction */}
-        <canvas ref={canvasRef} className="hidden" />
-
-        {/* Picker circle */}
+        {/* Zoom + pan layer: image and picker move together */}
         <div
-          className="absolute pointer-events-none transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
+          className="absolute inset-0 origin-top-left"
           style={{
-            left: `${position.x}%`,
-            top: `${position.y}%`,
-            width: pickerSize,
-            height: pickerSize,
+            width: '100%',
+            height: '100%',
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           }}
         >
-          {/* Outer ring */}
-          <div
-            className="absolute inset-0 rounded-full border-4 border-white shadow-picker"
-            style={{
-              backgroundColor: currentColor,
-            }}
+          <img
+            src={imageSrc}
+            alt="Selected clothing"
+            className="w-full h-full object-cover pointer-events-none"
+            draggable={false}
           />
-          {/* Crosshair */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-px h-4 bg-white/80" />
-          </div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4 h-px bg-white/80" />
+
+          {/* Picker circle */}
+          <div
+            className="absolute pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
+            style={{
+              left: `${position.x}%`,
+              top: `${position.y}%`,
+              width: pickerSize,
+              height: pickerSize,
+            }}
+          >
+            <div
+              className="absolute inset-0 rounded-full border-2 border-white shadow-picker"
+              style={{ backgroundColor: currentColor }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-px h-3 bg-white/80" />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-3 h-px bg-white/80" />
+            </div>
           </div>
         </div>
 
-        {/* Drag indicator */}
-        {isDragging && (
-          <div className="absolute inset-0 ring-4 ring-primary/30 rounded-2xl pointer-events-none" />
+        {/* Hidden canvas for color extraction */}
+        <canvas ref={canvasRef} className="hidden" />
+
+        {isDragging && dragMode === 'pan' && (
+          <div className="absolute inset-0 ring-2 ring-primary/40 rounded-2xl pointer-events-none" />
         )}
       </div>
 
@@ -206,7 +294,7 @@ export function ColorPicker({ imageSrc, onPositionChange, pickerSize = 48 }: Col
 
       {/* Instructions */}
       <p className="mt-4 text-center text-sm text-muted-foreground">
-        Drag the picker to select a color from your image
+        {t.pickerInstruction}
       </p>
     </div>
   );

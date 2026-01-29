@@ -12,6 +12,7 @@ interface Translations {
   
   // PickerPage
   selectColor: string;
+  pickerInstruction: string;
   analyzing: string;
   analyzeColor: string;
   imageNotReady: string;
@@ -54,6 +55,7 @@ const translations: Record<Language, Translations> = {
     
     // PickerPage
     selectColor: 'Select Color',
+    pickerInstruction: 'Click or drag on the image to pick a color from any part (e.g. shirt, scarf)',
     analyzing: 'Analyzing...',
     analyzeColor: 'Analyze Color',
     imageNotReady: 'Image not ready. Please try again.',
@@ -94,6 +96,7 @@ const translations: Record<Language, Translations> = {
     
     // PickerPage
     selectColor: '选择颜色',
+    pickerInstruction: '在图片上点击或拖动，从任意部位（如上衣、围巾）取色',
     analyzing: '分析中...',
     analyzeColor: '分析颜色',
     imageNotReady: '图片未准备好，请重试',

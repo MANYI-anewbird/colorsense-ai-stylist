@@ -82,17 +82,21 @@ serve(async (req) => {
         .eq("color_hex", cacheKey)
         .maybeSingle();
       if (!cacheErr && cached?.ai_result) {
+        // Count this request regardless of cache vs API: user clicked "This looks wrong"
+        const newTotal = (cached.total_queries_count ?? 0) + 1;
+        const newAiCalls = (cached.ai_api_calls_count ?? 0) + 1;
         const { data: updated } = await supabase
           .from("color_ai_cache")
           .update({
-            total_queries_count: (cached.total_queries_count ?? 0) + 1,
+            total_queries_count: newTotal,
+            ai_api_calls_count: newAiCalls,
           })
           .eq("color_hex", cacheKey)
           .select("total_queries_count, report_to_human_count, ai_api_calls_count")
           .single();
-        const totalQueries = updated?.total_queries_count ?? (cached.total_queries_count ?? 0) + 1;
+        const totalQueries = updated?.total_queries_count ?? newTotal;
         const reportToHuman = updated?.report_to_human_count ?? cached.report_to_human_count ?? 0;
-        const aiApiCalls = updated?.ai_api_calls_count ?? cached.ai_api_calls_count ?? 0;
+        const aiApiCalls = updated?.ai_api_calls_count ?? newAiCalls;
         console.log(`${logPrefix} Cache hit for ${cacheKey}, returning stored result`);
         return new Response(
           JSON.stringify({
@@ -346,11 +350,15 @@ ${userConcern ? `\nUser note: ${userConcern}` : ''}`;
     const aiApiCallsCount = 1;
     if (parsed && supabaseUrl && supabaseServiceKey) {
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      await supabase.from("color_ai_cache").upsert(
+      const { error: upsertErr } = await supabase.from("color_ai_cache").upsert(
         { color_hex: cacheKey, ai_result: parsed, total_queries_count: totalQueriesCount, report_to_human_count: reportToHumanCount, ai_api_calls_count: aiApiCallsCount },
         { onConflict: "color_hex" }
       );
-      console.log(`${logPrefix} Cached AI result for ${cacheKey}`);
+      if (upsertErr) {
+        console.error(`${logPrefix} Failed to cache AI result for ${cacheKey}:`, upsertErr.message);
+      } else {
+        console.log(`${logPrefix} Cached AI result for ${cacheKey}`);
+      }
     }
 
     return new Response(
