@@ -89,6 +89,7 @@ serve(async (req) => {
             metrics,
             correctedAnalysis: null,
             aiReanalysis: cached.ai_result as { primarySeason: string; similarSeasons: string[]; shortExplanation: string },
+            fromCache: true,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -341,6 +342,7 @@ ${userConcern ? `\nUser note: ${userConcern}` : ''}`;
         metrics,
         correctedAnalysis: parsed ? null : rawContent,
         aiReanalysis: parsed,
+        fromCache: false,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -72,37 +72,12 @@ export default function ResultPage() {
   const isRequestingRef = useRef<boolean>(false);
 
   const handleThisLooksWrong = async () => {
-    // Prevent rapid repeated clicks (rate limiting protection)
-    const now = Date.now();
-    const timeSinceLastRequest = now - lastRequestTimeRef.current;
-    const MIN_REQUEST_INTERVAL = 30000; // 30 seconds minimum between requests to avoid rate limits
-    
-    // Check if already requesting (using ref for immediate check)
-    if (isRequestingRef.current) {
-      console.log('Request already in progress, ignoring click');
+    // Prevent double-click while a request is in flight
+    if (isRequestingRef.current || isRequestingAI) {
       return;
     }
-    
-    // Check rate limiting (using ref for immediate check)
-    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL && lastRequestTimeRef.current > 0) {
-      const waitTime = Math.ceil((MIN_REQUEST_INTERVAL - timeSinceLastRequest) / 1000);
-      toast.error(
-        language === 'zh' 
-          ? `请等待 ${waitTime} 秒后再试，以避免速率限制`
-          : `Please wait ${waitTime} seconds before trying again to avoid rate limits`
-      );
-      return;
-    }
-    
-    // If already requesting (state check as backup), don't start another request
-    if (isRequestingAI) {
-      console.log('Request already in progress (state check), ignoring click');
-      return;
-    }
-    
-    // Immediately set refs to prevent race conditions
+    // No cooldown at click time: same color returns from cache (no API), so user can click again immediately
     isRequestingRef.current = true;
-    lastRequestTimeRef.current = now;
     
     // Then update state
     setIsRequestingAI(true);
@@ -183,6 +158,13 @@ export default function ResultPage() {
         setAiAnalysis(`Error: ${errorMessage}`);
         toast.error(errorMessage);
         return;
+      }
+
+      // Only start 30s cooldown when we actually called the API; cache hits don't trigger cooldown
+      if (data?.fromCache === true) {
+        lastRequestTimeRef.current = 0;
+      } else if (data?.fromCache === false) {
+        lastRequestTimeRef.current = Date.now();
       }
 
       // Show AI response in dialog (structured or legacy text)
