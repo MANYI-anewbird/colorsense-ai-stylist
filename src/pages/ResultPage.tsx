@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AlertCircle, ChevronDown, Loader2 } from 'lucide-react';
+import { AlertCircle, ChevronDown, Flag, Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorSwatch, ColorValueCard } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
@@ -67,7 +67,8 @@ export default function ResultPage() {
   
   const [aiAnalysis, setAiAnalysis] = useState<string | AIReanalysisResult | null>(null);
   const [showAIDialog, setShowAIDialog] = useState(false);
-  // Use useRef for immediate updates to prevent race conditions
+  const [aiReportStats, setAiReportStats] = useState<{ totalQueriesCount: number; reportToHumanCount: number; aiApiCallsCount: number } | null>(null);
+  const [reportedToHuman, setReportedToHuman] = useState(false);
   const lastRequestTimeRef = useRef<number>(0);
   const isRequestingRef = useRef<boolean>(false);
 
@@ -160,14 +161,17 @@ export default function ResultPage() {
         return;
       }
 
-      // Only start 30s cooldown when we actually called the API; cache hits don't trigger cooldown
-      if (data?.fromCache === true) {
-        lastRequestTimeRef.current = 0;
-      } else if (data?.fromCache === false) {
-        lastRequestTimeRef.current = Date.now();
-      }
+      if (data?.fromCache === true) lastRequestTimeRef.current = 0;
+      else if (data?.fromCache === false) lastRequestTimeRef.current = Date.now();
 
-      // Show AI response in dialog (structured or legacy text)
+      const total = data?.totalQueriesCount ?? 0;
+      const reported = data?.reportToHumanCount ?? 0;
+      const aiCalls = data?.aiApiCallsCount ?? 0;
+      if (typeof total === 'number' && typeof reported === 'number') {
+        setAiReportStats({ totalQueriesCount: total, reportToHumanCount: reported, aiApiCallsCount: aiCalls });
+      }
+      setReportedToHuman(false);
+
       if (data?.aiReanalysis?.primarySeason) {
         setAiAnalysis(data.aiReanalysis as AIReanalysisResult);
       } else if (data?.correctedAnalysis) {
@@ -366,6 +370,49 @@ export default function ResultPage() {
                         </CollapsibleContent>
                       </Collapsible>
                     ) : null}
+                    {/* Report to human + stats */}
+                    <div className="space-y-2">
+                      {aiReportStats && aiReportStats.totalQueriesCount > 0 && (
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <p>
+                            {language === 'zh'
+                              ? `「看起来不对」点击 ${aiReportStats.totalQueriesCount} 次；${aiReportStats.reportToHumanCount} 次标记需人工复核（${Math.round((100 * aiReportStats.reportToHumanCount) / aiReportStats.totalQueriesCount)}%）`
+                              : `"This looks wrong" clicked ${aiReportStats.totalQueriesCount} times; ${aiReportStats.reportToHumanCount} flagged for human review (${Math.round((100 * aiReportStats.reportToHumanCount) / aiReportStats.totalQueriesCount)}%)`}
+                          </p>
+                          <p>
+                            {language === 'zh'
+                              ? `AI 调用率：${aiReportStats.totalQueriesCount > 0 ? Math.round((100 * aiReportStats.aiApiCallsCount) / aiReportStats.totalQueriesCount) : 0}%（${aiReportStats.aiApiCallsCount} 次 API / ${aiReportStats.totalQueriesCount} 次请求）`
+                              : `AI call rate: ${aiReportStats.totalQueriesCount > 0 ? Math.round((100 * aiReportStats.aiApiCallsCount) / aiReportStats.totalQueriesCount) : 0}% (${aiReportStats.aiApiCallsCount} API call(s) / ${aiReportStats.totalQueriesCount} requests)`}
+                          </p>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (reportedToHuman) return;
+                          try {
+                            await supabase.functions.invoke('report-to-human', {
+                              body: { color: { hex: color.hex } },
+                              headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '' },
+                            });
+                            setReportedToHuman(true);
+                            setAiReportStats((prev) =>
+                              prev ? { ...prev, reportToHumanCount: prev.reportToHumanCount + 1 } : null
+                            );
+                            toast.success(
+                              language === 'zh' ? '已标记，我们会人工复核' : "Thanks — we've flagged this for human review."
+                            );
+                          } catch (_) {
+                            toast.error(language === 'zh' ? '提交失败，请稍后再试' : 'Failed to submit. Please try again.');
+                          }
+                        }}
+                        disabled={reportedToHuman}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted/50 disabled:opacity-60 disabled:pointer-events-none transition-colors"
+                      >
+                        <Flag className="h-4 w-4 shrink-0" />
+                        {language === 'zh' ? '报告给人工复核' : 'Send for human review'}
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <div className="rounded-xl border border-border/50 bg-muted/30 p-4">

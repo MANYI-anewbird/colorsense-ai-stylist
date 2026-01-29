@@ -78,10 +78,21 @@ serve(async (req) => {
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
       const { data: cached, error: cacheErr } = await supabase
         .from("color_ai_cache")
-        .select("ai_result")
+        .select("ai_result, total_queries_count, report_to_human_count, ai_api_calls_count")
         .eq("color_hex", cacheKey)
         .maybeSingle();
       if (!cacheErr && cached?.ai_result) {
+        const { data: updated } = await supabase
+          .from("color_ai_cache")
+          .update({
+            total_queries_count: (cached.total_queries_count ?? 0) + 1,
+          })
+          .eq("color_hex", cacheKey)
+          .select("total_queries_count, report_to_human_count, ai_api_calls_count")
+          .single();
+        const totalQueries = updated?.total_queries_count ?? (cached.total_queries_count ?? 0) + 1;
+        const reportToHuman = updated?.report_to_human_count ?? cached.report_to_human_count ?? 0;
+        const aiApiCalls = updated?.ai_api_calls_count ?? cached.ai_api_calls_count ?? 0;
         console.log(`${logPrefix} Cache hit for ${cacheKey}, returning stored result`);
         return new Response(
           JSON.stringify({
@@ -90,6 +101,9 @@ serve(async (req) => {
             correctedAnalysis: null,
             aiReanalysis: cached.ai_result as { primarySeason: string; similarSeasons: string[]; shortExplanation: string },
             fromCache: true,
+            totalQueriesCount: totalQueries,
+            reportToHumanCount: reportToHuman,
+            aiApiCallsCount: aiApiCalls,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -327,10 +341,13 @@ ${userConcern ? `\nUser note: ${userConcern}` : ''}`;
       // Keep parsed null, fall back to raw text
     }
 
+    const totalQueriesCount = 1;
+    const reportToHumanCount = 0;
+    const aiApiCallsCount = 1;
     if (parsed && supabaseUrl && supabaseServiceKey) {
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
       await supabase.from("color_ai_cache").upsert(
-        { color_hex: cacheKey, ai_result: parsed },
+        { color_hex: cacheKey, ai_result: parsed, total_queries_count: totalQueriesCount, report_to_human_count: reportToHumanCount, ai_api_calls_count: aiApiCallsCount },
         { onConflict: "color_hex" }
       );
       console.log(`${logPrefix} Cached AI result for ${cacheKey}`);
@@ -343,6 +360,9 @@ ${userConcern ? `\nUser note: ${userConcern}` : ''}`;
         correctedAnalysis: parsed ? null : rawContent,
         aiReanalysis: parsed,
         fromCache: false,
+        totalQueriesCount,
+        reportToHumanCount,
+        aiApiCallsCount,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
