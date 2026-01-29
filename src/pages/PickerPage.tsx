@@ -5,7 +5,6 @@ import { Header } from '@/components/Header';
 import { ColorPicker } from '@/components/ColorPicker';
 import { ColorButton } from '@/components/ui/color-button';
 import { analyzeColor, type ColorAnalysis } from '@/lib/color-utils';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -62,30 +61,11 @@ export default function PickerPage() {
       // Get image data for analysis
       const imgData = ctx.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
       
-      // Analyze color locally
+      // Analyze color locally (no AI call here - AI is only called when user clicks "This looks wrong")
       const radius = 20; // Sampling radius in pixels
       const localAnalysis: ColorAnalysis = analyzeColor(imgData, position.x, position.y, radius);
 
-      // Call backend for AI explanation
-      const { data, error } = await supabase.functions.invoke('analyze-color', {
-        body: {
-          color: localAnalysis.color,
-          metrics: localAnalysis.metrics,
-        },
-      });
-
-      if (error) {
-        console.error('API Error:', error);
-        // Navigate with local analysis only
-        navigate('/result', {
-          state: {
-            analysis: localAnalysis,
-          },
-        });
-        return;
-      }
-
-      // Navigate to result with full analysis
+      // Navigate to result with local analysis only
       navigate('/result', {
         state: {
           analysis: localAnalysis,

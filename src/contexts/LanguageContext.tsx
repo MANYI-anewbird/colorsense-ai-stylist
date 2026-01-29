@@ -26,6 +26,8 @@ interface Translations {
   temperature: string;
   seasonalTendency: string;
   analyzeAnother: string;
+  thisLooksWrong: string;
+  requestingAI: string;
   
   // Seasons
   spring: string;
@@ -66,6 +68,8 @@ const translations: Record<Language, Translations> = {
     temperature: 'Temperature',
     seasonalTendency: 'Seasonal Tendency',
     analyzeAnother: 'Analyze Another Color',
+    thisLooksWrong: 'This looks wrong',
+    requestingAI: 'Requesting AI analysis...',
     
     // Seasons
     spring: 'Spring',
@@ -104,6 +108,8 @@ const translations: Record<Language, Translations> = {
     temperature: '色温',
     seasonalTendency: '季节倾向',
     analyzeAnother: '分析另一个颜色',
+    thisLooksWrong: '这个看起来不对',
+    requestingAI: '正在请求AI分析...',
     
     // Seasons
     spring: '春季型',

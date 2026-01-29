@@ -1,4 +1,7 @@
-project_id = "ffhlprmliuocwbkeicya"
+project_id = "qvnkuqvdfolktpnhhbxc"
 
 [functions.analyze-color]
+verify_jwt = false
+
+[functions.analyze-wrong]
 verify_jwt = false
