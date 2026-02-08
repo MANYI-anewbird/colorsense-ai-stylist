@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AccountButton } from '@/components/AccountButton';
 
 interface HeaderProps {
   title?: string;
@@ -29,20 +30,25 @@ export function Header({ title, showBack = false, backTo, transparent = false }:
           : 'bg-background/80 backdrop-blur-xl border-b border-border/50'
       }`}
     >
-      <div className="container flex items-center h-14 px-4">
-        {showBack && (
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label="返回"
-            className="w-10 h-10 -ml-2 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </button>
-        )}
-        {title && (
-          <h1 className="font-semibold text-foreground text-lg ml-2">{title}</h1>
-        )}
+      <div className="container flex items-center justify-between h-14 px-4">
+        <div className="flex items-center min-w-0">
+          {showBack && (
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label="返回"
+              className="w-10 h-10 -ml-2 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            </button>
+          )}
+          {title && (
+            <h1 className="font-semibold text-foreground text-lg ml-2 truncate">{title}</h1>
+          )}
+        </div>
+        <div className="flex-shrink-0">
+          <AccountButton variant="light" />
+        </div>
       </div>
     </header>
   );

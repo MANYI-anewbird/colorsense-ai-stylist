@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image, Lightbulb, Palette, Sparkles } from 'lucide-react';
+import { AccountButton } from '@/components/AccountButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SkinToneSelector } from '@/components/SkinToneSelector';
@@ -67,8 +68,11 @@ export default function HomePage() {
             )}
           </div>
           
-          {/* Language Switcher - Right */}
-          <LanguageSwitcher variant="dark" />
+          {/* Account & Language - Right */}
+          <div className="flex items-center gap-2">
+            <AccountButton variant="dark" />
+            <LanguageSwitcher variant="dark" />
+          </div>
         </div>
         {/* Subtle bottom accent line */}
         <div className="h-0.5 bg-gradient-to-r from-editorial-magenta via-editorial-yellow to-editorial-cyan opacity-60" />

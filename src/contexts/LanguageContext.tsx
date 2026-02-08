@@ -42,6 +42,20 @@ interface Translations {
   neutral: string;
   neutralWarm: string;
   neutralCool: string;
+
+  // Auth / Account
+  account: string;
+  login: string;
+  signOut: string;
+  signIn: string;
+  signUp: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  passwordTooShort: string;
+  passwordMismatch: string;
+  loginRequired: string;
+  loginToUnlock: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -85,6 +99,19 @@ const translations: Record<Language, Translations> = {
     neutral: 'Neutral',
     neutralWarm: 'Neutral-Warm',
     neutralCool: 'Neutral-Cool',
+
+    account: 'Account',
+    login: 'Login',
+    signOut: 'Sign out',
+    signIn: 'Sign in',
+    signUp: 'Sign up',
+    email: 'Email',
+    password: 'Password',
+    confirmPassword: 'Confirm password',
+    passwordTooShort: 'Password must be at least 6 characters',
+    passwordMismatch: 'Passwords do not match',
+    loginRequired: 'Login required',
+    loginToUnlock: 'Please log in or sign up to use the color analysis features.',
   },
   zh: {
     // HomePage
@@ -126,6 +153,19 @@ const translations: Record<Language, Translations> = {
     neutral: '中性色调',
     neutralWarm: '中性偏暖',
     neutralCool: '中性偏冷',
+
+    account: '账号',
+    login: '登录',
+    signOut: '退出登录',
+    signIn: '登录',
+    signUp: '注册',
+    email: '邮箱',
+    password: '密码',
+    confirmPassword: '确认密码',
+    passwordTooShort: '密码至少需要6个字符',
+    passwordMismatch: '两次输入的密码不一致',
+    loginRequired: '需要登录',
+    loginToUnlock: '请登录或注册以使用色彩分析功能。',
   },
 };
 
