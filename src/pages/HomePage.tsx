@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, Lightbulb, Palette, Sparkles } from 'lucide-react';
+import { Camera, Image, Lightbulb, Palette } from 'lucide-react';
 import { AccountButton } from '@/components/AccountButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { SkinToneSelector } from '@/components/SkinToneSelector';
 import { SkinToneBadge } from '@/components/SkinToneBadge';
 import { useSkinTone } from '@/contexts/SkinToneContext';
@@ -13,6 +14,7 @@ export default function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, language } = useLanguage();
   const { skinTone } = useSkinTone();
+  const { user, openLoginDialog } = useAuth();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -27,6 +29,10 @@ export default function HomePage() {
   };
 
   const handleCameraClick = () => {
+    if (!user) {
+      openLoginDialog();
+      return;
+    }
     if (fileInputRef.current) {
       fileInputRef.current.setAttribute('capture', 'environment');
       fileInputRef.current.click();
@@ -34,6 +40,10 @@ export default function HomePage() {
   };
 
   const handleGalleryClick = () => {
+    if (!user) {
+      openLoginDialog();
+      return;
+    }
     if (fileInputRef.current) {
       fileInputRef.current.removeAttribute('capture');
       fileInputRef.current.click();

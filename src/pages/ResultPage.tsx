@@ -9,6 +9,7 @@ import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
 import { ColorClassification } from '@/components/ColorClassification';
 import { ColorButton } from '@/components/ui/color-button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -55,6 +56,7 @@ export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { user, openLoginDialog } = useAuth();
   const state = location.state as ResultState | undefined;
   const [isRequestingAI, setIsRequestingAI] = useState(false);
 
@@ -74,6 +76,10 @@ export default function ResultPage() {
   const isRequestingRef = useRef<boolean>(false);
 
   const handleThisLooksWrong = async () => {
+    if (!user) {
+      openLoginDialog();
+      return;
+    }
     // Prevent double-click while a request is in flight
     if (isRequestingRef.current || isRequestingAI) {
       return;

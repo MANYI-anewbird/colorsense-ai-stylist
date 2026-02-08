@@ -7,6 +7,7 @@ import { ColorButton } from '@/components/ui/color-button';
 import { analyzeColor, extractAverageColor, rgbToHex, type ColorAnalysis } from '@/lib/color-utils';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 /** Normalize hex for DB key (e.g. #111A23). */
@@ -29,6 +30,7 @@ export default function PickerPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user, openLoginDialog } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -64,6 +66,10 @@ export default function PickerPage() {
   }, []);
 
   const handleAnalyze = async () => {
+    if (!user) {
+      openLoginDialog();
+      return;
+    }
     if (!canvasRef.current) {
       toast.error(t.imageNotReady);
       return;

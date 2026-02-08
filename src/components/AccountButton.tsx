@@ -27,9 +27,8 @@ interface AccountButtonProps {
 }
 
 export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
-  const { user, isLoading, signUp, signIn, signOut } = useAuth();
+  const { user, isLoading, signUp, signIn, signOut, loginDialogOpen, setLoginDialogOpen } = useAuth();
   const { t } = useLanguage();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -48,7 +47,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
   };
 
   const handleOpenChange = (open: boolean) => {
-    setDialogOpen(open);
+    setLoginDialogOpen(open);
     if (!open) resetForm();
   };
 
@@ -69,7 +68,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
     if (err) {
       setError(err.message);
     } else {
-      setDialogOpen(false);
+      setLoginDialogOpen(false);
       resetForm();
     }
   };
@@ -83,7 +82,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
     if (err) {
       setError(err.message);
     } else {
-      setDialogOpen(false);
+      setLoginDialogOpen(false);
       resetForm();
     }
   };
@@ -142,7 +141,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
   return (
     <>
       <button
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setLoginDialogOpen(true)}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm border transition-colors ${buttonStyles}`}
         aria-label={t.login}
       >
@@ -150,7 +149,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
         <span className="text-xs font-medium">{t.login}</span>
       </button>
 
-      <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      <Dialog open={loginDialogOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t.account}</DialogTitle>

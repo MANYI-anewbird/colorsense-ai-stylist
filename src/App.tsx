@@ -10,7 +10,6 @@ import HomePage from "./pages/HomePage";
 import PickerPage from "./pages/PickerPage";
 import ResultPage from "./pages/ResultPage";
 import NotFound from "./pages/NotFound";
-import { RequireAuth } from "./components/RequireAuth";
 
 // Initialize query client
 const queryClient = new QueryClient();
@@ -25,11 +24,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<RequireAuth />}>
-                <Route index element={<HomePage />} />
-                <Route path="picker" element={<PickerPage />} />
-                <Route path="result" element={<ResultPage />} />
-              </Route>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/picker" element={<PickerPage />} />
+              <Route path="/result" element={<ResultPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
