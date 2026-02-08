@@ -56,6 +56,8 @@ interface Translations {
   passwordMismatch: string;
   loginRequired: string;
   loginToUnlock: string;
+  welcomeBack: string;
+  createAccountSubtitle: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -112,6 +114,8 @@ const translations: Record<Language, Translations> = {
     passwordMismatch: 'Passwords do not match',
     loginRequired: 'Login required',
     loginToUnlock: 'Please log in or sign up to use the color analysis features.',
+    welcomeBack: 'Welcome back! Please sign in to continue.',
+    createAccountSubtitle: 'Create an account to get started.',
   },
   zh: {
     // HomePage
@@ -166,6 +170,8 @@ const translations: Record<Language, Translations> = {
     passwordMismatch: '两次输入的密码不一致',
     loginRequired: '需要登录',
     loginToUnlock: '请登录或注册以使用色彩分析功能。',
+    welcomeBack: 'Welcome back! Please sign in to continue.',
+    createAccountSubtitle: 'Create an account to get started.',
   },
 };
 

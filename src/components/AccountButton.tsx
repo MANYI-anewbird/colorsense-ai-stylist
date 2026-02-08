@@ -150,40 +150,35 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
       </button>
 
       <Dialog open={loginDialogOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0">
-          {/* Editorial Color Stripe */}
-          <div className="color-stripe h-1.5" />
-          
-          <div className="p-6 pt-5">
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden border border-border/80 shadow-xl shadow-black/5">
+          <div className="p-8">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-bold tracking-tight text-center">
+              <DialogTitle className="text-xl font-semibold tracking-tight text-foreground">
                 {t.account}
               </DialogTitle>
-              <p className="text-sm text-muted-foreground text-center mt-1">
-                {t.signIn === 'Sign In' ? 'Welcome back! Please sign in to continue.' : '欢迎回来！请登录以继续。'}
-              </p>
             </DialogHeader>
             
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 h-12 p-1 bg-muted/50 rounded-xl">
+              <TabsList className="grid w-full grid-cols-2 mb-4 h-10 p-0.5 bg-neutral-100 rounded-lg">
                 <TabsTrigger 
                   value="signin" 
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm font-medium transition-all"
+                  className="rounded-md text-sm font-medium text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
                 >
                   {t.signIn}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup"
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm font-medium transition-all"
+                  className="rounded-md text-sm font-medium text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
                 >
                   {t.signUp}
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="signin" className="mt-0">
+              <TabsContent value="signin" className="mt-0 space-y-4">
+                <p className="text-sm text-muted-foreground mb-4">{t.welcomeBack}</p>
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-sm font-medium">{t.email}</Label>
+                    <Label htmlFor="signin-email" className="text-sm font-medium text-foreground">{t.email}</Label>
                     <Input
                       id="signin-email"
                       type="email"
@@ -191,11 +186,11 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-sm font-medium">{t.password}</Label>
+                    <Label htmlFor="signin-password" className="text-sm font-medium text-foreground">{t.password}</Label>
                     <Input
                       id="signin-password"
                       type="password"
@@ -203,28 +198,29 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
                     />
                   </div>
                   {error && (
-                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                      <p className="text-sm text-destructive">{error}</p>
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+                      <p className="text-sm text-red-700">{error}</p>
                     </div>
                   )}
                   <Button 
                     type="submit" 
-                    className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-editorial-magenta to-editorial-coral hover:opacity-90 transition-opacity" 
+                    className="w-full h-11 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors" 
                     disabled={loading}
                   >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.signIn}
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signIn}
                   </Button>
                 </form>
               </TabsContent>
               
-              <TabsContent value="signup" className="mt-0">
+              <TabsContent value="signup" className="mt-0 space-y-4">
+                <p className="text-sm text-muted-foreground mb-4">{t.createAccountSubtitle}</p>
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-sm font-medium">{t.email}</Label>
+                    <Label htmlFor="signup-email" className="text-sm font-medium text-foreground">{t.email}</Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -232,11 +228,11 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-sm font-medium">{t.password}</Label>
+                    <Label htmlFor="signup-password" className="text-sm font-medium text-foreground">{t.password}</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -244,11 +240,11 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-confirm" className="text-sm font-medium">{t.confirmPassword}</Label>
+                    <Label htmlFor="signup-confirm" className="text-sm font-medium text-foreground">{t.confirmPassword}</Label>
                     <Input
                       id="signup-confirm"
                       type="password"
@@ -256,20 +252,20 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
                     />
                   </div>
                   {error && (
-                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                      <p className="text-sm text-destructive">{error}</p>
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+                      <p className="text-sm text-red-700">{error}</p>
                     </div>
                   )}
                   <Button 
                     type="submit" 
-                    className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-editorial-magenta to-editorial-coral hover:opacity-90 transition-opacity" 
+                    className="w-full h-11 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors" 
                     disabled={loading}
                   >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.signUp}
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signUp}
                   </Button>
                 </form>
               </TabsContent>
