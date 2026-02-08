@@ -150,84 +150,131 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
       </button>
 
       <Dialog open={loginDialogOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t.account}</DialogTitle>
-          </DialogHeader>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">{t.signIn}</TabsTrigger>
-              <TabsTrigger value="signup">{t.signUp}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">{t.email}</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">{t.password}</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signIn}
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">{t.email}</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">{t.password}</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm">{t.confirmPassword}</Label>
-                  <Input
-                    id="signup-confirm"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signUp}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0">
+          {/* Editorial Color Stripe */}
+          <div className="color-stripe h-1.5" />
+          
+          <div className="p-6 pt-5">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-bold tracking-tight text-center">
+                {t.account}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground text-center mt-1">
+                {t.signIn === 'Sign In' ? 'Welcome back! Please sign in to continue.' : '欢迎回来！请登录以继续。'}
+              </p>
+            </DialogHeader>
+            
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6 h-12 p-1 bg-muted/50 rounded-xl">
+                <TabsTrigger 
+                  value="signin" 
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm font-medium transition-all"
+                >
+                  {t.signIn}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="signup"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm font-medium transition-all"
+                >
+                  {t.signUp}
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signin" className="mt-0">
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email" className="text-sm font-medium">{t.email}</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password" className="text-sm font-medium">{t.password}</Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                    />
+                  </div>
+                  {error && (
+                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-editorial-magenta to-editorial-coral hover:opacity-90 transition-opacity" 
+                    disabled={loading}
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.signIn}
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="signup" className="mt-0">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email" className="text-sm font-medium">{t.email}</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password" className="text-sm font-medium">{t.password}</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-confirm" className="text-sm font-medium">{t.confirmPassword}</Label>
+                    <Input
+                      id="signup-confirm"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="h-12 rounded-xl border-2 border-muted focus:border-primary transition-colors"
+                    />
+                  </div>
+                  {error && (
+                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-editorial-magenta to-editorial-coral hover:opacity-90 transition-opacity" 
+                    disabled={loading}
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.signUp}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </div>
         </DialogContent>
       </Dialog>
     </>
