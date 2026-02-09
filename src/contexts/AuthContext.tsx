@@ -9,6 +9,10 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  /** Send password reset email */
+  resetPasswordForEmail: (email: string) => Promise<{ error: Error | null }>;
+  /** Update password (use when user has recovery session from reset link) */
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   /** Opens the login/signup dialog. Use when a feature requires auth. */
   openLoginDialog: () => void;
   loginDialogOpen: boolean;
@@ -55,6 +59,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const resetPasswordForEmail = async (email: string) => {
+    const redirectTo = `${window.location.origin}/reset-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    return { error: error as Error | null };
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error: error as Error | null };
+  };
+
   const openLoginDialog = () => setLoginDialogOpen(true);
 
   const value = {
@@ -64,6 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signIn,
     signOut,
+    resetPasswordForEmail,
+    updatePassword,
     openLoginDialog,
     loginDialogOpen,
     setLoginDialogOpen,

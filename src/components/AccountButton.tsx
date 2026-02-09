@@ -27,7 +27,7 @@ interface AccountButtonProps {
 }
 
 export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
-  const { user, isLoading, signUp, signIn, signOut, loginDialogOpen, setLoginDialogOpen } = useAuth();
+  const { user, isLoading, signUp, signIn, signOut, resetPasswordForEmail, loginDialogOpen, setLoginDialogOpen } = useAuth();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +35,8 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetEmailSent, setShowResetEmailSent] = useState(false);
 
   const buttonStyles = variant === 'dark'
     ? 'bg-white/10 border-white/20 text-white/90 hover:bg-white/15'
@@ -46,6 +48,8 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
     setConfirmPassword('');
     setError(null);
     setShowSignupSuccess(false);
+    setShowForgotPassword(false);
+    setShowResetEmailSent(false);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -85,6 +89,19 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
     } else {
       setLoginDialogOpen(false);
       resetForm();
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error: err } = await resetPasswordForEmail(email);
+    setLoading(false);
+    if (err) {
+      setError(err.message);
+    } else {
+      setShowResetEmailSent(true);
     }
   };
 
@@ -176,45 +193,118 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
               </TabsList>
               
               <TabsContent value="signin" className="mt-0 space-y-4">
-                <p className="text-sm text-muted-foreground mb-4">{t.welcomeBack}</p>
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-sm font-medium text-foreground">{t.email}</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-sm font-medium text-foreground">{t.password}</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
-                    />
-                  </div>
-                  {error && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100">
-                      <p className="text-sm text-red-700">{error}</p>
+                {showResetEmailSent ? (
+                  <div className="space-y-4 py-2">
+                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-100">
+                      <h3 className="font-semibold text-emerald-800 mb-2">{t.resetEmailSentTitle}</h3>
+                      <p className="text-sm text-emerald-700">{t.resetEmailSentMessage}</p>
                     </div>
-                  )}
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors" 
-                    disabled={loading}
-                  >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signIn}
-                  </Button>
-                </form>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setShowResetEmailSent(false);
+                        setShowForgotPassword(false);
+                        resetForm();
+                      }}
+                    >
+                      {t.backToSignIn}
+                    </Button>
+                  </div>
+                ) : showForgotPassword ? (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">{t.forgotPasswordSubtitle}</p>
+                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="forgot-email" className="text-sm font-medium text-foreground">{t.email}</Label>
+                        <Input
+                          id="forgot-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
+                        />
+                      </div>
+                      {error && (
+                        <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+                          <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                      )}
+                      <Button 
+                        type="submit" 
+                        className="w-full h-11 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors" 
+                        disabled={loading}
+                      >
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.sendResetLink}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-full text-sm text-muted-foreground"
+                        onClick={() => {
+                          setShowForgotPassword(false);
+                          setError(null);
+                        }}
+                      >
+                        {t.backToSignIn}
+                      </Button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">{t.welcomeBack}</p>
+                    <form onSubmit={handleSignIn} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signin-email" className="text-sm font-medium text-foreground">{t.email}</Label>
+                        <Input
+                          id="signin-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="signin-password" className="text-sm font-medium text-foreground">{t.password}</Label>
+                          <button
+                            type="button"
+                            className="text-sm text-neutral-600 hover:text-neutral-900 underline underline-offset-2 transition-colors"
+                            onClick={() => setShowForgotPassword(true)}
+                          >
+                            {t.forgotPassword}
+                          </button>
+                        </div>
+                        <Input
+                          id="signin-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
+                        />
+                      </div>
+                      {error && (
+                        <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+                          <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                      )}
+                      <Button 
+                        type="submit" 
+                        className="w-full h-11 rounded-lg text-sm font-medium bg-neutral-900 text-white hover:bg-neutral-800 transition-colors" 
+                        disabled={loading}
+                      >
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signIn}
+                      </Button>
+                    </form>
+                  </>
+                )}
               </TabsContent>
               
               <TabsContent value="signup" className="mt-0 space-y-4">

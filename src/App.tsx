@@ -9,6 +9,7 @@ import { SkinToneProvider } from "@/contexts/SkinToneContext";
 import HomePage from "./pages/HomePage";
 import PickerPage from "./pages/PickerPage";
 import ResultPage from "./pages/ResultPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 
 // Initialize query client
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<HomePage />} />
               <Route path="/picker" element={<PickerPage />} />
               <Route path="/result" element={<ResultPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

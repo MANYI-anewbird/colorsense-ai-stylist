@@ -61,6 +61,16 @@ interface Translations {
   signupSuccessTitle: string;
   signupSuccessMessage: string;
   gotIt: string;
+  forgotPassword: string;
+  forgotPasswordSubtitle: string;
+  sendResetLink: string;
+  resetEmailSentTitle: string;
+  resetEmailSentMessage: string;
+  backToSignIn: string;
+  setNewPassword: string;
+  setNewPasswordSubtitle: string;
+  updatePassword: string;
+  resetLinkInvalid: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -122,6 +132,16 @@ const translations: Record<Language, Translations> = {
     signupSuccessTitle: "You're almost there!",
     signupSuccessMessage: "We've sent a confirmation link to your email. Please check your inbox and click the link to activate your account, then you can sign in.",
     gotIt: 'Got it',
+    forgotPassword: 'Forgot password?',
+    forgotPasswordSubtitle: "Enter your email and we'll send you a link to reset your password.",
+    sendResetLink: 'Send reset link',
+    resetEmailSentTitle: 'Check your email',
+    resetEmailSentMessage: "We've sent a password reset link to your email. Click the link to set a new password.",
+    backToSignIn: 'Back to sign in',
+    setNewPassword: 'Set new password',
+    setNewPasswordSubtitle: 'Enter your new password below.',
+    updatePassword: 'Update password',
+    resetLinkInvalid: 'This link is invalid or has expired. Please request a new password reset.',
   },
   zh: {
     // HomePage (English for all)
@@ -181,6 +201,16 @@ const translations: Record<Language, Translations> = {
     signupSuccessTitle: "You're almost there!",
     signupSuccessMessage: "We've sent a confirmation link to your email. Please check your inbox and click the link to activate your account, then you can sign in.",
     gotIt: 'Got it',
+    forgotPassword: 'Forgot password?',
+    forgotPasswordSubtitle: "Enter your email and we'll send you a link to reset your password.",
+    sendResetLink: 'Send reset link',
+    resetEmailSentTitle: 'Check your email',
+    resetEmailSentMessage: "We've sent a password reset link to your email. Click the link to set a new password.",
+    backToSignIn: 'Back to sign in',
+    setNewPassword: 'Set new password',
+    setNewPasswordSubtitle: 'Enter your new password below.',
+    updatePassword: 'Update password',
+    resetLinkInvalid: 'This link is invalid or has expired. Please request a new password reset.',
   },
 };
 
