@@ -270,16 +270,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="signin-password" className="text-sm font-medium text-foreground">{t.password}</Label>
-                          <button
-                            type="button"
-                            className="text-sm text-neutral-600 hover:text-neutral-900 underline underline-offset-2 transition-colors"
-                            onClick={() => setShowForgotPassword(true)}
-                          >
-                            {t.forgotPassword}
-                          </button>
-                        </div>
+                        <Label htmlFor="signin-password" className="text-sm font-medium text-foreground">{t.password}</Label>
                         <Input
                           id="signin-password"
                           type="password"
@@ -289,6 +280,15 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                           required
                           className="h-11 rounded-lg border-neutral-200 bg-white focus:border-neutral-400 focus:ring-2 focus:ring-neutral-400/20 transition-colors"
                         />
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            className="text-sm font-medium text-neutral-700 hover:text-neutral-900 underline underline-offset-2"
+                            onClick={() => setShowForgotPassword(true)}
+                          >
+                            {t.forgotPassword}
+                          </button>
+                        </div>
                       </div>
                       {error && (
                         <div className="p-3 rounded-lg bg-red-50 border border-red-100">
