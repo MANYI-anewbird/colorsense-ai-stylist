@@ -141,17 +141,11 @@ export default function ResultPage() {
         console.log('Extracted error info:', { statusCode, errorName, errorMsg });
         
         if (statusCode === 429 || errorMsg.includes('429') || errorMsg.includes('rate limit') || errorMsg.includes('Too Many Requests')) {
-          errorMessage = language === 'zh' 
-            ? '请求过于频繁，请稍后再试。这可能是由于速率限制导致的。'
-            : 'Too many requests. Please wait a moment and try again. This may be due to rate limiting.';
+          errorMessage = 'Too many requests. Please wait a moment and try again. This may be due to rate limiting.';
         } else if (statusCode === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-          errorMessage = language === 'zh'
-            ? '认证失败。请检查 Supabase 配置。'
-            : 'Authentication failed. Please check Supabase configuration.';
+          errorMessage = 'Authentication failed. Please check Supabase configuration.';
         } else if (statusCode === 404 || errorMsg.includes('404') || errorMsg.includes('not found')) {
-          errorMessage = language === 'zh'
-            ? 'Edge Function 未找到。请确认函数已正确部署。'
-            : 'Edge Function not found. Please ensure the function is deployed correctly.';
+          errorMessage = 'Edge Function not found. Please ensure the function is deployed correctly.';
         } else if (errorMsg) {
           errorMessage = errorMsg;
         } else if (statusCode) {
@@ -196,13 +190,9 @@ export default function ResultPage() {
       
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          errorMessage = language === 'zh'
-            ? '请求超时。Supabase 服务可能正在维护中，请稍后再试。'
-            : 'Request timeout. Supabase service may be under maintenance. Please try again later.';
+          errorMessage = 'Request timeout. Supabase service may be under maintenance. Please try again later.';
         } else if (error.message.includes('network') || error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
-          errorMessage = language === 'zh'
-            ? '网络错误。请检查网络连接，或 Supabase 服务可能正在维护中。'
-            : 'Network error. Please check your connection, or Supabase service may be under maintenance.';
+          errorMessage = 'Network error. Please check your connection, or Supabase service may be under maintenance.';
         } else {
           errorMessage = `${error.message} (${error.name})`;
         }
@@ -315,12 +305,10 @@ export default function ResultPage() {
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border-border/50 shadow-xl">
           <DialogHeader className="space-y-1.5 pb-2">
             <DialogTitle className="text-lg font-semibold tracking-tight">
-              {language === 'zh' ? 'AI 重新分析' : 'AI Re-analysis'}
+              AI Re-analysis
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              {language === 'zh' 
-                ? '基于颜色数据的独立分类结果'
-                : 'Independent classification from color data'}
+              Independent classification from color data
             </DialogDescription>
           </DialogHeader>
           
@@ -329,7 +317,7 @@ export default function ResultPage() {
               <div className="flex flex-col items-center justify-center py-10 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <p className="text-sm text-muted-foreground">
-                  {language === 'zh' ? '正在分析...' : 'Analyzing...'}
+                  Analyzing...
                 </p>
               </div>
             ) : aiAnalysis ? (
@@ -339,7 +327,7 @@ export default function ResultPage() {
                     {/* Primary season — clear hierarchy */}
                     <div className="rounded-xl bg-primary/10 px-4 py-3 text-center">
                       <p className="text-xs font-semibold uppercase tracking-wider text-black mb-1">
-                        {language === 'zh' ? '主色季' : 'Primary season'}
+                        Primary season
                       </p>
                       <p className="text-lg font-semibold text-foreground">
                         {getSeasonDisplayName(aiAnalysis.primarySeason as any)}
@@ -349,7 +337,7 @@ export default function ResultPage() {
                     {aiAnalysis.similarSeasons?.length ? (
                       <div className="space-y-1.5">
                         <p className="text-xs font-semibold text-black">
-                          {language === 'zh' ? '相似色季' : 'Similar seasons'}
+                          Similar seasons
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {aiAnalysis.similarSeasons.map((s) => (
@@ -364,7 +352,7 @@ export default function ResultPage() {
                     {aiAnalysis.shortExplanation ? (
                       <Collapsible className="group rounded-xl border border-border/50 overflow-hidden">
                         <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm font-semibold text-black hover:bg-muted/40 transition-colors">
-                          {language === 'zh' ? '查看说明' : 'View explanation'}
+                          View explanation
                           <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                         </CollapsibleTrigger>
                         <CollapsibleContent>
@@ -388,11 +376,11 @@ export default function ResultPage() {
                             (typeof resData?.error === 'string' ? resData.error : null) ??
                             (invokeError as { message?: string })?.message;
                           if (invokeError) {
-                            toast.error(errMsg || (language === 'zh' ? '提交失败，请稍后再试' : 'Failed to submit. Please try again.'));
+                            toast.error(errMsg || 'Failed to submit. Please try again.');
                             return;
                           }
                           if (resData?.error) {
-                            toast.error(typeof resData.error === 'string' ? resData.error : (language === 'zh' ? '提交失败，请稍后再试' : 'Failed to submit. Please try again.'));
+                            toast.error(typeof resData.error === 'string' ? resData.error : 'Failed to submit. Please try again.');
                             return;
                           }
                           setReportedToHuman(true);
@@ -400,18 +388,18 @@ export default function ResultPage() {
                             prev ? { ...prev, reportToHumanCount: prev.reportToHumanCount + 1 } : null
                           );
                           toast.success(
-                            language === 'zh' ? '已标记，我们会人工复核' : "Thanks — we've flagged this for human review."
+                            "Thanks — we've flagged this for human review."
                           );
                           setShowAIDialog(false);
                         } catch (_) {
-                          toast.error(language === 'zh' ? '提交失败，请稍后再试' : 'Failed to submit. Please try again.');
+                          toast.error('Failed to submit. Please try again.');
                         }
                       }}
                       disabled={reportedToHuman}
                       className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-400/60 bg-red-500 px-3 py-2.5 text-sm font-medium text-white shadow-md hover:bg-red-600 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none disabled:hover:scale-100 transition-all duration-200"
                     >
                       <Flag className="h-4 w-4 shrink-0" />
-                      {language === 'zh' ? '还是不对' : 'Nope, still wrong'}
+                      Nope, still wrong
                     </button>
                   </>
                 ) : (
@@ -423,14 +411,12 @@ export default function ResultPage() {
                 )}
                 {/* Note — minimal footer */}
                 <p className="text-[11px] text-muted-foreground/80 leading-relaxed pt-1 border-t border-border/30">
-                  {language === 'zh' 
-                    ? '分析仅基于颜色属性，个人色季还受肤色、发色与对比度影响。'
-                    : 'Analysis is based on color only; personal season also depends on skin tone, hair, and contrast.'}
+                  Analysis is based on color only; personal season also depends on skin tone, hair, and contrast.
                 </p>
               </div>
             ) : (
               <div className="text-center py-10 text-sm text-muted-foreground">
-                {language === 'zh' ? '等待分析...' : 'Waiting for analysis...'}
+                Waiting for analysis...
               </div>
             )}
           </div>

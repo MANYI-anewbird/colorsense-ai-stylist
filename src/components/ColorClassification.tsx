@@ -55,9 +55,9 @@ const getSeasonDotColor = (season: Season12): string => {
 /**
  * Get season display name
  */
-const getSeasonName = (season: Season12, language: 'en' | 'zh'): string => {
+const getSeasonName = (season: Season12): string => {
   const info = SKIN_TONES.find(s => s.id === season);
-  return language === 'zh' ? (info?.nameZh ?? season) : (info?.nameEn ?? season);
+  return info?.nameEn ?? season;
 };
 
 /**
@@ -202,7 +202,7 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
         {/* High Confidence badge */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">
-            {language === 'zh' ? '置信度' : 'Confidence'}
+            Confidence
           </span>
           <span className={cn(
             'px-2.5 py-1 rounded-full text-xs font-medium',
@@ -212,11 +212,11 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
               : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
           )}>
-            {language === 'zh' ? '高置信度' : 'High Confidence'} {formatConfidence(confidence)}
+            High Confidence {formatConfidence(confidence)}
           </span>
           {isBorderline && (
             <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-              {language === 'zh' ? '边界' : 'Borderline'}
+              Borderline
             </span>
           )}
         </div>
@@ -225,10 +225,10 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
         {secondaryMatch && (
           <div className="flex items-center gap-2 text-xs">
             <span className="text-muted-foreground">
-              {language === 'zh' ? '次要匹配' : 'Secondary match'}:
+              Secondary match:
             </span>
             <span className="font-medium text-foreground">
-              {getSeasonName(secondaryMatch.season, language)} ({formatConfidence(secondaryMatch.confidence)})
+              {getSeasonName(secondaryMatch.season)} ({formatConfidence(secondaryMatch.confidence)})
             </span>
           </div>
         )}
@@ -244,23 +244,21 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-foreground">
-            {language === 'zh' ? '模糊结果' : 'Close Match'}
+            Close Match
           </h3>
           {isBorderline && (
             <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-              {language === 'zh' ? '边界' : 'Borderline'}
+              Borderline
             </span>
           )}
         </div>
         <div className="flex flex-col items-end gap-0.5">
           <span className="text-xs text-muted-foreground">
-            {formatConfidence(confidence)} {language === 'zh' ? '置信度' : 'confidence'}
+            {formatConfidence(confidence)} confidence
           </span>
           {seasonMatch.confidenceDisplay?.useRelative && seasonMatch.confidenceDisplay.top3Cumulative > 0 && (
             <span className="text-[10px] text-muted-foreground/70">
-              {language === 'zh' 
-                ? `前3选项累积${Math.round(seasonMatch.confidenceDisplay.top3Cumulative * 100)}%`
-                : `Top 3: ${Math.round(seasonMatch.confidenceDisplay.top3Cumulative * 100)}%`}
+              {`Top 3: ${Math.round(seasonMatch.confidenceDisplay.top3Cumulative * 100)}%`}
             </span>
           )}
         </div>
@@ -271,7 +269,7 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
         <div className="flex items-center gap-2">
           <div className={cn('w-4 h-4 rounded-full', getSeasonDotColor(primarySeason))} />
           <span className="text-base font-bold text-foreground">
-            {getSeasonName(primarySeason, language)}
+            {getSeasonName(primarySeason)}
           </span>
           <span className="text-sm text-muted-foreground">
             ({primaryScore}%)
@@ -280,10 +278,10 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
         {secondaryMatch && (
           <div className="flex items-center gap-2 pl-6">
             <span className="text-xs text-muted-foreground">
-              {language === 'zh' ? '次要匹配' : 'Secondary match'}:
+              Secondary match:
             </span>
             <span className="text-sm font-medium text-muted-foreground">
-              {getSeasonName(secondaryMatch.season, language)} ({formatConfidence(secondaryMatch.confidence)})
+              {getSeasonName(secondaryMatch.season)} ({formatConfidence(secondaryMatch.confidence)})
             </span>
           </div>
         )}
@@ -321,10 +319,7 @@ export function ColorClassification({ seasonMatch, season12, hex, inputLab }: Co
 
       {/* Helpful message */}
       <p className="text-xs text-muted-foreground leading-relaxed italic">
-        {language === 'zh' 
-          ? `此颜色可能属于 ${getSeasonName(primarySeason, language)}，但具有 ${secondarySeason ? getSeasonName(secondarySeason, language) : ''} 的强烈特征。`
-          : `This color likely belongs to ${getSeasonName(primarySeason, language)}, but with strong traits of ${secondarySeason ? getSeasonName(secondarySeason, language) : ''}.`
-        }
+        {`This color likely belongs to ${getSeasonName(primarySeason)}, but with strong traits of ${secondarySeason ? getSeasonName(secondarySeason) : ''}.`}
       </p>
     </div>
   );

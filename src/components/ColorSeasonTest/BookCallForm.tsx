@@ -14,13 +14,13 @@ interface BookCallFormProps {
 }
 
 const TIMEZONES = [
-  { value: 'Asia/Shanghai', label: 'China (UTC+8)', labelZh: '中国 (UTC+8)' },
-  { value: 'Asia/Tokyo', label: 'Japan (UTC+9)', labelZh: '日本 (UTC+9)' },
-  { value: 'Asia/Singapore', label: 'Singapore (UTC+8)', labelZh: '新加坡 (UTC+8)' },
-  { value: 'America/New_York', label: 'New York (UTC-5)', labelZh: '纽约 (UTC-5)' },
-  { value: 'America/Los_Angeles', label: 'Los Angeles (UTC-8)', labelZh: '洛杉矶 (UTC-8)' },
-  { value: 'Europe/London', label: 'London (UTC+0)', labelZh: '伦敦 (UTC+0)' },
-  { value: 'Europe/Paris', label: 'Paris (UTC+1)', labelZh: '巴黎 (UTC+1)' },
+  { value: 'Asia/Shanghai', label: 'China (UTC+8)', labelZh: 'China (UTC+8)' },
+  { value: 'Asia/Tokyo', label: 'Japan (UTC+9)', labelZh: 'Japan (UTC+9)' },
+  { value: 'Asia/Singapore', label: 'Singapore (UTC+8)', labelZh: 'Singapore (UTC+8)' },
+  { value: 'America/New_York', label: 'New York (UTC-5)', labelZh: 'New York (UTC-5)' },
+  { value: 'America/Los_Angeles', label: 'Los Angeles (UTC-8)', labelZh: 'Los Angeles (UTC-8)' },
+  { value: 'Europe/London', label: 'London (UTC+0)', labelZh: 'London (UTC+0)' },
+  { value: 'Europe/Paris', label: 'Paris (UTC+1)', labelZh: 'Paris (UTC+1)' },
 ];
 
 const TIME_SLOTS = [
@@ -73,18 +73,16 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
             <Check className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-3 text-center tracking-tight">
-            {language === 'zh' ? '预约成功！' : 'Booking Confirmed!'}
+            Booking Confirmed!
           </h2>
           <p className="text-sm text-muted-foreground text-center leading-relaxed max-w-xs">
-            {language === 'zh' 
-              ? `我们将在 ${format(date!, 'yyyy年M月d日')} ${time} 给您回电。` 
-              : `We will call you on ${format(date!, 'MMM d, yyyy')} at ${time}.`}
+            {`We will call you on ${format(date!, 'MMM d, yyyy')} at ${time}.`}
           </p>
           <Button 
             onClick={onBack}
             className="mt-8 bg-foreground hover:bg-foreground/90 text-background font-semibold px-8"
           >
-            {language === 'zh' ? '返回' : 'Done'}
+            Done
           </Button>
         </div>
       </div>
@@ -105,16 +103,14 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <h1 className="ml-2 text-lg font-bold text-foreground tracking-tight">
-          {language === 'zh' ? '预约电话咨询' : 'Book a Call'}
+          Book a Call
         </h1>
       </div>
 
       {/* Form Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4">
         <p className="text-sm text-muted-foreground mb-5">
-          {language === 'zh' 
-            ? '填写您的信息，我们将在您选择的时间回电。' 
-            : 'Fill in your details and we will call you at your selected time.'}
+          Fill in your details and we will call you at your selected time.
         </p>
 
         <div className="space-y-5">
@@ -122,12 +118,12 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
               <User className="w-3.5 h-3.5 text-muted-foreground" />
-              {language === 'zh' ? '姓名' : 'Name'}
+              Name
             </label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={language === 'zh' ? '请输入您的姓名' : 'Enter your name'}
+              placeholder="Enter your name"
               maxLength={100}
               className="bg-background border-2 border-border focus:border-foreground transition-colors"
             />
@@ -137,12 +133,12 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-              {language === 'zh' ? '电话号码' : 'Phone Number'}
+              Phone Number
             </label>
             <Input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder={language === 'zh' ? '请输入您的电话号码' : 'Enter your phone number'}
+              placeholder="Enter your phone number"
               type="tel"
               maxLength={20}
               className="bg-background border-2 border-border focus:border-foreground transition-colors"
@@ -153,7 +149,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-              {language === 'zh' ? '可用日期' : 'Available Date'}
+              Available Date
             </label>
             <Popover>
               <PopoverTrigger asChild>
@@ -164,7 +160,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
                     !date && "text-muted-foreground"
                   )}
                 >
-                  {date ? format(date, language === 'zh' ? 'yyyy年M月d日' : 'PPP') : (language === 'zh' ? '选择日期' : 'Pick a date')}
+                  {date ? format(date, 'PPP') : 'Pick a date'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -183,11 +179,11 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           {/* Time */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              {language === 'zh' ? '可用时间' : 'Available Time'}
+              Available Time
             </label>
             <Select value={time} onValueChange={setTime}>
               <SelectTrigger className="bg-background border-2 border-border focus:border-foreground transition-colors">
-                <SelectValue placeholder={language === 'zh' ? '选择时间' : 'Select time'} />
+                <SelectValue placeholder="Select time" />
               </SelectTrigger>
               <SelectContent>
                 {TIME_SLOTS.map((slot) => (
@@ -203,7 +199,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Globe className="w-3.5 h-3.5 text-muted-foreground" />
-              {language === 'zh' ? '时区' : 'Timezone'}
+              Timezone
             </label>
             <Select value={timezone} onValueChange={setTimezone}>
               <SelectTrigger className="bg-background border-2 border-border focus:border-foreground transition-colors">
@@ -212,7 +208,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
               <SelectContent>
                 {TIMEZONES.map((tz) => (
                   <SelectItem key={tz.value} value={tz.value}>
-                    {language === 'zh' ? tz.labelZh : tz.label}
+                    {tz.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -229,8 +225,7 @@ export function BookCallForm({ onBack }: BookCallFormProps) {
           className="w-full bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 disabled:opacity-50"
         >
           {isSubmitting 
-            ? (language === 'zh' ? '提交中...' : 'Submitting...') 
-            : (language === 'zh' ? '提交预约' : 'Submit Booking')}
+            ? 'Submitting...' : 'Submit Booking'}
         </Button>
       </div>
     </div>

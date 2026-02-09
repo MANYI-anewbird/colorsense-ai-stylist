@@ -24,9 +24,9 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
   };
 
   const confidenceText = {
-    high: { en: 'High confidence', zh: '高置信度' },
-    medium: { en: 'Medium confidence', zh: '中等置信度' },
-    low: { en: 'Low confidence', zh: '低置信度' },
+    high: { en: 'High confidence', zh: 'High confidence' },
+    medium: { en: 'Medium confidence', zh: 'Medium confidence' },
+    low: { en: 'Low confidence', zh: 'Low confidence' },
   };
 
   if (!seasonInfo) {
@@ -37,7 +37,7 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
     <div className="flex flex-col h-full px-5 py-6">
       {/* Title */}
       <h2 className="text-xl font-semibold text-center text-foreground mb-8">
-        {language === 'zh' ? '你的可能色季' : 'Your Likely Color Season'}
+        Your Likely Color Season
       </h2>
 
       {/* Result Card */}
@@ -50,7 +50,7 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
 
         {/* Season Name */}
         <h3 className="text-2xl font-bold text-foreground mb-2">
-          {language === 'zh' ? seasonInfo.nameZh : seasonInfo.nameEn}
+          {seasonInfo.nameEn}
         </h3>
 
         {/* Confidence Badge */}
@@ -62,15 +62,13 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
             : 'bg-neutral-100 text-neutral-600'
         }`}>
           {confidence === 'low' && <AlertCircle className="w-3 h-3" />}
-          {language === 'zh' ? confidenceText[confidence].zh : confidenceText[confidence].en}
+          {confidenceText[confidence].en}
         </div>
 
         {/* Disclaimer */}
         <div className="bg-neutral-50 rounded-xl p-4 mb-6">
           <p className="text-xs text-muted-foreground text-center leading-relaxed">
-            {language === 'zh' 
-              ? '这是一个快速自测结果。光线和屏幕设置可能会影响准确性。' 
-              : 'This is a quick self-assessment. Lighting and screen settings may affect the result.'}
+            This is a quick self-assessment. Lighting and screen settings may affect the result.
           </p>
         </div>
       </div>
@@ -83,7 +81,7 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
           className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground rounded-xl font-medium border-2 border-border hover:text-foreground hover:border-foreground/50 active:scale-[0.98] transition-all"
         >
           <Check className="w-4 h-4" />
-          <span className="text-sm">{language === 'zh' ? '使用此估算' : 'Use this estimate'}</span>
+          <span className="text-sm">Use this estimate</span>
         </button>
 
         {/* Primary button - Editorial gradient */}
@@ -94,7 +92,7 @@ export function TestResult({ seasonId, confidence, onUseResult, onConsultant }: 
           {/* Hover gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <MessageCircle className="w-4 h-4 relative z-10" />
-          <span className="text-sm relative z-10">{language === 'zh' ? '获取专业色彩报告' : 'Get a professional color report'}</span>
+          <span className="text-sm relative z-10">Get a professional color report</span>
         </button>
       </div>
     </div>

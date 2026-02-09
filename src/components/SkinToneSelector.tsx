@@ -27,10 +27,10 @@ export function SkinToneSelector() {
   const winterTones = SKIN_TONES.filter(t => t.season === 'winter');
 
   const seasonGroups = [
-    { key: 'spring', tones: springTones, labelEn: 'Spring', labelZh: '春季型', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-    { key: 'summer', tones: summerTones, labelEn: 'Summer', labelZh: '夏季型', color: 'bg-violet-100 text-violet-700 border-violet-200' },
-    { key: 'autumn', tones: autumnTones, labelEn: 'Autumn', labelZh: '秋季型', color: 'bg-orange-100 text-orange-700 border-orange-200' },
-    { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: '冬季型', color: 'bg-sky-100 text-sky-700 border-sky-200' },
+    { key: 'spring', tones: springTones, labelEn: 'Spring', labelZh: 'Spring', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+    { key: 'summer', tones: summerTones, labelEn: 'Summer', labelZh: 'Summer', color: 'bg-violet-100 text-violet-700 border-violet-200' },
+    { key: 'autumn', tones: autumnTones, labelEn: 'Autumn', labelZh: 'Autumn', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+    { key: 'winter', tones: winterTones, labelEn: 'Winter', labelZh: 'Winter', color: 'bg-sky-100 text-sky-700 border-sky-200' },
   ];
 
   const handleTestComplete = () => {
@@ -74,11 +74,11 @@ export function SkinToneSelector() {
           
           {currentToneInfo ? (
             <span className="text-sm font-medium text-foreground">
-              {language === 'zh' ? currentToneInfo.nameZh : currentToneInfo.nameEn}
+              {currentToneInfo.nameEn}
             </span>
           ) : (
             <span className="text-sm font-medium text-foreground">
-              {language === 'zh' ? '选择你的色季' : 'Select Your Color Season'}
+              Select Your Color Season
             </span>
           )}
         </div>
@@ -94,7 +94,7 @@ export function SkinToneSelector() {
         }`}
       >
         <p className="text-xs text-muted-foreground text-center mb-3">
-          {language === 'zh' ? '基于12色季理论' : 'Based on 12-season color theory'}
+          Based on 12-season color theory
         </p>
 
         {/* "I don't know" Button - Editorial style */}
@@ -105,14 +105,14 @@ export function SkinToneSelector() {
           {/* Hover gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-editorial-magenta via-editorial-coral to-editorial-yellow opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <HelpCircle className="w-4 h-4 relative z-10" />
-          <span className="relative z-10">{language === 'zh' ? '我不知道我的色季' : "I don't know my color season"}</span>
+          <span className="relative z-10">{"I don't know my color season"}</span>
         </button>
 
         <div className="space-y-3">
           {seasonGroups.map((group) => (
             <div key={group.key} className="space-y-2">
               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide border ${group.color}`}>
-                {language === 'zh' ? group.labelZh : group.labelEn}
+                {group.labelEn}
               </span>
               <div className="grid grid-cols-3 gap-2">
                 {group.tones.map((tone) => {
@@ -144,7 +144,7 @@ export function SkinToneSelector() {
                       </div>
                       {/* Label */}
                       <span className="text-[10px] font-medium text-center leading-tight text-foreground">
-                        {language === 'zh' ? tone.nameZh : tone.nameEn}
+                        {tone.nameEn}
                       </span>
                     </button>
                   );

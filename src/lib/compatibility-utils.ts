@@ -99,12 +99,12 @@ export function getRecommendationLevel(score: number): {
   labelZh: string;
 } {
   if (score >= 80) {
-    return { level: 'excellent', labelEn: 'Excellent Match', labelZh: '非常推荐' };
+    return { level: 'excellent', labelEn: 'Excellent Match', labelZh: 'Excellent Match' };
   } else if (score >= 60) {
-    return { level: 'good', labelEn: 'Good Match', labelZh: '推荐' };
+    return { level: 'good', labelEn: 'Good Match', labelZh: 'Good Match' };
   } else if (score >= 40) {
-    return { level: 'fair', labelEn: 'Fair Match', labelZh: '一般' };
+    return { level: 'fair', labelEn: 'Fair Match', labelZh: 'Fair Match' };
   } else {
-    return { level: 'poor', labelEn: 'Not Recommended', labelZh: '不推荐' };
+    return { level: 'poor', labelEn: 'Not Recommended', labelZh: 'Not Recommended' };
   }
 }

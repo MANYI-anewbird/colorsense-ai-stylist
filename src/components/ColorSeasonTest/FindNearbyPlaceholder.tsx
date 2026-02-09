@@ -20,7 +20,7 @@ export function FindNearbyPlaceholder({ onBack }: FindNearbyPlaceholderProps) {
           <ArrowLeft className="w-5 h-5 text-neutral-700" />
         </button>
         <h1 className="ml-2 text-lg font-semibold text-foreground">
-          {language === 'zh' ? '附近顾问' : 'Find Nearby'}
+          Find Nearby
         </h1>
       </div>
 
@@ -33,28 +33,24 @@ export function FindNearbyPlaceholder({ onBack }: FindNearbyPlaceholderProps) {
 
         {/* Title */}
         <h2 className="text-xl font-semibold text-foreground mb-3 text-center">
-          {language === 'zh' ? '色彩顾问咨询' : 'Color Consultant'}
+          Color Consultant
         </h2>
 
         {/* Coming Soon Badge */}
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium mb-6">
           <Clock className="w-3.5 h-3.5" />
-          {language === 'zh' ? '即将推出' : 'Coming Soon'}
+          Coming Soon
         </div>
 
         {/* Description */}
         <p className="text-sm text-muted-foreground text-center leading-relaxed max-w-xs">
-          {language === 'zh' 
-            ? '我们正在建立本地专业色彩顾问网络。敬请期待！' 
-            : 'We are building local consultant connections. Stay tuned!'}
+          We are building local consultant connections. Stay tuned!
         </p>
 
         {/* Additional Info */}
         <div className="mt-8 p-4 bg-neutral-50 rounded-xl">
           <p className="text-xs text-muted-foreground text-center">
-            {language === 'zh' 
-              ? '专业色彩顾问可以通过面对面分析，为你提供最精准的个人色彩诊断。' 
-              : 'Professional consultants provide the most accurate personal color analysis through in-person sessions.'}
+            Professional consultants provide the most accurate personal color analysis through in-person sessions.
           </p>
         </div>
       </div>

@@ -20,19 +20,19 @@ interface ColorSeasonTestProps {
 
 // Test data
 const STEP_1_OPTIONS = [
-  { id: 'warm', color: '#FFF8E7', labelEn: 'Cream', labelZh: '米白色' },
-  { id: 'cool', color: '#FFFFFF', labelEn: 'True White', labelZh: '纯白色' },
+  { id: 'warm', color: '#FFF8E7', labelEn: 'Cream', labelZh: 'Cream' },
+  { id: 'cool', color: '#FFFFFF', labelEn: 'True White', labelZh: 'True White' },
 ];
 
 const STEP_2_OPTIONS = [
-  { id: 'bright', color: '#4169E1', labelEn: 'Bright Blue', labelZh: '亮蓝色' },
-  { id: 'soft', color: '#8BA8B7', labelEn: 'Dusty Blue', labelZh: '灰蓝色' },
+  { id: 'bright', color: '#4169E1', labelEn: 'Bright Blue', labelZh: 'Bright Blue' },
+  { id: 'soft', color: '#8BA8B7', labelEn: 'Dusty Blue', labelZh: 'Dusty Blue' },
 ];
 
 const STEP_3_OPTIONS = [
-  { id: 'light', color: '#FAF0E6', labelEn: 'Light', labelZh: '浅色' },
-  { id: 'medium', color: '#D2B48C', labelEn: 'Medium', labelZh: '中等' },
-  { id: 'deep', color: '#8B4513', labelEn: 'Deep', labelZh: '深色' },
+  { id: 'light', color: '#FAF0E6', labelEn: 'Light', labelZh: 'Light' },
+  { id: 'medium', color: '#D2B48C', labelEn: 'Medium', labelZh: 'Medium' },
+  { id: 'deep', color: '#8B4513', labelEn: 'Deep', labelZh: 'Deep' },
 ];
 
 export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
@@ -104,7 +104,7 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           step={0}
           totalSteps={3}
           titleEn="Warm vs Cool"
-          titleZh="暖色调 vs 冷色调"
+          titleZh="Warm vs Cool"
           options={STEP_1_OPTIONS}
           onSelect={handleStep1Select}
           onBack={() => setScreen('find')}
@@ -116,7 +116,7 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           step={1}
           totalSteps={3}
           titleEn="Bright vs Soft"
-          titleZh="清晰 vs 柔和"
+          titleZh="Bright vs Soft"
           options={STEP_2_OPTIONS}
           onSelect={handleStep2Select}
           onBack={() => setScreen('test-1')}
@@ -128,7 +128,7 @@ export function ColorSeasonTest({ onClose, onComplete }: ColorSeasonTestProps) {
           step={2}
           totalSteps={3}
           titleEn="Light / Medium / Deep"
-          titleZh="浅色 / 中等 / 深色"
+          titleZh="Light / Medium / Deep"
           options={STEP_3_OPTIONS}
           onSelect={handleStep3Select}
           onBack={() => setScreen('test-2')}

@@ -36,7 +36,7 @@ export function Header({ title, showBack = false, backTo, transparent = false }:
             <button
               type="button"
               onClick={handleBack}
-              aria-label="返回"
+              aria-label="Back"
               className="w-10 h-10 -ml-2 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-5 h-5 text-foreground" />

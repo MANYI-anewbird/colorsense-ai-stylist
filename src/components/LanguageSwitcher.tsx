@@ -23,7 +23,7 @@ export function LanguageSwitcher({ variant = 'dark' }: LanguageSwitcherProps) {
 
   const languages = [
     { code: 'en' as const, label: 'EN', fullLabel: 'English', flag: '🇺🇸' },
-    { code: 'zh' as const, label: '中', fullLabel: '中文', flag: '🇨🇳' },
+    { code: 'zh' as const, label: '中', fullLabel: 'Chinese', flag: '🇨🇳' },
   ];
 
   const currentLang = languages.find(l => l.code === language);

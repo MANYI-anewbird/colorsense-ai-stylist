@@ -16,7 +16,7 @@ interface SeasonBadgeProps {
 const seasonConfig = {
   spring: {
     descriptionEn: 'Warm & Light',
-    descriptionZh: '暖调浅色',
+    descriptionZh: 'Warm light',
     icon: Flower2,
     className: 'bg-gradient-to-br from-beauty-rose/15 to-beauty-coral/15 text-beauty-rose border-beauty-rose/30',
     iconClass: 'text-beauty-rose',
@@ -24,7 +24,7 @@ const seasonConfig = {
   },
   summer: {
     descriptionEn: 'Cool & Light',
-    descriptionZh: '冷调浅色',
+    descriptionZh: 'Cool light',
     icon: Sun,
     className: 'bg-gradient-to-br from-beauty-lavender/15 to-beauty-blush/15 text-beauty-lavender border-beauty-lavender/30',
     iconClass: 'text-beauty-lavender',
@@ -32,7 +32,7 @@ const seasonConfig = {
   },
   autumn: {
     descriptionEn: 'Warm & Deep',
-    descriptionZh: '暖调深色',
+    descriptionZh: 'Warm deep',
     icon: Leaf,
     className: 'bg-gradient-to-br from-beauty-coral/15 to-beauty-gold/15 text-beauty-coral border-beauty-coral/30',
     iconClass: 'text-beauty-coral',
@@ -40,7 +40,7 @@ const seasonConfig = {
   },
   winter: {
     descriptionEn: 'Cool & Deep',
-    descriptionZh: '冷调深色',
+    descriptionZh: 'Cool deep',
     icon: Snowflake,
     className: 'bg-gradient-to-br from-beauty-lavender/20 to-beauty-rose/15 text-beauty-lavender border-beauty-lavender/30',
     iconClass: 'text-beauty-lavender',
@@ -76,7 +76,7 @@ export function SeasonBadge({ season, size = 'md', showLabel = true }: SeasonBad
     season.includes('-')
       ? (() => {
           const info = SKIN_TONES.find(s => s.id === season);
-          return language === 'zh' ? info?.nameZh : info?.nameEn;
+          return info?.nameEn ?? '';
         })() ?? season
       : t[family];
 
@@ -105,7 +105,7 @@ export function SeasonCard({ season }: SeasonCardProps) {
   const config = seasonConfig[season];
   const Icon = config.icon;
   const label = t[season];
-  const description = language === 'zh' ? config.descriptionZh : config.descriptionEn;
+  const description = config.descriptionEn;
 
   return (
     <div className={cn('rounded-2xl border-2 p-4 shadow-card', config.className, config.cardBg)}>

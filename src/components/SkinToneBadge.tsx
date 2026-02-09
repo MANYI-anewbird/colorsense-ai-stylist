@@ -36,7 +36,7 @@ export function SkinToneBadge({ showLabel = true, size = 'sm', variant = 'dark' 
       />
       {showLabel && (
         <span className={`text-xs font-medium tracking-wide ${textStyles}`}>
-          {language === 'zh' ? info.nameZh : info.nameEn}
+          {info.nameEn}
         </span>
       )}
     </div>

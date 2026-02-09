@@ -34,6 +34,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showSignupSuccess, setShowSignupSuccess] = useState(false);
 
   const buttonStyles = variant === 'dark'
     ? 'bg-white/10 border-white/20 text-white/90 hover:bg-white/15'
@@ -44,6 +45,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
     setPassword('');
     setConfirmPassword('');
     setError(null);
+    setShowSignupSuccess(false);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -68,8 +70,7 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
     if (err) {
       setError(err.message);
     } else {
-      setLoginDialogOpen(false);
-      resetForm();
+      setShowSignupSuccess(true);
     }
   };
 
@@ -217,6 +218,27 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
               </TabsContent>
               
               <TabsContent value="signup" className="mt-0 space-y-4">
+                {showSignupSuccess ? (
+                  <div className="space-y-4 py-2">
+                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-100">
+                      <h3 className="font-semibold text-emerald-800 mb-2">{t.signupSuccessTitle}</h3>
+                      <p className="text-sm text-emerald-700">{t.signupSuccessMessage}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setShowSignupSuccess(false);
+                        setLoginDialogOpen(false);
+                        resetForm();
+                      }}
+                    >
+                      {t.gotIt}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
                 <p className="text-sm text-muted-foreground mb-4">{t.createAccountSubtitle}</p>
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
@@ -268,6 +290,8 @@ export function AccountButton({ variant = 'dark' }: AccountButtonProps) {
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.signUp}
                   </Button>
                 </form>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           </div>

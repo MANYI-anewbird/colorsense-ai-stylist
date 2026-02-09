@@ -20,9 +20,9 @@ interface TestStepProps {
 }
 
 const CRITERIA = [
-  { en: 'Brighter skin', zh: '肤色更明亮' },
-  { en: 'Less yellow / less dull', zh: '更少黄调 / 更少暗沉' },
-  { en: 'Clearer and more defined features', zh: '五官更清晰立体' },
+  { en: 'Brighter skin', zh: 'Brighter skin' },
+  { en: 'Less yellow / less dull', zh: 'Less yellow / less dull' },
+  { en: 'Clearer and more defined features', zh: 'Clearer and more defined features' },
 ];
 
 // Helper to determine if a color is light (for text contrast)
@@ -164,7 +164,7 @@ export function TestStep({
       {/* Title with round indicator for 3-option */}
       <div className="px-5 pt-4 pb-3">
         <h2 className="text-xl font-bold text-center text-foreground tracking-tight">
-          {language === 'zh' ? titleZh : titleEn}
+          {titleEn}
         </h2>
         {isThreeOptionStep && (
           <div className="flex items-center justify-center gap-2 mt-2">
@@ -225,7 +225,7 @@ export function TestStep({
                   <div className="w-full h-full bg-muted flex flex-col items-center justify-center text-muted-foreground">
                     <CameraOff className="w-5 h-5 mb-1" />
                     <span className="text-[9px] font-medium">
-                      {language === 'zh' ? '无法访问相机' : 'Camera unavailable'}
+                      Camera unavailable
                     </span>
                   </div>
                 )}
@@ -242,7 +242,7 @@ export function TestStep({
         {/* Selection criteria - editorial style */}
         <div className="mt-3 mb-3">
           <p className="text-center text-[10px] text-muted-foreground mb-2 uppercase tracking-widest font-medium">
-            {language === 'zh' ? '哪一侧让你看起来...' : 'Which side makes you look...'}
+            Which side makes you look...
           </p>
           <div className="flex flex-wrap items-center justify-center gap-1.5">
             {CRITERIA.map((criterion, index) => (
@@ -250,7 +250,7 @@ export function TestStep({
                 key={index}
                 className="px-3 py-1 rounded-full bg-foreground text-background text-[10px] font-semibold shadow-sm"
               >
-                {language === 'zh' ? criterion.zh : criterion.en}
+                {criterion.en}
               </div>
             ))}
           </div>
@@ -268,7 +268,7 @@ export function TestStep({
             }}
           >
             <span className="text-sm">
-              {language === 'zh' ? leftOption.labelZh : leftOption.labelEn}
+              {leftOption.labelEn}
             </span>
           </button>
           <button
@@ -281,7 +281,7 @@ export function TestStep({
             }}
           >
             <span className="text-sm">
-              {language === 'zh' ? rightOption.labelZh : rightOption.labelEn}
+              {rightOption.labelEn}
             </span>
           </button>
         </div>

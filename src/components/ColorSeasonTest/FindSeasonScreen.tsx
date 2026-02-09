@@ -35,10 +35,10 @@ export function FindSeasonScreen({ onBack, onStartTest, onConsultant }: FindSeas
         {/* Title with fade-in animation */}
         <div className="text-center mb-6 animate-fade-in">
           <h2 className="text-xl font-bold text-foreground mb-1">
-            {language === 'zh' ? '找到你的色季' : 'Find Your Color Season'}
+            Find Your Color Season
           </h2>
           <p className="text-xs text-muted-foreground">
-            {language === 'zh' ? '选择一种方式' : 'Choose a way'}
+            Choose a way
           </p>
         </div>
 
@@ -57,8 +57,8 @@ export function FindSeasonScreen({ onBack, onStartTest, onConsultant }: FindSeas
                 </div>
                 <div>
                   <h3 className="font-semibold">
-                    {language === 'zh' ? '快速测试' : 'Quick Test'}
-                    <span className="ml-2 text-sm font-normal text-white/50">3 {language === 'zh' ? '步' : 'steps'}</span>
+                    Quick Test
+                    <span className="ml-2 text-sm font-normal text-white/50">3 steps</span>
                   </h3>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export function FindSeasonScreen({ onBack, onStartTest, onConsultant }: FindSeas
           <div className="flex items-center gap-4 animate-fade-in" style={{ animationDelay: '0.15s' }}>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
             <span className="text-xs text-muted-foreground/60 font-medium">
-              {language === 'zh' ? '或者' : 'or'}
+              or
             </span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
           </div>
@@ -96,12 +96,12 @@ export function FindSeasonScreen({ onBack, onStartTest, onConsultant }: FindSeas
                   
                   <div>
                     <h3 className="font-bold text-foreground">
-                      {language === 'zh' ? '咨询色彩顾问' : 'Ask a Consultant'}
+                      Ask a Consultant
                     </h3>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                       <span className="text-[10px] font-medium text-neutral-400">
-                        {language === 'zh' ? '即将推出' : 'Coming soon'}
+                        Coming soon
                       </span>
                     </div>
                   </div>

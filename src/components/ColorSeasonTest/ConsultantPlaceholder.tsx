@@ -33,16 +33,14 @@ export function ConsultantPlaceholder({ onBack }: ConsultantPlaceholderProps) {
           <ArrowLeft className="w-5 h-5 text-neutral-700" />
         </button>
         <h1 className="ml-2 text-lg font-semibold text-foreground">
-          {language === 'zh' ? '色彩顾问' : 'Color Consultant'}
+          Color Consultant
         </h1>
       </div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col px-4 pt-4">
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {language === 'zh' 
-            ? '选择您希望与专业色彩顾问联系的方式' 
-            : 'Choose how you would like to connect with a professional color consultant'}
+          Choose how you would like to connect with a professional color consultant
         </p>
 
         {/* Options */}
@@ -57,12 +55,10 @@ export function ConsultantPlaceholder({ onBack }: ConsultantPlaceholderProps) {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-foreground mb-0.5">
-                {language === 'zh' ? '预约电话咨询' : 'Book a Call'}
+                Book a Call
               </h3>
               <p className="text-xs text-muted-foreground">
-                {language === 'zh' 
-                  ? '填写您的可用时间，我们会回电给您' 
-                  : 'Fill in your available time and we will call you back'}
+                Fill in your available time and we will call you back
               </p>
             </div>
           </button>
@@ -77,12 +73,10 @@ export function ConsultantPlaceholder({ onBack }: ConsultantPlaceholderProps) {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-foreground mb-0.5">
-                {language === 'zh' ? '查找附近顾问' : 'Find Nearby'}
+                Find Nearby
               </h3>
               <p className="text-xs text-muted-foreground">
-                {language === 'zh' 
-                  ? '发现您附近的专业色彩顾问' 
-                  : 'Discover professional consultants near you'}
+                Discover professional consultants near you
               </p>
             </div>
           </button>

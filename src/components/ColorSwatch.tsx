@@ -55,7 +55,7 @@ export function ColorSwatch({ hex, size = 'lg', className, showCompatibility = f
             {score}
           </div>
           <div className="text-xs text-white/90 font-medium mt-1 drop-shadow-md">
-            {language === 'zh' ? '推荐指数' : 'Match Score'}
+            Match Score
           </div>
         </div>
       )}

@@ -58,6 +58,9 @@ interface Translations {
   loginToUnlock: string;
   welcomeBack: string;
   createAccountSubtitle: string;
+  signupSuccessTitle: string;
+  signupSuccessMessage: string;
+  gotIt: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -116,62 +119,68 @@ const translations: Record<Language, Translations> = {
     loginToUnlock: 'Please log in or sign up to use the color analysis features.',
     welcomeBack: 'Welcome back! Please sign in to continue.',
     createAccountSubtitle: 'Create an account to get started.',
+    signupSuccessTitle: "You're almost there!",
+    signupSuccessMessage: "We've sent a confirmation link to your email. Please check your inbox and click the link to activate your account, then you can sign in.",
+    gotIt: 'Got it',
   },
   zh: {
-    // HomePage
-    tagline: '拍张照片，了解你的色彩',
-    takePhoto: '拍照',
-    gallery: '相册',
-    tip: '使用自然光以获得最佳色彩准确度',
-    footer: 'AI驱动的专业色彩分析',
+    // HomePage (English for all)
+    tagline: 'Snap a photo. Understand your colors.',
+    takePhoto: 'Take Photo',
+    gallery: 'Gallery',
+    tip: 'Use natural daylight for best color accuracy',
+    footer: 'AI-powered professional color analysis',
     
     // PickerPage
-    selectColor: '选择颜色',
-    pickerInstruction: '在图片上点击或拖动，从任意部位（如上衣、围巾）取色',
-    analyzing: '分析中...',
-    analyzeColor: '分析颜色',
-    imageNotReady: '图片未准备好，请重试',
-    analyzeFailed: '颜色分析失败，请重试',
+    selectColor: 'Select Color',
+    pickerInstruction: 'Click or drag on the image to pick a color from any part (e.g. shirt, scarf)',
+    analyzing: 'Analyzing...',
+    analyzeColor: 'Analyze Color',
+    imageNotReady: 'Image not ready. Please try again.',
+    analyzeFailed: 'Failed to analyze color. Please try again.',
     
     // ResultPage
-    colorAnalysis: '颜色分析',
-    colorMetrics: '颜色指标',
-    lightness: '明度',
-    saturation: '饱和度',
-    colorClassification: '颜色分类',
-    temperature: '色温',
-    seasonalTendency: '季节倾向',
-    analyzeAnother: '分析另一个颜色',
-    thisLooksWrong: '这个看起来不对',
-    requestingAI: '正在请求AI分析...',
+    colorAnalysis: 'Color Analysis',
+    colorMetrics: 'Color Metrics',
+    lightness: 'Lightness',
+    saturation: 'Saturation',
+    colorClassification: 'Color Classification',
+    temperature: 'Temperature',
+    seasonalTendency: 'Seasonal Tendency',
+    analyzeAnother: 'Analyze Another Color',
+    thisLooksWrong: 'This looks wrong',
+    requestingAI: 'Requesting AI analysis...',
     
     // Seasons
-    spring: '春季型',
-    summer: '夏季型',
-    autumn: '秋季型',
-    winter: '冬季型',
+    spring: 'Spring',
+    summer: 'Summer',
+    autumn: 'Autumn',
+    winter: 'Winter',
     
     // Temperature
-    warm: '暖色调',
-    cool: '冷色调',
-    neutral: '中性色调',
-    neutralWarm: '中性偏暖',
-    neutralCool: '中性偏冷',
+    warm: 'Warm',
+    cool: 'Cool',
+    neutral: 'Neutral',
+    neutralWarm: 'Neutral-Warm',
+    neutralCool: 'Neutral-Cool',
 
-    account: '账号',
-    login: '登录',
-    signOut: '退出登录',
-    signIn: '登录',
-    signUp: '注册',
-    email: '邮箱',
-    password: '密码',
-    confirmPassword: '确认密码',
-    passwordTooShort: '密码至少需要6个字符',
-    passwordMismatch: '两次输入的密码不一致',
-    loginRequired: '需要登录',
-    loginToUnlock: '请登录或注册以使用色彩分析功能。',
+    account: 'Account',
+    login: 'Login',
+    signOut: 'Sign out',
+    signIn: 'Sign in',
+    signUp: 'Sign up',
+    email: 'Email',
+    password: 'Password',
+    confirmPassword: 'Confirm password',
+    passwordTooShort: 'Password must be at least 6 characters',
+    passwordMismatch: 'Passwords do not match',
+    loginRequired: 'Login required',
+    loginToUnlock: 'Please log in or sign up to use the color analysis features.',
     welcomeBack: 'Welcome back! Please sign in to continue.',
     createAccountSubtitle: 'Create an account to get started.',
+    signupSuccessTitle: "You're almost there!",
+    signupSuccessMessage: "We've sent a confirmation link to your email. Please check your inbox and click the link to activate your account, then you can sign in.",
+    gotIt: 'Got it',
   },
 };
 
