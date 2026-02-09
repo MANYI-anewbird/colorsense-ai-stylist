@@ -210,12 +210,6 @@ export default function ResultPage() {
                   </div>
                 </div>
               </div>
-              {agentResult.engineeringResult && (
-                <div className="flex flex-col gap-1 pt-2 border-t border-border/50">
-                  <span className="text-xs text-muted-foreground">{t.engineeringResult}</span>
-                  <SeasonBadge season={agentResult.engineeringResult.season12 as Season12} size="sm" />
-                </div>
-              )}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-muted-foreground">Confidence</span>
                 <span
