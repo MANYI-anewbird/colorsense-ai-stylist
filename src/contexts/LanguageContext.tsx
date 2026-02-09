@@ -56,6 +56,7 @@ interface Translations {
   passwordMismatch: string;
   loginRequired: string;
   loginToUnlock: string;
+  freeLimitReached: string;
   welcomeBack: string;
   createAccountSubtitle: string;
   signupSuccessTitle: string;
@@ -127,6 +128,7 @@ const translations: Record<Language, Translations> = {
     passwordMismatch: 'Passwords do not match',
     loginRequired: 'Login required',
     loginToUnlock: 'Please log in or sign up to use the color analysis features.',
+    freeLimitReached: "You've used your 3 free analyses. Sign in to continue.",
     welcomeBack: 'Welcome back! Please sign in to continue.',
     createAccountSubtitle: 'Create an account to get started.',
     signupSuccessTitle: "You're almost there!",
@@ -196,6 +198,7 @@ const translations: Record<Language, Translations> = {
     passwordMismatch: 'Passwords do not match',
     loginRequired: 'Login required',
     loginToUnlock: 'Please log in or sign up to use the color analysis features.',
+    freeLimitReached: "You've used your 3 free analyses. Sign in to continue.",
     welcomeBack: 'Welcome back! Please sign in to continue.',
     createAccountSubtitle: 'Create an account to get started.',
     signupSuccessTitle: "You're almost there!",

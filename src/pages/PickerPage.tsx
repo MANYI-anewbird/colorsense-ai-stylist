@@ -8,6 +8,7 @@ import { analyzeColor, extractAverageColor, rgbToHex, type ColorAnalysis } from 
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { getFreeAnalysesUsed, incrementFreeAnalysesUsed, FREE_ANALYSIS_LIMIT } from '@/lib/free-analysis';
 
 export default function PickerPage() {
   const location = useLocation();
@@ -49,13 +50,20 @@ export default function PickerPage() {
   }, []);
 
   const handleAnalyze = async () => {
-    if (!user) {
-      openLoginDialog();
-      return;
-    }
     if (!canvasRef.current) {
       toast.error(t.imageNotReady);
       return;
+    }
+
+    // Guest limit: 3 free analyses, then require login
+    if (!user) {
+      const used = getFreeAnalysesUsed();
+      if (used >= FREE_ANALYSIS_LIMIT) {
+        toast.error(t.freeLimitReached);
+        openLoginDialog();
+        return;
+      }
+      incrementFreeAnalysesUsed();
     }
 
     setIsAnalyzing(true);
