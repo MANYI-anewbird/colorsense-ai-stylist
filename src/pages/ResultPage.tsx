@@ -1,34 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AlertCircle, ChevronDown, Flag, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ColorSwatch, ColorValueCard } from '@/components/ColorSwatch';
 import { MetricBar } from '@/components/MetricBar';
 import { TemperatureBadge } from '@/components/TemperatureBadge';
-import { ConfidenceIndicator } from '@/components/ConfidenceIndicator';
-import { ColorClassification } from '@/components/ColorClassification';
-import { ColorButton } from '@/components/ui/color-button';
+import { SeasonBadge } from '@/components/SeasonBadge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { Badge } from '@/components/ui/badge';
 import type { ColorAnalysis } from '@/lib/color-utils';
 import { getSeasonDisplayName } from '@/lib/color-utils';
+import type { Season12 } from '@/lib/color-utils';
 
-/** Generate a PNG data URL of a pure solid color swatch for AI vision (no UI: no border, shadow, or labels). */
 function colorSwatchToDataUrl(hex: string, size = 128): string {
   if (typeof document === 'undefined') return '';
   const canvas = document.createElement('canvas');
@@ -42,10 +27,13 @@ function colorSwatchToDataUrl(hex: string, size = 128): string {
   return canvas.toDataURL('image/png');
 }
 
-export interface AIReanalysisResult {
+export interface AgentResult {
   primarySeason: string;
-  similarSeasons: string[];
-  shortExplanation: string;
+  secondarySeason?: string;
+  confidencePct: number;
+  temperature: string;
+  engineeringResult?: { season12: string; temperature: string };
+  reportToHumanCount?: number;
 }
 
 interface ResultState {
@@ -55,10 +43,14 @@ interface ResultState {
 export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { user, openLoginDialog } = useAuth();
   const state = location.state as ResultState | undefined;
-  const [isRequestingAI, setIsRequestingAI] = useState(false);
+  const [agentResult, setAgentResult] = useState<AgentResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reportedToHuman, setReportedToHuman] = useState(false);
+  const fetchedRef = useRef(false);
 
   if (!state?.analysis) {
     navigate('/');
@@ -66,362 +58,200 @@ export default function ResultPage() {
   }
 
   const { analysis } = state;
-  const { color, metrics, confidence, confidenceNote } = analysis;
-  
-  const [aiAnalysis, setAiAnalysis] = useState<string | AIReanalysisResult | null>(null);
-  const [showAIDialog, setShowAIDialog] = useState(false);
-  const [aiReportStats, setAiReportStats] = useState<{ totalQueriesCount: number; reportToHumanCount: number; aiApiCallsCount: number } | null>(null);
-  const [reportedToHuman, setReportedToHuman] = useState(false);
-  const lastRequestTimeRef = useRef<number>(0);
-  const isRequestingRef = useRef<boolean>(false);
+  const { color, metrics } = analysis;
 
-  const handleThisLooksWrong = async () => {
+  useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+    supabase.functions
+      .invoke('color-agent', {
+        body: {
+          color,
+          metrics: {
+            lightness: metrics.lightness,
+            saturation: metrics.saturation,
+            temperature: metrics.temperature,
+            seasonalTendency: metrics.seasonalTendency,
+            season12: metrics.season12,
+            seasonMatch: metrics.seasonMatch
+              ? {
+                  primaryMatch: metrics.seasonMatch.primaryMatch,
+                  secondaryMatch: metrics.seasonMatch.secondaryMatch,
+                }
+              : undefined,
+          },
+          colorSwatchImage: colorSwatchToDataUrl(color.hex),
+        },
+      })
+      .then(({ data, error: invokeError }) => {
+        clearTimeout(timeoutId);
+        if (invokeError) {
+          setError(invokeError.message || 'Failed to analyze');
+          setLoading(false);
+          return;
+        }
+        if (data?.error) {
+          setError(typeof data.error === 'string' ? data.error : 'Unknown error');
+          setLoading(false);
+          return;
+        }
+        const result = data as AgentResult;
+        if (result?.primarySeason) {
+          setAgentResult(result);
+        } else {
+          setError('No result from agent');
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        clearTimeout(timeoutId);
+        if (err?.name === 'AbortError') {
+          setError('Request timeout. Please try again.');
+        } else {
+          setError(err?.message || 'Failed to analyze');
+        }
+        setLoading(false);
+      });
+  }, [color, metrics]);
+
+  const handleReportError = async () => {
     if (!user) {
       openLoginDialog();
       return;
     }
-    // Prevent double-click while a request is in flight
-    if (isRequestingRef.current || isRequestingAI) {
-      return;
-    }
-    // No cooldown at click time: same color returns from cache (no API), so user can click again immediately
-    isRequestingRef.current = true;
-    
-    // Then update state
-    setIsRequestingAI(true);
-    setShowAIDialog(true);
-    setAiAnalysis(null);
-    
+    if (reportedToHuman) return;
     try {
-      console.log('Calling analyze-wrong function...');
-      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-      console.log('Function URL:', `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-wrong`);
-      
-      // Add timeout to prevent hanging requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
-      let functionResponse;
-      try {
-        functionResponse = await supabase.functions.invoke('analyze-wrong', {
-          body: {
-            color,
-            metrics: {
-              ...metrics,
-              season12: metrics.season12,
-              confidence: metrics.seasonMatch?.primaryMatch?.confidence,
-            },
-            colorSwatchImage: colorSwatchToDataUrl(color.hex),
-          },
-        });
-        clearTimeout(timeoutId);
-      } catch (invokeError) {
-        clearTimeout(timeoutId);
-        console.error('Function invoke error:', invokeError);
-        throw invokeError;
-      }
-      
-      const { data, error } = functionResponse;
-
-      console.log('Function response:', { data, error });
-
-      if (error) {
-        console.error('AI Analysis Error:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        console.error('Error type:', error.constructor.name);
-        console.error('Error keys:', Object.keys(error));
-        
-        // More detailed error message based on status code
-        let errorMessage = 'Failed to send a request to the Edge Function';
-        const errorAny = error as any;
-        const statusCode = errorAny?.status || errorAny?.context?.status || errorAny?.statusCode;
-        const errorName = errorAny?.name || error.constructor.name;
-        const errorMsg = errorAny?.message || errorAny?.error?.message || '';
-        
-        console.log('Extracted error info:', { statusCode, errorName, errorMsg });
-        
-        if (statusCode === 429 || errorMsg.includes('429') || errorMsg.includes('rate limit') || errorMsg.includes('Too Many Requests')) {
-          errorMessage = 'Too many requests. Please wait a moment and try again. This may be due to rate limiting.';
-        } else if (statusCode === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-          errorMessage = 'Authentication failed. Please check Supabase configuration.';
-        } else if (statusCode === 404 || errorMsg.includes('404') || errorMsg.includes('not found')) {
-          errorMessage = 'Edge Function not found. Please ensure the function is deployed correctly.';
-        } else if (errorMsg) {
-          errorMessage = errorMsg;
-        } else if (statusCode) {
-          errorMessage = `Request failed with status ${statusCode}`;
-        } else if (errorName) {
-          errorMessage = `Error: ${errorName}${errorMsg ? ` - ${errorMsg}` : ''}`;
-        }
-        
-        setAiAnalysis(`Error: ${errorMessage}`);
-        toast.error(errorMessage);
+      const { data: resData, error: invokeError } = await supabase.functions.invoke('report-to-human', {
+        body: { color: { hex: color.hex } },
+      });
+      const errMsg =
+        (typeof resData?.error === 'string' ? resData.error : null) ??
+        (invokeError as { message?: string })?.message;
+      if (invokeError || resData?.error) {
+        toast.error(errMsg || 'Failed to submit. Please try again.');
         return;
       }
-
-      if (data?.fromCache === true) lastRequestTimeRef.current = 0;
-      else if (data?.fromCache === false) lastRequestTimeRef.current = Date.now();
-
-      const total = data?.totalQueriesCount ?? 0;
-      const reported = data?.reportToHumanCount ?? 0;
-      const aiCalls = data?.aiApiCallsCount ?? 0;
-      if (typeof total === 'number' && typeof reported === 'number') {
-        setAiReportStats({ totalQueriesCount: total, reportToHumanCount: reported, aiApiCallsCount: aiCalls });
-      }
-      setReportedToHuman(false);
-
-      if (data?.aiReanalysis?.primarySeason) {
-        setAiAnalysis(data.aiReanalysis as AIReanalysisResult);
-      } else if (data?.correctedAnalysis) {
-        setAiAnalysis(data.correctedAnalysis);
-      } else if (data?.error) {
-        setAiAnalysis(`Error: ${data.error}`);
-        toast.error(data.error);
-      } else {
-        setAiAnalysis('No analysis received from AI. Please try again.');
-        toast.error('No analysis received from AI.');
-      }
-    } catch (error) {
-      console.error('Error requesting AI analysis:', error);
-      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
-      console.error('Error details:', error);
-      
-      let errorMessage = 'Failed to request AI analysis. Please try again.';
-      
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          errorMessage = 'Request timeout. Supabase service may be under maintenance. Please try again later.';
-        } else if (error.message.includes('network') || error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error. Please check your connection, or Supabase service may be under maintenance.';
-        } else {
-          errorMessage = `${error.message} (${error.name})`;
-        }
-      }
-      
-      setAiAnalysis(`Error: ${errorMessage}`);
-      toast.error(errorMessage);
-    } finally {
-      // Reset both state and ref
-      setIsRequestingAI(false);
-      isRequestingRef.current = false;
+      setReportedToHuman(true);
+      setAgentResult((prev) =>
+        prev ? { ...prev, reportToHumanCount: (prev.reportToHumanCount ?? 0) + 1 } : null
+      );
+      toast.success("Thanks — we've flagged this for human review.");
+    } catch {
+      toast.error('Failed to submit. Please try again.');
     }
   };
 
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Editorial Color Stripe - Top accent */}
       <div className="color-stripe h-1" />
-      
       <Header title={t.colorAnalysis} showBack backTo="/picker" />
 
       <main className="container px-4 py-4 pb-20">
-        {/* Color Swatch - More compact with compatibility */}
         <div className="flex flex-col items-center animate-scale-in">
-          <ColorSwatch 
-            hex={color.hex} 
-            size="lg" 
+          <ColorSwatch
+            hex={color.hex}
+            size="lg"
             showCompatibility={true}
-            colorMetrics={metrics}
+            colorMetrics={{
+              ...metrics,
+              temperature: (agentResult?.temperature as any) ?? metrics.temperature,
+            }}
           />
           <p className="mt-3 text-xl font-bold text-foreground">{color.hex}</p>
         </div>
 
-        {/* Color Values - Editorial cards */}
         <div className="mt-5 grid grid-cols-2 gap-2 animate-slide-up-color" style={{ animationDelay: '0.1s' }}>
           <ColorValueCard label="HSL" displayValue={`${color.hsl.h}°, ${color.hsl.s}%, ${color.hsl.l}%`} copyValue={`hsl(${color.hsl.h}, ${color.hsl.s}%, ${color.hsl.l}%)`} />
           <ColorValueCard label="RGB" displayValue={`${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`} copyValue={`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`} />
           <ColorValueCard label="LAB" displayValue={`${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)}`} copyValue={`lab(${color.lab.l.toFixed(1)}, ${color.lab.a.toFixed(1)}, ${color.lab.b.toFixed(1)})`} fullWidth />
         </div>
 
-        {/* Confidence Indicator */}
-        {(confidence !== 'high' || confidenceNote) && (
-          <div className="mt-4 animate-slide-up-color" style={{ animationDelay: '0.15s' }}>
-            <ConfidenceIndicator confidence={confidence} note={confidenceNote} />
-          </div>
-        )}
-
-        {/* Metrics - Editorial style */}
         <div className="mt-5 space-y-4 animate-slide-up-color" style={{ animationDelay: '0.2s' }}>
           <h2 className="text-base font-semibold text-foreground">{t.colorMetrics}</h2>
-          
           <div className="space-y-3">
-            <MetricBar
-              label={t.lightness}
-              value={metrics.lightness}
-              variant="lightness"
-            />
-            <MetricBar
-              label={t.saturation}
-              value={metrics.saturation}
-              variant="saturation"
-            />
+            <MetricBar label={t.lightness} value={metrics.lightness} variant="lightness" />
+            <MetricBar label={t.saturation} value={metrics.saturation} variant="saturation" />
           </div>
         </div>
 
-        {/* Temperature & Season - Editorial badges side by side */}
         <div className="mt-5 space-y-3 animate-slide-up-color" style={{ animationDelay: '0.25s' }}>
           <h2 className="text-base font-semibold text-foreground">{t.colorClassification}</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground">{t.temperature}</span>
-              <TemperatureBadge temperature={metrics.temperature} size="md" />
+          {loading ? (
+            <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="text-sm">Analyzing color...</span>
             </div>
-            <div className="flex flex-col gap-1">
-              <ColorClassification 
-                seasonMatch={metrics.seasonMatch} 
-                season12={metrics.season12}
-                hex={color.hex}
-                inputLab={color.lab}
-              />
+          ) : error ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-xs text-red-600 mt-2">You can still view the color metrics above.</p>
             </div>
-          </div>
+          ) : agentResult ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-muted-foreground">{t.temperature}</span>
+                  <TemperatureBadge temperature={agentResult.temperature as any} size="md" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs text-muted-foreground">{t.seasonalTendency}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SeasonBadge season={agentResult.primarySeason as Season12} size="md" />
+                    {agentResult.secondarySeason && (
+                      <>
+                        <span className="text-xs text-muted-foreground">or</span>
+                        <SeasonBadge season={agentResult.secondarySeason as Season12} size="md" />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {agentResult.engineeringResult && (
+                <div className="flex flex-col gap-1 pt-2 border-t border-border/50">
+                  <span className="text-xs text-muted-foreground">{t.engineeringResult}</span>
+                  <SeasonBadge season={agentResult.engineeringResult.season12 as Season12} size="sm" />
+                </div>
+              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground">Confidence</span>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                    agentResult.confidencePct >= 80
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : agentResult.confidencePct >= 60
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  }`}
+                >
+                  {agentResult.confidencePct >= 95 ? '>95%' : `${agentResult.confidencePct}%`}
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
 
-        {/* Action Button - This looks wrong */}
         <div className="mt-6 animate-slide-up-color" style={{ animationDelay: '0.35s' }}>
           <button
-            onClick={handleThisLooksWrong}
-            disabled={isRequestingAI}
+            onClick={handleReportError}
+            disabled={loading || reportedToHuman}
             className="group w-full relative flex items-center justify-center gap-2 py-4 bg-foreground text-background rounded-2xl font-semibold overflow-hidden active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {/* Hover gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            {isRequestingAI ? (
-              <Loader2 className="w-5 h-5 relative z-10 animate-spin" />
+            {reportedToHuman ? (
+              <span className="relative z-10">Thanks for your feedback</span>
             ) : (
-              <AlertCircle className="w-5 h-5 relative z-10" />
+              <>
+                <AlertCircle className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">{t.thisLooksWrong}</span>
+              </>
             )}
-            <span className="relative z-10">
-              {isRequestingAI ? t.requestingAI : t.thisLooksWrong}
-            </span>
           </button>
         </div>
       </main>
-
-      {/* AI Analysis Dialog */}
-      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
-        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border-border/50 shadow-xl">
-          <DialogHeader className="space-y-1.5 pb-2">
-            <DialogTitle className="text-lg font-semibold tracking-tight">
-              AI Re-analysis
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              Independent classification from color data
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="mt-2">
-            {isRequestingAI ? (
-              <div className="flex flex-col items-center justify-center py-10 gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">
-                  Analyzing...
-                </p>
-              </div>
-            ) : aiAnalysis ? (
-              <div className="space-y-5">
-                {typeof aiAnalysis === 'object' ? (
-                  <>
-                    {/* Primary season — clear hierarchy */}
-                    <div className="rounded-xl bg-primary/10 px-4 py-3 text-center">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-black mb-1">
-                        Primary season
-                      </p>
-                      <p className="text-lg font-semibold text-foreground">
-                        {getSeasonDisplayName(aiAnalysis.primarySeason as any)}
-                      </p>
-                    </div>
-                    {/* Similar — compact row */}
-                    {aiAnalysis.similarSeasons?.length ? (
-                      <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-black">
-                          Similar seasons
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {aiAnalysis.similarSeasons.map((s) => (
-                            <Badge key={s} variant="secondary" className="text-xs font-normal rounded-md px-2.5 py-1 bg-muted text-muted-foreground border-0">
-                              {getSeasonDisplayName(s as any)}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {/* Details — collapsible, lighter style */}
-                    {aiAnalysis.shortExplanation ? (
-                      <Collapsible className="group rounded-xl border border-border/50 overflow-hidden">
-                        <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm font-semibold text-black hover:bg-muted/40 transition-colors">
-                          View explanation
-                          <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <p className="px-3 pb-3 pt-0 text-sm leading-relaxed text-foreground/90">
-                            {aiAnalysis.shortExplanation}
-                          </p>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ) : null}
-                    {/* Nope, still wrong — report to human */}
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (reportedToHuman) return;
-                        try {
-                          const { data: resData, error: invokeError } = await supabase.functions.invoke('report-to-human', {
-                            body: { color: { hex: color.hex } },
-                          });
-                          // Prefer backend error message (resData.error) over generic "non-2xx" from client
-                          const errMsg =
-                            (typeof resData?.error === 'string' ? resData.error : null) ??
-                            (invokeError as { message?: string })?.message;
-                          if (invokeError) {
-                            toast.error(errMsg || 'Failed to submit. Please try again.');
-                            return;
-                          }
-                          if (resData?.error) {
-                            toast.error(typeof resData.error === 'string' ? resData.error : 'Failed to submit. Please try again.');
-                            return;
-                          }
-                          setReportedToHuman(true);
-                          setAiReportStats((prev) =>
-                            prev ? { ...prev, reportToHumanCount: prev.reportToHumanCount + 1 } : null
-                          );
-                          toast.success(
-                            "Thanks — we've flagged this for human review."
-                          );
-                          setShowAIDialog(false);
-                        } catch (_) {
-                          toast.error('Failed to submit. Please try again.');
-                        }
-                      }}
-                      disabled={reportedToHuman}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-400/60 bg-red-500 px-3 py-2.5 text-sm font-medium text-white shadow-md hover:bg-red-600 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none disabled:hover:scale-100 transition-all duration-200"
-                    >
-                      <Flag className="h-4 w-4 shrink-0" />
-                      Nope, still wrong
-                    </button>
-                  </>
-                ) : (
-                  <div className="rounded-xl border border-border/50 bg-muted/30 p-4">
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                      {aiAnalysis}
-                    </p>
-                  </div>
-                )}
-                {/* Note — minimal footer */}
-                <p className="text-[11px] text-muted-foreground/80 leading-relaxed pt-1 border-t border-border/30">
-                  Analysis is based on color only; personal season also depends on skin tone, hair, and contrast.
-                </p>
-              </div>
-            ) : (
-              <div className="text-center py-10 text-sm text-muted-foreground">
-                Waiting for analysis...
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

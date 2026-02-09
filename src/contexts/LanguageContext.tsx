@@ -26,6 +26,7 @@ interface Translations {
   colorClassification: string;
   temperature: string;
   seasonalTendency: string;
+  engineeringResult: string;
   analyzeAnother: string;
   thisLooksWrong: string;
   requestingAI: string;
@@ -99,6 +100,7 @@ const translations: Record<Language, Translations> = {
     colorClassification: 'Color Classification',
     temperature: 'Temperature',
     seasonalTendency: 'Seasonal Tendency',
+    engineeringResult: 'Algorithm',
     analyzeAnother: 'Analyze Another Color',
     thisLooksWrong: 'This looks wrong',
     requestingAI: 'Requesting AI analysis...',
@@ -169,6 +171,7 @@ const translations: Record<Language, Translations> = {
     colorClassification: 'Color Classification',
     temperature: 'Temperature',
     seasonalTendency: 'Seasonal Tendency',
+    engineeringResult: 'Algorithm',
     analyzeAnother: 'Analyze Another Color',
     thisLooksWrong: 'This looks wrong',
     requestingAI: 'Requesting AI analysis...',
