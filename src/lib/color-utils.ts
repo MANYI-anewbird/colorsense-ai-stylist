@@ -417,13 +417,7 @@ export function getTemperatureCategoryFromLab(
   }
   
   // Neutral range (-5 <= b <= 5): Use hue as tie-breaker
-  // Bluish greens (145°-180°) are cool
-  if (lch.h >= 145 && lch.h <= 180) {
-    return lab.b < 0 ? 'neutral-cool' : 'neutral-cool';
-  }
-  
-  // For other hues, use b-axis lean
-  return lab.b >= 0 ? 'neutral-warm' : 'neutral-cool';
+  return isWarmHue(lch.h) ? 'neutral-warm' : 'neutral-cool';
 }
 
 export function getChromaCategoryFromLch(
@@ -465,7 +459,13 @@ export function determineSeasonFamilyFromLab(
 ): SeasonFamily {
   const temperatureCategory = getTemperatureCategoryFromLab(lab, lch, thresholds);
   const resolvedTemperature =
-    temperatureCategory === 'neutral' ? (isWarmHue(lch.h) ? 'warm' : 'cool') : temperatureCategory;
+    temperatureCategory === 'neutral'
+      ? isWarmHue(lch.h) ? 'warm' : 'cool'
+      : temperatureCategory === 'neutral-warm'
+        ? 'warm'
+        : temperatureCategory === 'neutral-cool'
+          ? 'cool'
+          : temperatureCategory;
   const chroma = getChromaCategoryFromLch(lch, thresholds);
   const resolvedChroma = resolveChromaForFamily(chroma, lch, thresholds);
 
@@ -2185,9 +2185,7 @@ export function determineColorSeasonFromLab(
   } else if (lab.b < -5) {
     temperature = 'cool';
   } else {
-    // Neutral: lean depends on slight b bias or a-axis
-    // If b is slightly positive, lean warm; if slightly negative, lean cool
-    temperature = lab.b >= 0 ? 'warm' : 'cool';
+    temperature = isWarmHue(lch.h) ? 'warm' : 'cool';
   }
   
   // Step 3: The 12-Season Decision Tree
@@ -2229,18 +2227,21 @@ export function determineColorSeasonFromLab(
   }
   
   // 5. True Seasons (Mid-range L: 35 <= L <= 70, Mid-to-High Chroma: 25 <= C <= 50)
+  const chromaMidpoint =
+    (DEFAULT_SEASON_THRESHOLDS.chroma.clear + DEFAULT_SEASON_THRESHOLDS.chroma.soft) / 2;
+
   if (temperature === 'warm') {
     // Brighter warm colors -> True Spring, darker/muted warm -> True Autumn
-    if (C >= 35 && L >= 50) {
-      return 'spring-true'; // Brighter True Spring
+    if ((C >= 35 && L >= 50) || C >= chromaMidpoint) {
+      return 'spring-true'; // Brighter or mid-clear True Spring
     }
     return 'autumn-true'; // True Autumn
   }
   
   // temperature === 'cool' or neutral-cool
   // Sharper cool colors -> True Winter, softer cool -> True Summer
-  if (C >= 35 && L <= 55) {
-    return 'winter-true'; // Sharp True Winter
+  if ((C >= 35 && L <= 55) || C >= chromaMidpoint) {
+    return 'winter-true'; // Sharp True Winter or mid-clear cools
   }
   return 'summer-true'; // True Summer
 }
@@ -2424,14 +2425,7 @@ export function extractAverageColor(
 }
 
 // Full color analysis
-export function analyzeColor(
-  imageData: ImageData,
-  centerX: number,
-  centerY: number,
-  radius: number
-): ColorAnalysis {
-  const { rgb, variance } = extractAverageColor(imageData, centerX, centerY, radius);
-  const color = getColorValues(rgb.r, rgb.g, rgb.b);
+export function createColorAnalysis(color: ColorValues, variance: number): ColorAnalysis {
   const metrics = getColorMetrics(color);
   const { confidence, note } = analyzeConfidence(color.lab.l, variance);
 
@@ -2441,5 +2435,16 @@ export function analyzeColor(
     confidence,
     confidenceNote: note,
   };
+}
+
+export function analyzeColor(
+  imageData: ImageData,
+  centerX: number,
+  centerY: number,
+  radius: number
+): ColorAnalysis {
+  const { rgb, variance } = extractAverageColor(imageData, centerX, centerY, radius);
+  const color = getColorValues(rgb.r, rgb.g, rgb.b);
+  return createColorAnalysis(color, variance);
 }
 

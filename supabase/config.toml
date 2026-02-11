@@ -9,8 +9,5 @@ verify_jwt = false
 [functions.report-to-human]
 verify_jwt = false
 
-[functions.color-agent]
-verify_jwt = false
-
 [functions.color-analysis-cache]
 verify_jwt = false

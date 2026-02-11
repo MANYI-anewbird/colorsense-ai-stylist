@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import type { ColorAnalysis } from '@/lib/color-utils';
 import { getSeasonDisplayName } from '@/lib/color-utils';
 import type { Season12 } from '@/lib/color-utils';
+import type { PickerSelection } from '@/components/ColorPicker';
 
 function colorSwatchToDataUrl(hex: string, size = 128): string {
   if (typeof document === 'undefined') return '';
@@ -38,6 +39,7 @@ export interface AgentResult {
 
 interface ResultState {
   analysis: ColorAnalysis;
+  selection?: PickerSelection;
 }
 
 export default function ResultPage() {
