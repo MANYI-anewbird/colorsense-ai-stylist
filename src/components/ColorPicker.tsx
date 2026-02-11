@@ -103,12 +103,17 @@ export function ColorPicker({
   const buildSelection = useCallback(
     (result: DominantColorResult, currentMode: ColorMode): PickerSelection => {
       const { x, y } = pixelRef.current;
+      const pickedDark = result.picked.lab.l < 28;
+      const largeShift = result.stats.largeShift;
+      const trustPickedForDark = pickedDark && largeShift;
       const activeColorType =
         currentMode === 'spot'
           ? 'picked'
           : currentMode === 'dominant'
-            ? 'dominant'
-            : result.stats.largeShift
+            ? trustPickedForDark
+              ? 'picked'
+              : 'dominant'
+            : largeShift
               ? 'picked'
               : 'dominant';
       const activeColor =
