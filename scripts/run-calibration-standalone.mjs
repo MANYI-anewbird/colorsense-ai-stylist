@@ -630,8 +630,8 @@ const bestCSV = generateCSV(sweepResults.bestConfig, 'best');
 try {
   const fs = await import('fs');
   const path = await import('path');
-  const defaultPath = path.join(process.cwd(), 'season-anchors-snapshot-default.csv');
-  const bestPath = path.join(process.cwd(), 'season-anchors-snapshot-best.csv');
+  const defaultPath = path.join(process.cwd(), 'docs/calibration/season-anchors-snapshot-default.csv');
+  const bestPath = path.join(process.cwd(), 'docs/calibration/season-anchors-snapshot-best.csv');
   
   fs.writeFileSync(defaultPath, defaultCSV, 'utf-8');
   fs.writeFileSync(bestPath, bestCSV, 'utf-8');
